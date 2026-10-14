@@ -1,0 +1,196 @@
+@import "tailwindcss";
+@source "../";
+
+/*
+  Jetons de design de Siira.
+  Aucune couleur n'est ecrite en dur dans les composants : tout passe par ici.
+
+  Rose principal impose : #D6336C.
+  Prune du logo : #2A1A20.
+  Les trois niveaux d'urgence different par la teinte ET par la luminosite,
+  pour rester distinguables sans percevoir les couleurs.
+*/
+@theme {
+  /* Marque */
+  --color-rose-50: #fdf2f6;
+  --color-rose-100: #fce7ef;
+  --color-rose-200: #fbd0e0;
+  --color-rose-300: #f7a8c4;
+  --color-rose-400: #ef6f9d;
+  --color-rose-500: #e14a80;
+  --color-rose-600: #d6336c;
+  --color-rose-700: #b61f56;
+  --color-rose-800: #951a47;
+  --color-rose-900: #7a183d;
+
+  --color-prune-50: #faf7f8;
+  --color-prune-100: #f2ecee;
+  --color-prune-200: #e4d9dd;
+  --color-prune-300: #c9b6bd;
+  --color-prune-400: #a08792;
+  --color-prune-500: #7a5e6b;
+  --color-prune-600: #5c4350;
+  --color-prune-700: #44303b;
+  --color-prune-800: #35242d;
+  --color-prune-900: #2a1a20;
+
+  /* Neutres chauds, accordes au prune */
+  --color-sable-50: #fbfaf9;
+  --color-sable-100: #f5f3f1;
+  --color-sable-200: #e9e5e2;
+  --color-sable-300: #d6d0cb;
+  --color-sable-400: #a8a09a;
+  --color-sable-500: #7d756f;
+  --color-sable-600: #5d5650;
+  --color-sable-700: #45403b;
+
+  /* Niveaux d'urgence. Contrastes verifies sur fond clair. */
+  --color-vert-bg: #e8f4ed;
+  --color-vert-bord: #a9d4bd;
+  --color-vert-fort: #146b4a;
+  --color-vert-texte: #0e4e36;
+
+  --color-orange-bg: #fdf1e2;
+  --color-orange-bord: #efc98f;
+  --color-orange-fort: #9a5b00;
+  --color-orange-texte: #6f4200;
+
+  --color-rouge-bg: #fbe9e9;
+  --color-rouge-bord: #eda9ac;
+  --color-rouge-fort: #b3121b;
+  --color-rouge-texte: #8a0e15;
+
+  /* Information neutre */
+  --color-info-bg: #eef2f7;
+  --color-info-bord: #bcc9d9;
+  --color-info-fort: #2d4a6b;
+
+  /* Rayons : sobres, jamais de pilule sauf sur les etiquettes */
+  --radius-petit: 0.375rem;
+  --radius-moyen: 0.625rem;
+  --radius-grand: 1rem;
+
+  /* Ombres discretes. Aucune ombre lourde. */
+  --shadow-carte: 0 1px 2px rgba(42, 26, 32, 0.06), 0 1px 3px rgba(42, 26, 32, 0.04);
+  --shadow-releve: 0 4px 12px rgba(42, 26, 32, 0.08);
+  --shadow-barre: 0 -1px 0 rgba(42, 26, 32, 0.08);
+
+  /* Typographie */
+  --font-titre: var(--police-titre), Georgia, "Times New Roman", serif;
+  --font-sans: var(--police-texte), system-ui, -apple-system, sans-serif;
+
+  /* Hauteur minimale d'une cible tactile : 44 px (WCAG 2.5.5) */
+  --spacing-cible: 2.75rem;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-sable-50);
+    color: var(--color-prune-900);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titre);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  /* Focus toujours visible, jamais supprime (WCAG 2.4.11). */
+  :focus-visible {
+    outline: 3px solid var(--color-rose-600);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Respecter le choix de l'utilisateur sur les animations. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Lien d'evitement vers le contenu principal. */
+  .lien-evitement {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+  }
+  .lien-evitement:focus {
+    left: 0.5rem;
+    top: 0.5rem;
+    background: var(--color-prune-900);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-petit);
+  }
+
+  /* Visible uniquement par les lecteurs d'ecran. */
+  .lecteur-seul {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .apparition {
+    animation: apparition 0.24s ease-out;
+  }
+
+  @keyframes apparition {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Mise en evidence breve d'une ligne qui vient d'arriver. */
+  .signal-nouveau {
+    animation: signal 4s ease-out forwards;
+  }
+
+  @keyframes signal {
+    0%,
+    60% {
+      background-color: var(--color-rose-50);
+      box-shadow: inset 3px 0 0 var(--color-rose-600);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: inset 3px 0 0 transparent;
+    }
+  }
+}
