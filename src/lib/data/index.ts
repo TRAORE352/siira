@@ -104,6 +104,17 @@ export interface PatienteEnListe {
   centre: Centre | undefined;
   /** Vrai quand le centre a signalé que la patiente n'est pas venue. */
   absente: boolean;
+  /**
+   * Date du dernier mouvement du dossier, en ISO.
+   *
+   * La liste affiche cette date à côté de l'état du dossier. C'est donc la
+   * date de CET état — celle du dernier suivi enregistré par le centre, ou de
+   * l'envoi, ou de la consultation si rien n'est encore parti. Afficher la
+   * date d'inscription de la patiente à cet endroit faisait lire « Résultat
+   * disponible il y a trois semaines » pour un résultat arrivé la semaine
+   * dernière.
+   */
+  dernier_mouvement: string;
 }
 
 export function listerPatientesAgent(agentId: string): PatienteEnListe[] {
@@ -133,6 +144,18 @@ export function detailPatiente(patienteId: string): PatienteEnListe | null {
       e.financements.find((f) => f.orientation_id === orientation.id) ??
       null)
     : null;
+
+  /* Le dernier mouvement : ce qui a fait bouger le dossier en dernier. */
+  const dernier_suivi = orientation
+    ? ([...e.suivis]
+        .filter((s) => s.orientation_id === orientation.id)
+        .sort((a, b) => a.cree_le.localeCompare(b.cree_le))
+        .at(-1)?.cree_le ?? null)
+    : null;
+  const dernier_mouvement = orientation
+    ? (dernier_suivi ?? orientation.envoyee_le ?? orientation.cree_le)
+    : (consultation?.cree_le ?? patiente.cree_le);
+
   return {
     patiente,
     consultation,
@@ -141,6 +164,7 @@ export function detailPatiente(patienteId: string): PatienteEnListe | null {
     district: trouverDistrict(patiente.district_id),
     centre: orientation ? trouverCentre(orientation.centre_id) : undefined,
     absente: orientation?.statut === "absente",
+    dernier_mouvement,
   };
 }
 
