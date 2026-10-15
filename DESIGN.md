@@ -191,6 +191,8 @@ d'écran.
 | `Carte`, `EtatVide`, `MessageErreur`, `MessageSucces`, `Squelette` | `components/Interface.tsx` | Tous les états d'un écran : chargement, vide, erreur, succès |
 | `MentionPasDeDiagnostic` | `components/Interface.tsx` | Présente sur chaque écran de résultat |
 | `Espace`, `BarreAction` | `components/Espace.tsx` | Coquille par rôle ; barre d'action fixée en bas sur téléphone |
+| `Pliant`, `EnTeteEtapes`, `Question`, `Rappel`, `BarreEtape` | `components/Parcours.tsx` | Le parcours d'une consultation : une question par étape, un bloc qu'on déplie (`details` natif) pour les listes longues |
+| `SurveillanceTexte`, `SurveillanceRecommandee` | `components/Surveillance.tsx` | Ce qu'il faut surveiller selon l'âge, affiché quand aucun signe inquiétant n'est relevé |
 
 ---
 

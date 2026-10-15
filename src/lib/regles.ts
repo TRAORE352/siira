@@ -217,6 +217,10 @@ export function ficheVide(): Fiche {
     ecoulement: null,
     ecoulement_un_cote: null,
     ganglion_aisselle: null,
+    antecedents_personnels: null,
+    statut_menopause: null,
+    fievre: null,
+    grossesse_ou_allaitement: null,
     antecedents_familiaux: null,
     autres: null,
   };

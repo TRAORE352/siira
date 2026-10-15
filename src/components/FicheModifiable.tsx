@@ -212,13 +212,64 @@ export function FicheModifiable({
           onChange={(e) => set("ganglion_aisselle", versBooleen(e.target.value))}
         />
 
-        <Liste
-          label="Cas de cancer du sein dans la famille"
-          placeholder="Non précisé"
-          options={OUI_NON}
-          value={depuisBooleen(fiche.antecedents_familiaux)}
-          onChange={(e) => set("antecedents_familiaux", versBooleen(e.target.value))}
-        />
+        {/*
+          Le contexte ne décide pas du niveau d'urgence : il éclaire le
+          spécialiste, et il évite de se tromper de chemin. Un sein rouge et
+          chaud avec de la fièvre est souvent un abcès, qui ne se traite pas
+          comme un cancer ; une grossesse ou un allaitement change l'imagerie
+          à demander.
+        */}
+        <div className="border-t border-sable-200 pt-4">
+          <p className="mb-3 text-[0.95rem] font-medium text-prune-800">
+            Contexte de la patiente
+          </p>
+
+          <div className="flex flex-col gap-4">
+            <Liste
+              label="A-t-elle déjà eu un cancer du sein ?"
+              placeholder="Non précisé"
+              options={OUI_NON}
+              value={depuisBooleen(fiche.antecedents_personnels)}
+              onChange={(e) =>
+                set("antecedents_personnels", versBooleen(e.target.value))
+              }
+            />
+
+            <Liste
+              label="Ses règles se sont-elles arrêtées ?"
+              placeholder="Non précisé"
+              options={OUI_NON}
+              value={depuisBooleen(fiche.statut_menopause)}
+              onChange={(e) => set("statut_menopause", versBooleen(e.target.value))}
+            />
+
+            <Liste
+              label="A-t-elle de la fièvre, le sein est-il chaud et rouge ?"
+              placeholder="Non précisé"
+              options={OUI_NON}
+              value={depuisBooleen(fiche.fievre)}
+              onChange={(e) => set("fievre", versBooleen(e.target.value))}
+            />
+
+            <Liste
+              label="Est-elle enceinte ou allaite-t-elle ?"
+              placeholder="Non précisé"
+              options={OUI_NON}
+              value={depuisBooleen(fiche.grossesse_ou_allaitement)}
+              onChange={(e) =>
+                set("grossesse_ou_allaitement", versBooleen(e.target.value))
+              }
+            />
+
+            <Liste
+              label="Cas de cancer du sein dans la famille"
+              placeholder="Non précisé"
+              options={OUI_NON}
+              value={depuisBooleen(fiche.antecedents_familiaux)}
+              onChange={(e) => set("antecedents_familiaux", versBooleen(e.target.value))}
+            />
+          </div>
+        </div>
 
         {fiche.autres ? (
           <div>

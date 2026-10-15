@@ -7,6 +7,7 @@ import { Bouton } from "@/components/Bouton";
 import { Liste, ZoneTexte } from "@/components/Champs";
 import { BarreAction, Espace, Retour } from "@/components/Espace";
 import { FicheModifiable } from "@/components/FicheModifiable";
+import { SurveillanceRecommandee } from "@/components/Surveillance";
 import {
   Carte,
   Chargement,
@@ -146,17 +147,28 @@ function Resultat({ id }: { id: string }) {
       ) : null}
 
       {niveau === "vert" ? (
-        <Carte className="mt-4">
-          <h3 className="mb-3 text-lg">Ce qu&apos;il faut dire à la patiente</h3>
-          <ul className="flex flex-col gap-2">
-            {CONSEILS_VERT.map((c) => (
-              <li key={c} className="flex gap-2 text-[0.95rem] text-prune-800">
-                <span aria-hidden="true">•</span>
-                <span>{c}</span>
-              </li>
-            ))}
-          </ul>
-        </Carte>
+        <>
+          <Carte className="mt-4">
+            <h3 className="mb-3 text-lg">Ce qu&apos;il faut dire à la patiente</h3>
+            <ul className="flex flex-col gap-2">
+              {CONSEILS_VERT.map((c) => (
+                <li key={c} className="flex gap-2 text-[0.95rem] text-prune-800">
+                  <span aria-hidden="true">•</span>
+                  <span>{c}</span>
+                </li>
+              ))}
+            </ul>
+          </Carte>
+
+          {/*
+            Aucun signe inquiétant : la consultation ne débouche sur aucun soin.
+            Ce qu'il reste à dire, c'est quand revenir et quoi surveiller — le
+            calendrier de l'âge de la patiente.
+          */}
+          <div className="mt-4">
+            <SurveillanceRecommandee age={patiente.age} />
+          </div>
+        </>
       ) : null}
 
       <div className="mt-4">

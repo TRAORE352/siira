@@ -330,6 +330,44 @@ Les liens « Mes patientes » des écrans de confirmation et des fiches pointent
 désormais là, et non vers l'accueil. Écran de choix, puis liste, puis dossier :
 une décision par écran.
 
+**D43. Quand aucun signe inquiétant n'est relevé, Siira dit quoi surveiller,
+et à quel âge.**
+Le calendrier vient de l'équipe (conférence d'octobre 2026) : autopalpation
+mensuelle dès 20 ans ; examen des seins par un professionnel chaque année dès
+35 ans ; mammographie tous les trois ans dès 40 ans ; tous les deux ans dès
+50 ans. Il est écrit dans `lib/surveillance.ts`, sous forme de phrases lisibles
+à voix haute, et affiché sur l'écran de résultat d'un cas vert et sur la fiche
+de la patiente — les deux endroits où la consultation ne débouche sur aucun
+soin et où la seule chose utile à dire est « voilà ce que vous devez
+surveiller ».
+
+**À valider par une professionnelle de santé**, comme les règles de classement.
+Pour mémoire, l'OMS (fiche « Cancer du sein », juillet 2026) situe le dépistage
+par mammographie chez les femmes « généralement âgées de 50 à 69 ans » et ne
+retient pas l'auto-examen comme méthode de dépistage : elle insiste sur la
+connaissance des signes et la consultation sans attendre — ce que Siira fait
+déjà. Le calendrier de l'équipe est donc plus proactif que la recommandation
+mondiale. Il est présenté comme une invitation à surveiller, jamais comme un
+diagnostic, et la mention « cet outil ne pose pas de diagnostic » reste sur
+l'écran.
+
+**D44. Le questionnaire gagne un contexte et un guide d'interrogatoire.**
+Quatre réponses rejoignent la fiche, groupées sous « Contexte de la patiente » :
+a-t-elle déjà eu un cancer du sein, ses règles se sont-elles arrêtées, a-t-elle
+de la fièvre avec un sein chaud et rouge, est-elle enceinte ou allaite-t-elle.
+Elles ne décident pas du niveau d'urgence — le classement reste dans
+`lib/regles.ts` — mais elles éclairent le spécialiste et évitent de se tromper
+de chemin : un sein rouge et chaud avec de la fièvre est souvent un abcès, qui
+ne se soigne pas comme un cancer, et une grossesse change l'imagerie à
+demander.
+
+Sur l'étape du récit, un bloc plié « Questions à lui poser » donne à l'agent les
+treize questions d'un interrogatoire du sein, dans l'ordre des champs de la
+fiche. L'écran reste tenu : l'agent ouvre la liste quand il veut suivre
+question par question, la referme pour dicter. La zone du récit est aussi plus
+haute, et la ligne de rappel d'une étape accepte deux lignes — « Awa Compaoré,
+41 ans · Saaba » s'y coupait en « … · Saa… ».
+
 ---
 
 ## Données de démonstration

@@ -178,6 +178,30 @@ export function Question({
 }
 
 /**
+ * Un bloc qu'on déplie. Sert à poser une liste longue à côté d'une question
+ * sans encombrer l'écran : l'agent l'ouvre quand il en a besoin, la referme
+ * quand il dicte. Élément natif `details` : le clavier et les lecteurs d'écran
+ * le connaissent déjà.
+ */
+export function Pliant({ titre, children }: { titre: string; children: ReactNode }) {
+  return (
+    <details className="group rounded-[var(--radius-moyen)] border border-sable-200 bg-white">
+      <summary className="flex min-h-[var(--spacing-cible)] cursor-pointer items-center justify-between gap-3 px-4 text-[0.95rem] font-medium text-rose-700">
+        {titre}
+        {/* Un repère visible : sans lui, rien n'indique que le bloc s'ouvre. */}
+        <span
+          aria-hidden="true"
+          className="text-lg leading-none text-prune-600 transition-transform group-open:rotate-90"
+        >
+          ›
+        </span>
+      </summary>
+      <div className="border-t border-sable-200 px-4 py-3">{children}</div>
+    </details>
+  );
+}
+
+/**
  * Récapitulatif d'une étape déjà franchie : ce que l'agent a répondu, et un
  * moyen d'y revenir. Évite de faire défiler tout le parcours pour corriger.
  */
@@ -194,7 +218,11 @@ export function Rappel({
     <div className="flex items-center justify-between gap-3 rounded-[var(--radius-moyen)] border border-sable-200 bg-sable-100/60 px-3.5 py-2.5">
       <span className="min-w-0">
         <span className="block text-xs text-sable-600">{libelle}</span>
-        <span className="block truncate text-[0.95rem] font-medium text-prune-900">
+        {/*
+          Deux lignes plutôt qu'une : « Awa Compaoré, 41 ans · Saaba » se
+          coupait en « … · Saa… » sur un écran de 360 px.
+        */}
+        <span className="line-clamp-2 text-[0.95rem] font-medium text-prune-900">
           {valeur}
         </span>
       </span>

@@ -214,6 +214,14 @@ function LignesFiche({ fiche }: { fiche: Fiche }) {
         <Ligne libelle="D'un seul côté">{ouiNon(fiche.ecoulement_un_cote)}</Ligne>
       ) : null}
       <Ligne libelle="Ganglion sous l'aisselle">{ouiNon(fiche.ganglion_aisselle)}</Ligne>
+      <Ligne libelle="Déjà eu un cancer du sein">
+        {ouiNon(fiche.antecedents_personnels)}
+      </Ligne>
+      <Ligne libelle="Règles arrêtées">{ouiNon(fiche.statut_menopause)}</Ligne>
+      <Ligne libelle="Fièvre, sein chaud et rouge">{ouiNon(fiche.fievre)}</Ligne>
+      <Ligne libelle="Enceinte ou allaitante">
+        {ouiNon(fiche.grossesse_ou_allaitement)}
+      </Ligne>
       <Ligne libelle="Antécédents familiaux">{ouiNon(fiche.antecedents_familiaux)}</Ligne>
       {fiche.autres ? <Ligne libelle="Autre">{fiche.autres}</Ligne> : null}
     </>

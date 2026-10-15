@@ -123,6 +123,8 @@ const AUDIT = () => {
     if (e.children.length > 0 || e.offsetParent === null) continue;
     const texte = e.textContent.trim();
     if (!texte) continue;
+    /* Un contrôle désactivé sort du champ des exigences de contraste. */
+    if (e.closest("[disabled]")) continue;
     const s = getComputedStyle(e);
     const f = fondDe(e);
     const px = parseFloat(s.fontSize);

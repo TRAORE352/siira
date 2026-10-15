@@ -4,6 +4,7 @@ import { use } from "react";
 import { BadgeNiveau } from "@/components/BadgeNiveau";
 import { BoutonLien } from "@/components/Bouton";
 import { Espace, Retour } from "@/components/Espace";
+import { SurveillanceTexte } from "@/components/Surveillance";
 import {
   Carte,
   Chargement,
@@ -141,6 +142,14 @@ function FichePatiente({ id }: { id: string }) {
               </li>
             ))}
           </ul>
+
+          {/* Ce que l'on surveille dépend de l'âge : le calendrier de l'équipe. */}
+          <div className="mt-3 border-t border-sable-200 pt-3">
+            <p className="mb-1 text-sm font-medium text-prune-800">
+              À {patiente.age} ans
+            </p>
+            <SurveillanceTexte age={patiente.age} />
+          </div>
         </Carte>
       ) : null}
 

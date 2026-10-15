@@ -10,6 +10,7 @@ import {
   BarreEtape,
   CorpsEtape,
   EnTeteEtapes,
+  Pliant,
   Question,
   Rappel,
 } from "@/components/Parcours";
@@ -72,6 +73,28 @@ const ETAPES = [
 ] as const;
 
 const TOTAL = ETAPES.length;
+
+/*
+ * Ce qu'un interrogatoire du sein demande. La liste sert de guide à la dictée :
+ * l'agent lit les questions, la patiente répond, et le récit contient alors
+ * tout ce qu'il faut pour remplir la fiche et classer le cas. Elle reprend,
+ * dans l'ordre, les champs de la fiche structurée.
+ */
+const QUESTIONS_RECIT = [
+  "Depuis combien de temps ?",
+  "Un seul sein ou les deux ?",
+  "Sentez-vous une boule ? Où, et depuis quand ?",
+  "La boule est-elle dure ? Bouge-t-elle sous les doigts ?",
+  "La peau a-t-elle changé : tirée, en peau d'orange, une plaie, une rougeur ?",
+  "Le mamelon est-il rentré depuis peu ?",
+  "Y a-t-il un écoulement ? Avec du sang ? D'un seul côté ?",
+  "Sentez-vous une boule sous l'aisselle ?",
+  "A-t-elle mal, et à un endroit précis ?",
+  "A-t-elle déjà eu un cancer du sein ? Y en a-t-il dans la famille ?",
+  "A-t-elle de la fièvre, le sein est-il chaud et rouge ?",
+  "Est-elle enceinte, ou allaite-t-elle ?",
+  "Ses règles se sont-elles arrêtées ?",
+];
 
 export default function NouvelleConsultation() {
   return (
@@ -338,12 +361,36 @@ function Parcours() {
                 </MessageInfo>
               )}
 
+              {/*
+                Le guide d'interrogatoire reste plié : l'écran ne montre que le
+                bouton et la zone de texte, et l'agent ouvre la liste quand il
+                veut la suivre question par question.
+              */}
+              <div className="mt-4">
+                <Pliant titre="Questions à lui poser">
+                  <ul className="flex flex-col gap-1.5 text-[0.95rem] leading-relaxed text-prune-800">
+                    {QUESTIONS_RECIT.map((q) => (
+                      <li key={q} className="flex gap-2">
+                        <span aria-hidden="true">•</span>
+                        <span>{q}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-sm text-sable-600">
+                    Ces réponses remplissent la fiche, qui sert au classement puis au
+                    spécialiste.
+                  </p>
+                </Pliant>
+              </div>
+
+              {/* La zone est haute : le récit est le cœur du dossier. */}
               <div className="mt-4">
                 <ZoneTexte
                   label="Récit"
                   labelMasque
                   obligatoire
                   maxLength={2000}
+                  className="min-h-52"
                   value={f.recit}
                   erreur={erreurs.recit}
                   compteur={{ actuel: f.recit.length, max: 2000 }}

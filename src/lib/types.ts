@@ -23,6 +23,16 @@ export interface Fiche {
   ecoulement: Ecoulement | null;
   ecoulement_un_cote: boolean | null;
   ganglion_aisselle: boolean | null;
+  /**
+   * Contexte de la patiente. Ces quatre réponses ne décident pas du niveau
+   * d'urgence : elles éclairent le spécialiste et évitent de se tromper de
+   * chemin (un sein rouge et chaud avec de la fièvre est souvent un abcès,
+   * une grossesse change l'examen d'imagerie à demander).
+   */
+  antecedents_personnels: boolean | null;
+  statut_menopause: boolean | null;
+  fievre: boolean | null;
+  grossesse_ou_allaitement: boolean | null;
   antecedents_familiaux: boolean | null;
   autres: string | null;
 }
