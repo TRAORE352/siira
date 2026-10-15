@@ -7,6 +7,7 @@ export interface LienNav {
 
 export const LIENS_CENTRE: LienNav[] = [
   { href: "/centre", libelle: "Patientes reçues" },
+  { href: "/centre/prises-en-charge", libelle: "Prises en charge" },
   { href: "/centre/disponibilites", libelle: "Disponibilités" },
 ];
 

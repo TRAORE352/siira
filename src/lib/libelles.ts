@@ -15,6 +15,7 @@ import type {
   ResultatSuivi,
   Sein,
   SignePeau,
+  StatutFinancement,
 } from "./types";
 
 export const LIBELLE_PAIEMENT: Record<CapacitePaiement, string> = {
@@ -71,6 +72,18 @@ export const LIBELLE_STATUT_ORIENTATION: Record<Orientation["statut"], string> =
   resultat: "Résultat disponible",
   close: "Suivi terminé",
   absente: "Patiente non venue au rendez-vous",
+};
+
+/**
+ * État d'une demande de prise en charge.
+ * L'accord des partenaires se traite hors de l'application : ces libellés
+ * décrivent uniquement où en est la demande, pas une action à faire ici.
+ */
+export const LIBELLE_STATUT_FINANCEMENT: Record<StatutFinancement, string> = {
+  proposee: "À demander",
+  confirmee: "Accordée",
+  refusee: "Refusée",
+  retiree: "Retirée",
 };
 
 export const RAISONS_CORRECTION = [

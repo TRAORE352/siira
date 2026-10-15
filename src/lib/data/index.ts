@@ -567,6 +567,73 @@ export function enregistrerSuivi(entree: {
 }
 
 /* ------------------------------------------------------------------ */
+/* Prises en charge (lecture seule)                                    */
+/* ------------------------------------------------------------------ */
+
+export interface PriseEnCharge {
+  orientation_id: string;
+  patiente: Patiente;
+  niveau: Niveau | null;
+  district: District | undefined;
+  /** Demandes de financement, une par partenaire pressenti. */
+  demandes: { financement: Financement; ong: Ong | undefined }[];
+}
+
+/**
+ * Demandes de prise en charge d'un centre, regroupées par dossier.
+ *
+ * Lecture seule : l'accord des partenaires se traite hors de l'application
+ * (voir types.ts). Chaque dossier porte donc la liste de ses demandes, avec
+ * le montant demandé et l'état de chacune — rien n'est décidé ici.
+ */
+export function listerPrisesEnCharge(centreId: string): PriseEnCharge[] {
+  const e = lireEtat();
+  const parOrientation = new Map<string, PriseEnCharge>();
+
+  for (const orientation of e.orientations) {
+    if (orientation.centre_id !== centreId || orientation.statut === "brouillon") {
+      continue;
+    }
+    const consultation = e.consultations.find((c) => c.id === orientation.consultation_id);
+    if (!consultation) continue;
+    const patiente = e.patientes.find((p) => p.id === consultation.patiente_id);
+    if (!patiente) continue;
+
+    const demandes = e.financements
+      .filter((f) => f.orientation_id === orientation.id)
+      .map((financement) => ({ financement, ong: trouverOng(financement.ong_id) }));
+    if (demandes.length === 0) continue;
+
+    parOrientation.set(orientation.id, {
+      orientation_id: orientation.id,
+      patiente,
+      niveau: consultation.niveau_valide,
+      district: trouverDistrict(patiente.district_id),
+      demandes,
+    });
+  }
+
+  // Les dossiers dont une demande attend encore (« à demander ») passent en
+  // premier, puis les niveaux les plus urgents, puis les plus récents.
+  return Array.from(parOrientation.values()).sort((a, b) => {
+    const aAttend = a.demandes.some((d) => d.financement.statut === "proposee");
+    const bAttend = b.demandes.some((d) => d.financement.statut === "proposee");
+    if (aAttend !== bAttend) return aAttend ? -1 : 1;
+
+    const na = RANG_NIVEAU[a.niveau ?? "vert"];
+    const nb = RANG_NIVEAU[b.niveau ?? "vert"];
+    if (na !== nb) return na - nb;
+
+    const recents = (p: PriseEnCharge) =>
+      p.demandes.reduce(
+        (max, d) => (d.financement.cree_le > max ? d.financement.cree_le : max),
+        "",
+      );
+    return recents(b).localeCompare(recents(a));
+  });
+}
+
+/* ------------------------------------------------------------------ */
 /* Abonnement et réinitialisation                                      */
 /* ------------------------------------------------------------------ */
 
