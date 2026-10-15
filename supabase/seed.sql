@@ -73,8 +73,33 @@ insert into public.regles_financement (ong_id, districts, niveaux, situations, a
    array['orange','rouge'], array['partielle','ne_peut_pas'], true);
 
 -- ---------------------------------------------------------------------------
+-- Comptes Auth de démo (email + mot de passe partagé « siira2026 »).
+-- Les user_id correspondent aux profils insérés juste après.
+-- ---------------------------------------------------------------------------
+insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values
+  ('40000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'agent.saaba@siira.dev',      crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"agent"}',  now(), now()),
+  ('40000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'agent.ziniare@siira.dev',    crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"agent"}',  now(), now()),
+  ('40000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'agent.koubri@siira.dev',     crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"agent"}',  now(), now()),
+  ('40000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'centre.bogodogo@siira.dev',  crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"centre"}', now(), now()),
+  ('40000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'centre.tengandogo@siira.dev', crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"centre"}', now(), now()),
+  ('40000000-0000-4000-8000-000000000006', 'authenticated', 'authenticated', 'centre.yalgado@siira.dev',   crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"centre"}', now(), now()),
+  ('40000000-0000-4000-8000-000000000007', 'authenticated', 'authenticated', 'centre.ziniare@siira.dev',   crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"centre"}', now(), now()),
+  ('40000000-0000-4000-8000-000000000008', 'authenticated', 'authenticated', 'ong.rosesolidaire@siira.dev', crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"ong"}',   now(), now()),
+  ('40000000-0000-4000-8000-000000000009', 'authenticated', 'authenticated', 'ong.espoirfeminin@siira.dev', crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"ong"}',   now(), now()),
+  ('40000000-0000-4000-8000-000000000010', 'authenticated', 'authenticated', 'admin@siira.dev',             crypt('siira2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"role":"admin"}', now(), now())
+on conflict (id) do nothing;
+
+-- Identités email (requises pour la connexion par email / mot de passe).
+insert into auth.identities (id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at)
+select gen_random_uuid(), u.id, jsonb_build_object('sub', u.id::text, 'email', u.email, 'email_verified', true), 'email', u.id::text, now(), now(), now()
+from auth.users u
+where u.email like '%@siira.dev'
+on conflict do nothing;
+
+-- ---------------------------------------------------------------------------
 -- Profils (3 agents, 4 centres, 2 ONG, 1 admin).
--- user_id = identifiants Auth à créer dans Supabase Auth.
+-- user_id = identifiants Auth créés juste au-dessus.
 -- ---------------------------------------------------------------------------
 insert into public.profils (id, user_id, nom, role, centre_sante, centre_id, ong_id) values
   ('30000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000001', 'Agent Saaba',    'agent',  'CSPS de Saaba',    null, null),
