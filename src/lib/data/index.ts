@@ -16,6 +16,7 @@ import type {
   CapacitePaiement,
   Centre,
   Consultation,
+  Creneau,
   District,
   EtapeSuivi,
   Fiche,
@@ -700,6 +701,32 @@ export function refuserPriseEnCharge(
     }
     financement.statut = "refusee";
     financement.raison_refus = raison?.trim() ? raison.trim() : null;
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Créneaux et disponibilités (écriture)                               */
+/* ------------------------------------------------------------------ */
+
+/** Ajoute un créneau libre pour un centre, à une date et une heure données. */
+export function creerCreneau(centreId: string, debut: string): void {
+  const creneau: Creneau = {
+    id: identifiant("cre"),
+    centre_id: centreId,
+    debut,
+    libre: true,
+  };
+  modifier((e) => {
+    e.creneaux.push(creneau);
+  });
+}
+
+/** Change l'état d'un créneau : libre ou pris. */
+export function changerDisponibiliteCreneau(creneauId: string, libre: boolean): void {
+  modifier((e) => {
+    const creneau = e.creneaux.find((c) => c.id === creneauId);
+    if (!creneau) throw new Error("Créneau introuvable.");
+    creneau.libre = libre;
   });
 }
 
