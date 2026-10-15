@@ -42,3 +42,4 @@ next-env.d.ts
 
 # Journaux et artefacts locaux
 *.tsbuildinfo
+.env*

@@ -40,6 +40,23 @@ L'application est servie sur <http://localhost:3000>.
 | `npm run typecheck` | Vérification des types, sans rien produire |
 | `npm run lint` | Analyse du code |
 | `npm run recette` | Rejoue le parcours complet dans un vrai navigateur |
+| `npm run audit` | Vérifie les 13 écrans : débordements, cibles tactiles, libellés, titres |
+| `./scripts/relancer.sh` | Reconstruit et relance le serveur de production sur le port 3100 |
+
+---
+
+### Vérifier que tout fonctionne
+
+```bash
+npm test                              # 53 tests unitaires
+npm run typecheck && npm run lint     # types et style
+./scripts/relancer.sh                 # construction + serveur de production
+npm run audit                         # 13 écrans
+node scripts/recette.js --repetitions 5
+```
+
+Dernier relevé : **53 tests unitaires**, **audit propre sur 13 écrans**,
+**recette réussie 5 fois de suite (170 vérifications)**.
 
 ---
 

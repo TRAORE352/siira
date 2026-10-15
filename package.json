@@ -10,7 +10,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "recette": "node scripts/recette.js",
-    "audit": "node scripts/audit.js"
+    "audit": "node scripts/audit-ecrans.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",
