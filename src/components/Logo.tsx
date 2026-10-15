@@ -29,14 +29,21 @@ export function Logo({
       width={dimensions.w}
       height={dimensions.h}
       priority
-      style={{ width: dimensions.w, height: "auto" }}
+      // Les deux dimensions sont laissées à "auto" : le rapport est conservé
+      // par Next à partir de width et height ci-dessus.
+      style={{ width: dimensions.w, height: "auto", maxWidth: "100%" }}
+      sizes={`${dimensions.w}px`}
     />
   );
 
   if (!lien) return image;
 
   return (
-    <Link href={href} className="inline-flex items-center" aria-label="Siira, accueil">
+    <Link
+      href={href}
+      className="inline-flex min-h-[var(--spacing-cible)] items-center"
+      aria-label="Siira, accueil"
+    >
       {image}
     </Link>
   );

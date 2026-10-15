@@ -141,13 +141,15 @@ function Contenu() {
                     <Td>
                       <Link
                         href={`/centre/dossier/${d.orientation.id}`}
-                        className="font-medium text-prune-900 underline-offset-4 hover:text-rose-700 hover:underline"
+                        className="flex min-h-[var(--spacing-cible)] flex-col justify-center underline-offset-4 hover:text-rose-700"
                       >
-                        {d.patiente.nom}
+                        <span className="font-medium text-prune-900 hover:underline">
+                          {d.patiente.nom}
+                        </span>
+                        <span className="text-sm text-sable-600">
+                          {d.patiente.age} ans
+                        </span>
                       </Link>
-                      <span className="block text-sm text-sable-600">
-                        {d.patiente.age} ans
-                      </span>
                     </Td>
                     <Td>{d.district?.nom ?? "—"}</Td>
                     <Td>

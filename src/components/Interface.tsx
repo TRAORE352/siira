@@ -19,19 +19,26 @@ export function Carte({
   );
 }
 
+/**
+ * Titre d'une section d'écran.
+ * `principal` en fait le titre de la page (un seul par écran).
+ */
 export function TitreSection({
   children,
   aide,
   action,
+  principal = true,
 }: {
   children: ReactNode;
   aide?: string;
   action?: ReactNode;
+  principal?: boolean;
 }) {
+  const Titre = principal ? "h1" : "h2";
   return (
     <div className="mb-4 flex items-end justify-between gap-4">
       <div>
-        <h2 className="text-xl sm:text-2xl">{children}</h2>
+        <Titre className="text-xl sm:text-2xl">{children}</Titre>
         {aide ? <p className="mt-1 text-sm text-sable-600">{aide}</p> : null}
       </div>
       {action}

@@ -139,14 +139,17 @@
     left: -9999px;
     top: 0;
     z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--spacing-cible);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-petit);
   }
   .lien-evitement:focus {
     left: 0.5rem;
     top: 0.5rem;
     background: var(--color-prune-900);
     color: white;
-    padding: 0.75rem 1rem;
-    border-radius: var(--radius-petit);
   }
 
   /* Visible uniquement par les lecteurs d'ecran. */

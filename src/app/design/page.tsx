@@ -38,7 +38,9 @@ const NIVEAUX: { nom: string; fond: string; bord: string; fort: string; texte: s
 function Bloc({ titre, note, children }: { titre: string; note?: string; children: React.ReactNode }) {
   return (
     <section className="mb-14">
-      <TitreSection aide={note}>{titre}</TitreSection>
+      <TitreSection aide={note} principal={false}>
+        {titre}
+      </TitreSection>
       {children}
     </section>
   );

@@ -75,6 +75,34 @@ async function connecter(page, email) {
   }, email);
 }
 
+/**
+ * Préchauffage : en mode développement, Next compile chaque route à la
+ * première visite. On les visite toutes une fois avant de chronométrer.
+ */
+async function prechauffer(navigateur) {
+  const contexte = await navigateur.newContext();
+  const page = await contexte.newPage();
+  await page.goto(`${BASE}/connexion`, { waitUntil: "domcontentloaded" });
+  await page.evaluate(() =>
+    sessionStorage.setItem("siira.session.v1", "pro-agent-saaba"),
+  );
+  for (const chemin of [
+    "/agent",
+    "/agent/consultation/nouvelle",
+    "/agent/consultation/con-1/resultat",
+    "/agent/consultation/con-1/orientation",
+    "/agent/patiente/pat-1",
+    "/centre",
+    "/centre/dossier/ori-1",
+    "/ong",
+    "/ong/impact",
+    "/admin",
+  ]) {
+    await page.goto(BASE + chemin, { waitUntil: "domcontentloaded" }).catch(() => {});
+  }
+  await contexte.close();
+}
+
 async function passage(navigateur, numero) {
   etapes.push(`\n--- Passage ${numero} ---`);
 
@@ -152,7 +180,7 @@ async function passage(navigateur, numero) {
   await agent.click('input[type="checkbox"]');
   const debutAnalyse = Date.now();
   await agent.getByRole("button", { name: "Analyser le cas" }).click();
-  await agent.waitForURL(/\/resultat$/, { timeout: 10000 });
+  await agent.waitForURL(/\/resultat$/, { timeout: 15000 });
   await agent.waitForSelector("text=Niveau d'urgence proposé");
   const dureeAnalyse = Date.now() - debutAnalyse;
 
@@ -324,6 +352,7 @@ async function passage(navigateur, numero) {
   });
 
   try {
+    await prechauffer(navigateur);
     for (let i = 1; i <= REPETITIONS; i += 1) {
       await passage(navigateur, i);
     }
