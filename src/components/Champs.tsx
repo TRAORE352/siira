@@ -18,6 +18,7 @@ function Enveloppe({
   aide,
   erreur,
   obligatoire,
+  labelMasque = false,
   children,
 }: {
   id: string;
@@ -25,13 +26,24 @@ function Enveloppe({
   aide?: string;
   erreur?: string;
   obligatoire?: boolean;
+  /**
+   * Masque le libellé à l'écran sans le retirer aux lecteurs d'écran.
+   * Utile quand le titre de la question dit déjà la même chose : l'afficher
+   * deux fois alourdit l'écran sans rien apporter.
+   */
+  labelMasque?: boolean;
   children: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-[0.95rem] font-medium text-prune-800">
+      <label
+        htmlFor={id}
+        className={
+          labelMasque ? "lecteur-seul" : "text-[0.95rem] font-medium text-prune-800"
+        }
+      >
         {label}
-        {obligatoire ? (
+        {labelMasque ? null : obligatoire ? (
           <span className="ml-1 text-rose-600" aria-hidden="true">
             *
           </span>
@@ -60,6 +72,7 @@ export function Champ({
   aide,
   erreur,
   obligatoire,
+  labelMasque,
   className,
   id: idFourni,
   ...rest
@@ -68,11 +81,19 @@ export function Champ({
   aide?: string;
   erreur?: string;
   obligatoire?: boolean;
+  labelMasque?: boolean;
 }) {
   const genere = useId();
   const id = idFourni ?? genere;
   return (
-    <Enveloppe id={id} label={label} aide={aide} erreur={erreur} obligatoire={obligatoire}>
+    <Enveloppe
+      id={id}
+      label={label}
+      aide={aide}
+      erreur={erreur}
+      obligatoire={obligatoire}
+      labelMasque={labelMasque}
+    >
       <input
         {...rest}
         id={id}
@@ -89,6 +110,7 @@ export function ZoneTexte({
   aide,
   erreur,
   obligatoire,
+  labelMasque,
   compteur,
   className,
   id: idFourni,
@@ -98,12 +120,20 @@ export function ZoneTexte({
   aide?: string;
   erreur?: string;
   obligatoire?: boolean;
+  labelMasque?: boolean;
   compteur?: { actuel: number; max: number };
 }) {
   const genere = useId();
   const id = idFourni ?? genere;
   return (
-    <Enveloppe id={id} label={label} aide={aide} erreur={erreur} obligatoire={obligatoire}>
+    <Enveloppe
+      id={id}
+      label={label}
+      aide={aide}
+      erreur={erreur}
+      obligatoire={obligatoire}
+      labelMasque={labelMasque}
+    >
       <textarea
         {...rest}
         id={id}
@@ -125,6 +155,7 @@ export function Liste({
   aide,
   erreur,
   obligatoire,
+  labelMasque,
   options,
   placeholder,
   className,
@@ -135,13 +166,21 @@ export function Liste({
   aide?: string;
   erreur?: string;
   obligatoire?: boolean;
+  labelMasque?: boolean;
   placeholder?: string;
   options: { valeur: string; libelle: string }[];
 }) {
   const genere = useId();
   const id = idFourni ?? genere;
   return (
-    <Enveloppe id={id} label={label} aide={aide} erreur={erreur} obligatoire={obligatoire}>
+    <Enveloppe
+      id={id}
+      label={label}
+      aide={aide}
+      erreur={erreur}
+      obligatoire={obligatoire}
+      labelMasque={labelMasque}
+    >
       <select
         {...rest}
         id={id}

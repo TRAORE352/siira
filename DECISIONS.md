@@ -202,6 +202,41 @@ pensée pour les écrans d'ordinateur, écrasait cette hiérarchie. L'action
 principale — « Nouvelle consultation » — descend en barre fixe, à portée du
 pouce : en haut de page, il fallait remonter toute la liste pour l'atteindre.
 
+**D31. Écran d'ouverture, une fois par session, sur l'application de l'agent.**
+L'agent installe Siira sur son téléphone et la démarre plusieurs fois par jour :
+le temps de chargement réel — polices, feuille de style, premier rendu — se
+voyait comme un écran blanc. Un rideau de marque le couvre : la marque entre,
+un trait se trace sous le nom (« le chemin », sens de Siira en dioula), et il
+se retire seul au bout d'1,15 s **sans jamais attendre une action**. Trois
+garde-fous : il est `aria-hidden` (purement visuel, un lecteur d'écran doit
+lire la page) ; il ne paraît qu'une fois par session, pas à chaque navigation ;
+il ne paraît pas du tout si la personne a demandé moins d'animations. La
+décision se lit par `useSyncExternalStore` et non dans un effet, pour éviter à
+la fois l'écart d'hydratation et un `setState` en cascade. Les espaces
+d'ordinateur n'en ont pas, et le jury ne le revoit pas à chaque onglet.
+
+**D32. La consultation est un parcours en cinq étapes, une question à la fois.**
+L'agent remplit la fiche **avec la patiente, en lui parlant**. Un formulaire
+long l'oblige à chercher où il en est entre deux phrases, et à quitter la
+patiente des yeux. Les cinq temps suivent l'ordre de la conversation réelle :
+qui elle est, où elle habite, ce qu'elle peut payer, ce qu'elle ressent, son
+accord. Chaque étape affiche un rappel de ce qui a déjà été dit, avec un lien
+« Modifier » : corriger ne demande pas de refaire défiler tout le parcours. La
+dernière étape récapitule tout avant l'analyse, parce que c'est le moment où
+l'agent relit à voix haute avec la patiente.
+
+**D33. Le mouvement couvre une attente ou explique un changement, jamais plus.**
+Les étapes entrent en cascade (60 ms d'écart, ensemble sous 400 ms), la barre
+d'avancement anime sa largeur, le rideau d'ouverture se retire en fondu. Aucun
+rebond, aucune rotation, aucune animation qui retarde une saisie. Tout est
+suspendu par `prefers-reduced-motion`, déjà respecté globalement.
+
+**D34. Un libellé n'est jamais écrit deux fois à l'écran.**
+Quand le titre de la question dit déjà « Son nom », le champ ne répète pas
+« Nom de la patiente » au-dessus de lui : `labelMasque` le réserve aux lecteurs
+d'écran. Le libellé reste donc présent dans l'arbre d'accessibilité — il n'est
+pas supprimé, seulement retiré de la vue.
+
 ---
 
 ## Données de démonstration

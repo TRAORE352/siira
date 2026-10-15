@@ -152,20 +152,43 @@ async function passage(navigateur, numero) {
   });
   verifier("Connexion de l'ONG", budgetAvant !== null, `budget ${budgetAvant} FCFA`);
 
-  /* 1. Saisie du cas d'Awa. */
+  /* 1. Saisie du cas d'Awa, en cinq étapes. */
   await agent.getByRole("link", { name: "Nouvelle consultation" }).click();
-  await agent.waitForSelector('input[type="number"]');
+  await agent.waitForSelector('input[autocomplete="off"]');
 
+  /*
+   * Le formulaire est un parcours : une question à la fois. On remplit chaque
+   * étape puis on touche « Continuer », exactement comme l'agent.
+   */
+  async function continuer() {
+    await agent.getByRole("button", { name: "Continuer", exact: true }).click();
+  }
+
+  /* Étape 1 — identité */
   await agent.fill('input[autocomplete="off"]', "Awa Compaoré");
   await agent.fill('input[type="number"]', "41");
+  await continuer();
+
+  /* Étape 2 — district */
+  await agent.waitForSelector("select");
   await agent.selectOption("select", { label: "Saaba" });
+  await continuer();
+
+  /* Étape 3 — capacité de paiement */
+  await agent.waitForSelector('input[type="radio"]');
   await agent.click("text=Elle ne peut pas payer");
+  await continuer();
+
+  /* Étape 4 — le récit */
+  await agent.waitForSelector("textarea");
   await agent.fill(
     "textarea",
     "Elle a une boule au sein gauche depuis deux mois, ça ne fait pas mal, la peau est un peu tirée.",
   );
+  await continuer();
 
-  // Le bouton reste inactif tant que le consentement n'est pas coché.
+  /* Étape 5 — consentement. L'analyse reste bloquée tant qu'il manque. */
+  await agent.waitForSelector('input[type="checkbox"]');
   const inactifAvantConsentement = await agent.evaluate(() => {
     const b = Array.from(document.querySelectorAll("button")).find((x) =>
       x.textContent.includes("Analyser le cas"),

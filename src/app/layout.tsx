@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { Ouverture } from "@/components/Ouverture";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ESPACE_ACTIF, nomEspace, presentationEspace } from "@/lib/espaces";
 import "./globals.css";
@@ -56,6 +57,13 @@ export default function RootLayout({
         <a href="#contenu" className="lien-evitement">
           Aller au contenu
         </a>
+        {/*
+          Écran d'ouverture, réservé à l'application de l'agent : elle est
+          installée sur son téléphone et démarrée plusieurs fois par jour. Les
+          espaces d'ordinateur n'en ont pas besoin, et le jury ne doit pas le
+          revoir à chaque onglet pendant la démonstration.
+        */}
+        {ESPACE_ACTIF === "agent" ? <Ouverture /> : null}
         {children}
         <ServiceWorker />
       </body>
