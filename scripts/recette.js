@@ -325,6 +325,8 @@ async function passage(navigateur, numero) {
   await centre.goto(`${BASE}/centre/suivi`, { waitUntil: "domcontentloaded" });
   await centre.waitForSelector("text=Suivi des soins");
   const ficheAwa = centre.locator("li", { hasText: "Awa Compaoré" }).first();
+  /* Chaque dossier se déplie au clic : le formulaire est caché tant que non. */
+  await ficheAwa.getByRole("button").first().click();
   await ficheAwa.locator("select").first().selectOption({ label: "Patiente reçue" });
   await ficheAwa.getByRole("button", { name: "Enregistrer" }).click();
   await centre.waitForSelector("text=est enregistrée");
