@@ -75,37 +75,38 @@ export function ConnexionAgent() {
 
   return (
     <div className="flex min-h-screen flex-col bg-prune-900">
-      {/* Bandeau de marque. Il porte l'identité, le contenu vient par-dessus. */}
-      <div className="fond-marque px-6 pt-12 pb-16 sm:pt-16">
-        <div className="mx-auto w-full max-w-md">
+      {/*
+        Bandeau de marque. Il dit seulement où l'on est : l'agent ouvre cet
+        écran tous les matins, le slogan et la présentation de l'application
+        n'ont rien à y faire — chaque ligne de texte en plus est une ligne à
+        lire avant de pouvoir travailler.
+      */}
+      <div className="fond-marque px-6 pt-10 pb-14">
+        <div className="mx-auto flex w-full max-w-md items-center gap-3">
           <Image
             src="/brand/icon-512.png"
             alt=""
-            width={56}
-            height={56}
+            width={52}
+            height={52}
             priority
-            className="rounded-[1.1rem] bg-white/95 p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
-            style={{ width: 56, height: 56 }}
+            className="rounded-[1rem] bg-white/95 p-1.5"
+            style={{ width: 52, height: 52 }}
           />
-          <h1 className="mt-6 font-[family-name:var(--font-titre)] text-[2.1rem] leading-[1.15] text-white">
-            Le chemin
-            <br />
-            vers les soins
-          </h1>
-          <p className="mt-3 max-w-xs text-[1.02rem] leading-relaxed text-rose-100/85">
-            Espace des agents de santé. Dépistez, orientez, suivez vos patientes
-            depuis votre téléphone.
-          </p>
+          <p className="text-[0.95rem] text-rose-100/85">Espace des agents de santé</p>
         </div>
       </div>
 
       {/* Feuille de saisie, remontée sur le bandeau. */}
-      <main id="contenu" className="feuille relative -mt-7 flex-1 px-6 pt-8 pb-12">
-        <div className="mx-auto w-full max-w-md">
-          <h2 className="text-2xl">Connexion</h2>
-          <p className="mt-1.5 text-[0.95rem] text-sable-600">
-            Entrez le numéro sur lequel votre compte a été créé.
-          </p>
+      <main
+        id="contenu"
+        className="feuille relative -mt-6 flex flex-1 flex-col px-6 pt-8 pb-10"
+      >
+        {/*
+          Le bloc est centré verticalement : sur un téléphone de 844 px, une
+          feuille vide sous le bouton donne l'impression d'un écran inachevé.
+        */}
+        <div className="mx-auto my-auto w-full max-w-md">
+          <h1 className="text-2xl">Connexion</h1>
 
           <form
             noValidate
@@ -113,7 +114,7 @@ export function ConnexionAgent() {
               e.preventDefault();
               entrer();
             }}
-            className="mt-7 flex flex-col gap-6"
+            className="mt-6 flex flex-col gap-6"
           >
             {erreur ? <MessageErreur titre="Connexion impossible" texte={erreur} /> : null}
 
@@ -145,16 +146,9 @@ export function ConnexionAgent() {
             </Bouton>
           </form>
 
-          <p className="mt-7 text-center text-sm leading-relaxed text-sable-600">
-            Code oublié ou numéro changé ?{" "}
-            <span className="font-medium text-prune-800">
-              Appelez le superviseur de votre district.
-            </span>
-          </p>
-
-          <p className="mt-8 border-t border-sable-200 pt-5 text-center text-xs leading-relaxed text-sable-500">
-            Siira ne pose pas de diagnostic. Il évalue un niveau d’urgence et
-            oriente vers un centre spécialisé.
+          <p className="mt-6 text-center text-sm text-sable-600">
+            Code oublié ?{" "}
+            <span className="font-medium text-prune-800">Appelez votre superviseur.</span>
           </p>
         </div>
       </main>
