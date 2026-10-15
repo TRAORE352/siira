@@ -103,15 +103,19 @@ version différente de celle du dépôt. Les secrets ne passent jamais par le
 dépôt : `.env.local` est ignoré, et les variables de la Phase 2 seront saisies
 dans les réglages Vercel.
 
-**D21. Deux adresses dédiées, plus une adresse de démonstration.**
-Trois projets Vercel servent le même dépôt : `siira-agent`,
-`siira-centre`, et `siira` pour l'application complète. Chacun
-fixe son espace par `NEXT_PUBLIC_ESPACE`. Raison : le commanditaire veut un
-lien par public, et une adresse qui n'ouvre que son espace évite qu'un
-agent découvre les écrans du centre. L'adresse complète est conservée parce que
-l'état de la démonstration vit dans le stockage du navigateur, propre à chaque
-adresse : c'est la seule où le parcours complet se joue entre deux onglets. Le
-partage entre les deux adresses dédiées viendra avec Supabase, en Phase 2.
+**D21. Deux adresses déployées, une par public.**
+Deux projets Vercel servent le même dépôt : `siira-agent` et `siira-centre`.
+Chacun fixe son espace par `NEXT_PUBLIC_ESPACE`. Raison : le commanditaire
+veut un lien par public, et une adresse qui n'ouvre que son espace évite qu'un
+agent découvre les écrans du centre.
+
+**Révision.** Une troisième adresse servait l'application complète pour les
+démonstrations. Elle est supprimée : le commanditaire ne veut que deux liens.
+Conséquence assumée — l'état de la démonstration vit dans le stockage du
+navigateur, propre à chaque adresse, donc l'agent et le centre déployés ne
+partagent pas leurs données. Montrer le parcours de bout en bout demande
+désormais de servir l'application sans `NEXT_PUBLIC_ESPACE`, en local. Le
+partage entre les deux adresses viendra avec Supabase, en Phase 2.
 
 **D22. Les autres espaces sont refusés, pas seulement cachés.**
 Un middleware s'exécute avant tout rendu et renvoie vers la connexion si le

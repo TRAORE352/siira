@@ -30,19 +30,22 @@ son espace par la variable `NEXT_PUBLIC_ESPACE`, et n'ouvre que celui-là : les
 |---|---|---|
 | <https://siira-agent.vercel.app> | `agent` | L'agent de santé, sur son téléphone. Application installable. |
 | <https://siira-centre.vercel.app> | `centre` | Le centre de santé ou le centre spécialisé, sur ordinateur. |
-| <https://siira-chi.vercel.app> | application complète | La démonstration du jury : tous les rôles sur une seule adresse. |
 
-**Pourquoi une troisième adresse ?** L'état de la démonstration vit dans le
-stockage du navigateur, qui est propre à chaque adresse. Sur l'application
-complète, les deux espaces ouverts dans deux onglets partagent les mêmes
-données : c'est le seul endroit où le parcours complet se déroule sous les yeux
-du jury. Les deux adresses dédiées servent à remettre à chaque partenaire un
-lien qui n'ouvre que son espace. Le partage des données entre les deux
+**Deux publics, deux adresses.** Chaque partenaire reçoit un lien qui n'ouvre
+que son espace : les écrans de l'autre ne sont pas seulement masqués, ils sont
+refusés avant tout rendu.
+
+**Conséquence à connaître pour une démonstration.** L'état de la démonstration
+vit dans le stockage du navigateur, qui est propre à chaque adresse : l'agent
+et le centre ouverts sur leurs deux adresses NE partagent PAS leurs données.
+Pour montrer le parcours de bout en bout (un dossier envoyé qui apparaît chez
+le centre), il faut servir l'application sans `NEXT_PUBLIC_ESPACE`, en local :
+`npm run build && npm start`. Le partage des données entre les deux
 adresses dédiées viendra avec Supabase (Phase 2), où l'état vivra sur le
 serveur.
 
 Le dépôt est relié à Vercel, avec `main` comme branche de production : chaque
-push sur `main` met les trois adresses à jour.
+push sur `main` met les deux adresses à jour.
 
 ---
 
@@ -113,9 +116,8 @@ Un même numéro retrouve toujours le même agent de démonstration — et donc 
 mêmes patientes — plutôt qu'un agent tiré au hasard à chaque connexion.
 Essayez `70 12 34 56` avec le code `123456`.
 
-Les autres espaces travaillent sur ordinateur et gardent la connexion par
-compte, car l'adresse de démonstration doit ouvrir les deux espaces côte à
-côte. Sur l'écran de connexion, il suffit de toucher un compte.
+Le centre travaille sur ordinateur et garde la connexion par compte : sur son
+écran de connexion, il suffit de toucher un compte.
 
 | Rôle | Adresse | Personne |
 |---|---|---|
@@ -126,8 +128,9 @@ côte. Sur l'écran de connexion, il suffit de toucher un compte.
 | Admin | `admin@siira.demo` | Équipe Siira |
 
 Les trois agents de démonstration (Salimata Ouédraogo à Saaba, Boukary
-Sawadogo à Ziniaré, Mariam Kaboré à Koubri) restent accessibles par leur
-adresse sur l'adresse de démonstration complète.
+Sawadogo à Ziniaré, Mariam Kaboré à Koubri) se connectent par téléphone sur
+l'adresse de l'agent, et par leur adresse lorsque l'application est servie
+sans `NEXT_PUBLIC_ESPACE`.
 
 En Phase 2, ces comptes auront de vrais mots de passe, qui seront notés ici et
 jamais publiés.
@@ -225,8 +228,10 @@ de bout en bout Playwright sur les trois adresses.
 Variables d'environnement attendues : URL et clé publique Supabase, clé de
 service Supabase (serveur uniquement), clé DeepSeek (serveur uniquement).
 Aucune clé ne doit porter le préfixe `NEXT_PUBLIC_` hormis les deux premières.
-La variable `NEXT_PUBLIC_ESPACE` (`agent` ou `centre`) désigne l'espace
-d'une adresse ; vide, elle sert l'application complète.
+La variable `NEXT_PUBLIC_ESPACE` (`agent` ou `centre`) désigne l'espace d'une
+adresse ; vide, elle sert l'application complète, qui n'est plus déployée et
+ne sert qu'en local. Une valeur d'un espace supprimé (`ong`) ferme l'adresse
+au lieu de l'ouvrir en grand.
 
 ---
 
