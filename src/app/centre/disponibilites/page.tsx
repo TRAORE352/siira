@@ -1,17 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { AgendaSemaine } from "@/components/AgendaSemaine";
 import { Bouton } from "@/components/Bouton";
 import { Champ } from "@/components/Champs";
 import { Espace } from "@/components/Espace";
-import {
-  Carte,
-  EtatVide,
-  Ligne,
-  MessageInfo,
-  Squelette,
-  TitreSection,
-} from "@/components/Interface";
+import { Carte, Ligne, MessageInfo, Squelette, TitreSection } from "@/components/Interface";
 import {
   changerDisponibiliteCreneau,
   creerCreneau,
@@ -48,24 +42,13 @@ function Contenu() {
     if (!centre) return null;
     const maintenant = Date.now();
     const creneaux = lireEtat()
-      .creneaux.filter(
-        (c) => c.centre_id === centreId && new Date(c.debut).getTime() >= maintenant,
-      )
+      .creneaux.filter((c) => c.centre_id === centreId)
       .sort((a, b) => a.debut.localeCompare(b.debut));
-    return { centre, creneaux, libres: creneaux.filter((c) => c.libre).length };
+    const libres = creneaux.filter(
+      (c) => c.libre && new Date(c.debut).getTime() >= maintenant,
+    ).length;
+    return { centre, creneaux, libres };
   });
-
-  const jours = useMemo(() => {
-    const creneaux = donnees?.creneaux ?? [];
-    const parJour = new Map<string, typeof creneaux>();
-    for (const c of creneaux) {
-      const cle = cleJour(c.debut);
-      const liste = parJour.get(cle) ?? [];
-      liste.push(c);
-      parJour.set(cle, liste);
-    }
-    return Array.from(parJour.entries());
-  }, [donnees]);
 
   function ajouter() {
     setErreur(null);
@@ -103,7 +86,7 @@ function Contenu() {
   if (!pret) return <Squelette lignes={4} />;
   if (!donnees) return <MessageInfo>Aucun centre rattaché à ce compte.</MessageInfo>;
 
-  const { centre, libres } = donnees;
+  const { centre, creneaux, libres } = donnees;
 
   return (
     <>
@@ -111,150 +94,55 @@ function Contenu() {
         Disponibilités
       </TitreSection>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.3fr] lg:items-start">
-        <div className="flex flex-col gap-4">
-          <Carte>
-            <h2 className="mb-3 text-lg">{centre.nom}</h2>
-            <dl>
-              <Ligne libelle="Service">{centre.service}</Ligne>
-              <Ligne libelle="Examens proposés">
-                {centre.examens.map((e) => LIBELLE_EXAMEN[e] ?? e).join(", ")}
-              </Ligne>
-              <Ligne libelle="Places par semaine">{centre.places_semaine}</Ligne>
-              <Ligne libelle="Créneaux libres à venir">{libres}</Ligne>
-            </dl>
-          </Carte>
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        <Carte>
+          <h2 className="mb-3 text-lg">{centre.nom}</h2>
+          <dl>
+            <Ligne libelle="Service">{centre.service}</Ligne>
+            <Ligne libelle="Examens proposés">
+              {centre.examens.map((e) => LIBELLE_EXAMEN[e] ?? e).join(", ")}
+            </Ligne>
+            <Ligne libelle="Places par semaine">{centre.places_semaine}</Ligne>
+            <Ligne libelle="Créneaux libres à venir">{libres}</Ligne>
+          </dl>
+        </Carte>
 
-          <Carte>
-            <h2 className="mb-3 text-lg">Ajouter un rendez-vous</h2>
-            {erreur ? (
-              <p role="alert" className="mb-3 text-sm font-medium text-rouge-fort">
-                {erreur}
-              </p>
-            ) : null}
-            <div className="flex flex-col gap-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Champ
-                  type="date"
-                  label="Date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-                <Champ
-                  type="time"
-                  label="Heure"
-                  value={heure}
-                  onChange={(e) => setHeure(e.target.value)}
-                />
-              </div>
-              <Bouton onClick={ajouter}>Ajouter le créneau</Bouton>
+        <Carte>
+          <h2 className="mb-3 text-lg">Ajouter un rendez-vous</h2>
+          {erreur ? (
+            <p role="alert" className="mb-3 text-sm font-medium text-rouge-fort">
+              {erreur}
+            </p>
+          ) : null}
+          <div className="flex flex-col gap-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Champ
+                type="date"
+                label="Date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+              <Champ
+                type="time"
+                label="Heure"
+                value={heure}
+                onChange={(e) => setHeure(e.target.value)}
+              />
             </div>
-          </Carte>
-        </div>
+            <Bouton onClick={ajouter}>Ajouter le créneau</Bouton>
+          </div>
+        </Carte>
+      </div>
 
+      <div className="mt-4">
         <Carte>
           <h2 className="mb-1 text-lg">Agenda des rendez-vous</h2>
           <p className="mb-4 text-sm text-sable-600">
             Cliquez sur un créneau pour le marquer libre ou pris.
           </p>
-          {jours.length === 0 ? (
-            <EtatVide
-              titre="Aucun rendez-vous à venir"
-              texte="Ajoutez un créneau libre pour le voir apparaître ici."
-            />
-          ) : (
-            <div className="overflow-x-auto pb-1">
-              <div className="flex gap-3">
-                {jours.map(([cle, creneaux]) => {
-                  const aujourdhui = estAujourdhui(cle);
-                  return (
-                    <div
-                      key={cle}
-                      className={`flex min-w-[10rem] shrink-0 flex-col overflow-hidden rounded-[var(--radius-grand)] border bg-white ${
-                        aujourdhui ? "border-rose-300" : "border-sable-200"
-                      }`}
-                    >
-                      <div
-                        className={`border-b px-3 pb-2 pt-3 text-center ${
-                          aujourdhui
-                            ? "border-rose-200 bg-rose-50"
-                            : "border-sable-200 bg-sable-50"
-                        }`}
-                      >
-                        <p className="font-[family-name:var(--font-titre)] text-2xl leading-none text-prune-900">
-                          {jourNumero(cle)}
-                        </p>
-                        <p
-                          className={`mt-1 text-xs font-medium ${
-                            aujourdhui ? "text-rose-700" : "text-sable-600"
-                          }`}
-                        >
-                          {aujourdhui ? "Aujourd'hui" : jourSemaine(cle)}
-                        </p>
-                      </div>
-                      <ul className="flex flex-col gap-1.5 p-3">
-                        {creneaux.map((c) => (
-                          <li key={c.id}>
-                            <button
-                              type="button"
-                              onClick={() => basculer(c.id, !c.libre)}
-                              aria-pressed={!c.libre}
-                              className={`flex w-full items-center justify-between gap-2 rounded-[var(--radius-moyen)] border px-2.5 py-2 text-left transition-colors ${
-                                c.libre
-                                  ? "border-vert-bord bg-vert-bg hover:border-vert-fort"
-                                  : "border-sable-300 bg-sable-100 hover:bg-sable-200"
-                              }`}
-                            >
-                              <span className="text-sm text-prune-800">{heureDe(c.debut)}</span>
-                              <span
-                                className={`text-xs font-medium ${
-                                  c.libre ? "text-vert-texte" : "text-sable-700"
-                                }`}
-                              >
-                                {c.libre ? "Libre" : "Pris"}
-                              </span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <AgendaSemaine creneaux={creneaux} onBasculer={basculer} />
         </Carte>
       </div>
     </>
   );
-}
-
-function cleJour(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
-}
-
-function jourNumero(cle: string): string {
-  return String(Number(cle.split("-")[2]));
-}
-
-function jourSemaine(cle: string): string {
-  const [a, m, j] = cle.split("-").map(Number);
-  const d = new Date(a, m - 1, j);
-  const l = d.toLocaleDateString("fr-FR", { weekday: "short" });
-  return l.charAt(0).toUpperCase() + l.slice(1);
-}
-
-function estAujourdhui(cle: string): boolean {
-  const auj = new Date();
-  const cleAuj = `${auj.getFullYear()}-${String(auj.getMonth() + 1).padStart(2, "0")}-${String(
-    auj.getDate(),
-  ).padStart(2, "0")}`;
-  return cle === cleAuj;
-}
-
-function heureDe(iso: string): string {
-  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
