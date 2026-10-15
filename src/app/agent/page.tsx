@@ -10,7 +10,7 @@ import { Marque } from "@/components/Logo";
 import { listerPatientesAgent } from "@/lib/data";
 import type { PatienteEnListe } from "@/lib/data";
 import { useDonnees } from "@/lib/hooks";
-import { LIBELLE_STATUT_ORIENTATION, depuis } from "@/lib/libelles";
+import { LIBELLE_STATUT_ORIENTATION, depuisCourt } from "@/lib/libelles";
 import { fermerSession, lireNumeroSession, useSession } from "@/lib/session";
 import { numeroLisible } from "@/lib/telephone";
 
@@ -54,8 +54,14 @@ function Contenu() {
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-xl">Mes patientes</h2>
             {liste.length > 0 ? (
-              <span className="chiffres-fixes text-sm text-sable-500">
-                {liste.length} suivie{liste.length > 1 ? "s" : ""}
+              /*
+                « 3 suivies » ne voulait rien dire tout seul, et le texte
+                d'aide était en sable-500 : 4,34 pour 1 sur la feuille, sous
+                le seuil de 4,5 exigé pour le petit texte. sable-600 est le
+                jeton que le système de design réserve à cet usage (6,9:1).
+              */
+              <span className="chiffres-fixes text-sm text-sable-600">
+                {liste.length} patiente{liste.length > 1 ? "s" : ""}
               </span>
             ) : null}
           </div>
@@ -201,7 +207,7 @@ function Chiffre({
 /* ------------------------------------------------------------------ */
 
 function LignePatiente({ detail }: { detail: PatienteEnListe }) {
-  const { patiente, consultation, orientation, absente } = detail;
+  const { patiente, consultation, orientation, absente, dernier_mouvement } = detail;
   const niveau = consultation?.niveau_valide ?? consultation?.niveau_propose ?? null;
 
   const statut = orientation
@@ -219,24 +225,35 @@ function LignePatiente({ detail }: { detail: PatienteEnListe }) {
         <Initiales nom={patiente.nom} niveau={niveau} />
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
-            <p className="truncate text-[1.05rem] font-medium text-prune-900">{patiente.nom}</p>
-            {niveau ? <BadgeNiveau niveau={niveau} /> : null}
+          {/*
+            Le nom tient une ligne à lui seul. À 360 px, la colonne de texte
+            fait 238 px : partagée avec l'étiquette de niveau, elle coupait le
+            nom (« Korotimi Zoun… »). L'agent doit pouvoir lire le nom de sa
+            patiente, et un nom de trois mots passe donc sur deux lignes
+            plutôt que d'être raccourci.
+          */}
+          <p className="line-clamp-2 text-[1.05rem] font-medium text-prune-900">{patiente.nom}</p>
+
+          {/* Les faits de la fiche, et le niveau d'urgence à leur droite. */}
+          <div className="mt-0.5 flex items-center justify-between gap-3">
+            <p className="min-w-0 truncate text-sm text-sable-600">
+              <span className="chiffres-fixes">{patiente.age}</span> ans ·{" "}
+              {detail.district?.nom ?? "District non précisé"}
+            </p>
+            {niveau ? <BadgeNiveau niveau={niveau} className="shrink-0" /> : null}
           </div>
 
-          <p className="mt-0.5 text-sm text-sable-600">
-            <span className="chiffres-fixes">{patiente.age}</span> ans ·{" "}
-            {detail.district?.nom ?? "District non précisé"}
-          </p>
-
           {/*
-            Statut et ancienneté sur une seule ligne, chacun à un bout : un
-            séparateur « · » au milieu se retrouve orphelin en fin de ligne dès
-            que le statut est long, ce qui arrive sur un écran de 360 px.
+            État du dossier, et depuis quand il en est là. La date affichée est
+            celle du dernier mouvement du dossier, pas celle de l'inscription :
+            une date plus vieille que l'état qu'elle accompagne se lirait de
+            travers (« Résultat disponible il y a trois semaines »).
           */}
           <div className="mt-2 flex items-baseline justify-between gap-3 text-sm">
             <span className="min-w-0 truncate text-prune-700">{statut}</span>
-            <span className="shrink-0 text-sable-500">{depuis(patiente.cree_le)}</span>
+            <span className="chiffres-fixes shrink-0 text-sable-600">
+              {depuisCourt(dernier_mouvement)}
+            </span>
           </div>
         </div>
       </div>
