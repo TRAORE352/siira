@@ -46,3 +46,6 @@ next-env.d.ts
 # Secrets : jamais versionnés. .env.example, lui, l'est (il ne contient aucune valeur).
 .env*
 !.env.example
+
+# Captures de verification (regenerables par scripts/captures-adresses.js)
+/shots-prod/
