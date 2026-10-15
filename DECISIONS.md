@@ -307,6 +307,17 @@ interdit les emojis (§11.2), et « +226 » se lit aussi vite. Le bloc de saisie
 est centré verticalement, pour qu'une feuille vide sous le bouton ne donne pas
 l'impression d'un écran inachevé.
 
+**D41. L'accueil de l'agent ne porte plus de compteurs.**
+Il affichait le numéro de téléphone de l'agent et trois cadres — patientes, en
+attente, à revoir. Le numéro ne sert à rien ici : l'agent sait avec lequel il
+s'est connecté. Les trois nombres comptaient ce que la liste juste en dessous
+montre déjà : « 4 patientes » quand quatre cartes sont visibles, « 0 à revoir »
+quand aucune carte ne porte l'alerte. La liste regagne cette hauteur : quatre
+patientes tiennent à l'écran sans faire défiler, contre deux avant. Une femme
+qui n'est pas venue au rendez-vous reste signalée en rouge sur sa carte, à
+l'endroit où l'agent agit. Si le besoin d'un état du jour revient, une seule
+ligne discrète suffira — pas trois cadres.
+
 ---
 
 ## Données de démonstration
