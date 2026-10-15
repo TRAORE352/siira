@@ -69,11 +69,21 @@ function chrome() {
     await page.getByLabel(/Numéro de téléphone/).fill(essai);
     await page.getByLabel(/Code secret/).fill("123456");
     await page.getByRole("button", { name: /Ouvrir mon espace/ }).click();
-    await page.waitForTimeout(500);
-    const refuse = await page.getByText(/ne ressemble pas/).count();
-    const arrive = /\/agent$/.test(page.url());
-    console.log(`  ${essai} : ${arrive ? "ACCEPTE" : refuse ? "REFUSE A TORT" : "bloque"}`);
-    if (!arrive) throw new Error(`Le numéro ${essai} aurait dû être accepté`);
+    /*
+      Attendre l'arrivée, ne pas lire l'URL après un délai fixe : en production
+      la navigation prend plus longtemps qu'en local, et une lecture trop tôt
+      fait conclure à tort que le numéro a été refusé.
+    */
+    const arrive = await page
+      .waitForURL(/\/agent$/, { timeout: 20000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!arrive) {
+      const refuse = await page.getByText(/ne ressemble pas/).count();
+      console.log(`  ${essai} : ${refuse ? "REFUSE A TORT" : "bloque"}`);
+      throw new Error(`Le numéro ${essai} aurait dû être accepté`);
+    }
+    console.log(`  ${essai} : ACCEPTE`);
     /* Revenir à la connexion pour l'essai suivant. */
     await page.evaluate(() => sessionStorage.clear());
     await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
