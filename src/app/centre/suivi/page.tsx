@@ -63,9 +63,14 @@ function Contenu() {
                       {d.creneau ? ` · ${dateCourte(d.creneau.debut)}` : ""}
                     </p>
                   </div>
+                  {/*
+                    Cible tactile de 44 px (WCAG 2.5.5) : un lien de la hauteur
+                    de son texte ne fait que 20 px, ce que l'audit des écrans
+                    signale. Le mot reste le même, la zone d'appui grandit.
+                  */}
                   <Link
                     href={`/centre/patientes/${d.orientation.id}`}
-                    className="text-sm text-rose-700 hover:underline"
+                    className="inline-flex min-h-[var(--spacing-cible)] items-center text-sm text-rose-700 hover:underline"
                   >
                     Voir le dossier
                   </Link>
