@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { BadgeNiveau } from "@/components/BadgeNiveau";
 import { Bouton } from "@/components/Bouton";
-import { BarreAction, Espace, Retour } from "@/components/Espace";
+import { BarreAction, Espace, Redirection, Retour } from "@/components/Espace";
 import {
   Carte,
   Chargement,
@@ -12,7 +12,6 @@ import {
   MentionPasDeDiagnostic,
   MessageErreur,
   MessageInfo,
-  MessageSucces,
   TitreSection,
 } from "@/components/Interface";
 import {
@@ -22,7 +21,6 @@ import {
   messagePourLaPatiente,
   preparerOrientation,
   trouverConsultation,
-  trouverCreneau,
   trouverOrientationParConsultation,
 } from "@/lib/data";
 import type { PropositionOrientation } from "@/lib/data";
@@ -81,25 +79,13 @@ function Orientation({ id }: { id: string }) {
   const patiente = detail.patiente;
   const niveau = consultation.niveau_valide;
 
-  // Dossier déjà parti : on montre le suivi, pas le formulaire.
+  /*
+   * Dossier déjà parti : l'écran de confirmation est la seule page qui dit ce
+   * qu'il est devenu. On y renvoie plutôt que d'en réécrire un résumé ici,
+   * qui finirait par diverger de l'autre.
+   */
   if (dejaEnvoyee) {
-    const creneau = trouverCreneau(dejaEnvoyee.creneau_id);
-    return (
-      <>
-        <Retour href="/agent" libelle="Mes patientes" />
-        <MessageSucces>Le dossier de {patiente.nom} est parti au centre.</MessageSucces>
-        {creneau ? (
-          <Carte className="mt-4">
-            <Ligne libelle="Rendez-vous">{dateLisible(creneau.debut)}</Ligne>
-          </Carte>
-        ) : null}
-        <div className="mt-4">
-          <Bouton onClick={() => router.push(`/agent/patiente/${patiente.id}`)}>
-            Voir la fiche de la patiente
-          </Bouton>
-        </div>
-      </>
-    );
+    return <Redirection vers={`/agent/consultation/${id}/confirmation`} />;
   }
 
   if (!niveau || niveau === "vert" || !proposition) {
@@ -126,7 +112,7 @@ function Orientation({ id }: { id: string }) {
         creneau_id: retenu.creneau.id,
         score: retenu.score,
       });
-      router.push(`/agent/patiente/${patiente.id}`);
+      router.push(`/agent/consultation/${id}/confirmation`);
     } catch (e) {
       setEnvoi(false);
       setErreur(

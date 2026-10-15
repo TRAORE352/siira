@@ -216,6 +216,24 @@ export function BarreAction({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Renvoie vers un autre écran dès le montage.
+ *
+ * Sert quand une page n'a plus lieu d'être dans l'état courant (dossier déjà
+ * envoyé, par exemple) : plutôt que d'y réécrire un résumé qui finirait par
+ * diverger, on envoie vers l'écran qui fait autorité. L'attente reste
+ * annoncée, car une redirection muette ressemble à une panne.
+ */
+export function Redirection({ vers }: { vers: string }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(vers);
+  }, [router, vers]);
+
+  return <Chargement texte="Ouverture du dossier" />;
+}
+
 /** Fil d'Ariane discret, pour revenir en arrière sans perdre le contexte. */
 export function Retour({ href, libelle }: { href: string; libelle: string }) {
   return (

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { MarqueAnimee } from "@/components/MarqueAnimee";
 
 /**
  * Écran d'ouverture.
@@ -61,29 +61,15 @@ export function Ouverture() {
       aria-hidden="true"
       className="ecran-ouverture fond-marque pointer-events-none fixed inset-0 z-50 flex flex-col items-center justify-center"
     >
-      {/* Halo qui s'ouvre derrière la marque. */}
-      <span className="splash-halo absolute h-72 w-72 rounded-full bg-rose-500/40 blur-3xl" />
+      <MarqueAnimee taille={82} />
 
-      <div className="splash-marque relative flex flex-col items-center">
-        <Image
-          src="/brand/icon-512.png"
-          alt=""
-          width={76}
-          height={76}
-          priority
-          className="rounded-[1.4rem] bg-white/95 p-2 shadow-[0_12px_32px_rgba(0,0,0,0.35)]"
-          style={{ width: 76, height: 76 }}
-        />
+      <p className="ouverture-nom mt-6 font-[family-name:var(--font-titre)] text-[2rem] leading-none text-white">
+        Siira
+      </p>
 
-        <p className="mt-5 font-[family-name:var(--font-titre)] text-3xl text-white">
-          Siira
-        </p>
-
-        {/* Le trait se trace : c'est « le chemin », le sens du nom en dioula. */}
-        <span className="splash-trait mt-3 block h-[2px] w-24 rounded-full bg-rose-400" />
-
-        <p className="mt-4 text-sm text-rose-100/70">Le chemin vers les soins</p>
-      </div>
+      <p className="ouverture-devise mt-3 text-sm text-rose-100/70">
+        Le chemin vers les soins
+      </p>
     </div>
   );
 }

@@ -8,7 +8,7 @@ const pr=fs.mkdtempSync(path.join(os.tmpdir(),"ouv-"));
 const c=await chromium.launchPersistentContext(pr,{executablePath:chrome(),args:["--no-sandbox"],viewport:{width:390,height:844},deviceScaleFactor:2});
 const p=c.pages()[0]??await c.newPage();
 let ok=0,ko=0;
-const dire=(t,v)=>{console.log((v?"  OK  ":"  KO  ")+t);v?ok++:ko++;};
+const dire=(t,v)=>{console.log((v?"  OK  ":"  KO  ")+t);if(v){ok++;}else{ko++;}};
 
 // 1. premiere visite : le rideau est la des la premiere peinture
 await p.goto(BASE+"/",{waitUntil:"commit"});

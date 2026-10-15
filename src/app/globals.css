@@ -242,28 +242,82 @@
   }
 
   /* ---------------------------------------------------------------- */
-  /* Ecran d'ouverture                                                  */
+  /* Marque animee et ecran d'ouverture                                 */
   /* ---------------------------------------------------------------- */
 
   /*
-    Le mouvement sert a couvrir le temps de chargement reel, pas a faire joli :
-    chaque element entre une fois, sans rebond ni rotation. Duree totale sous
-    la seconde, pour ne jamais retarder un agent presse.
+    Le symbole de Siira, ce sont deux silhouettes cote a cote. L'animation ne
+    raconte que cela : un chemin se trace autour d'elles, puis le symbole se
+    pose. Jamais de rebond ni de rotation — ce produit accompagne des femmes
+    malades, le mouvement reste calme et se termine vite.
   */
+
+  /* Le symbole se pose : il monte a peine, et s'ouvre. */
+  .marque-symbole {
+    animation: marque-pose 0.78s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes marque-pose {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /*
-    Le rideau est servi dans le HTML, donc il doit savoir partir sans aide.
-    Cette animation est sa seule sortie : elle ne depend ni de React, ni d'un
-    minuteur, ni meme de javascript actif. Il tient environ 1,15 s — le temps
-    du demarrage reel — puis s'efface. `forwards` fige l'etat final : une fois
+    Le chemin se trace d'un seul trait, en partant du haut. `--perimetre` est
+    pose par le composant a partir du rayon reel : le trait fait donc le tour
+    exact, quelle que soit la taille demandee.
+  */
+  .marque-anneau {
+    color: var(--color-rose-400);
+    transform: rotate(-90deg);
+  }
+
+  .marque-anneau circle {
+    animation: marque-chemin 1.5s cubic-bezier(0.65, 0, 0.35, 1) 0.18s both;
+  }
+
+  @keyframes marque-chemin {
+    from {
+      stroke-dashoffset: var(--perimetre);
+      opacity: 0;
+    }
+    35% {
+      opacity: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+  }
+
+  /*
+    Ecran d'ouverture.
+
+    Il est servi dans le HTML, donc il doit savoir partir sans aide. Cette
+    animation est sa seule sortie : elle ne depend ni de React, ni d'un
+    minuteur, ni meme du javascript. `forwards` fige l'etat final : une fois
     parti, il ne revient pas.
   */
   .ecran-ouverture {
-    animation: ouverture-retrait 1.6s linear forwards;
+    animation: ouverture-retrait 1.75s cubic-bezier(0.4, 0, 1, 1) forwards;
   }
 
+  /*
+    Le rideau tient opaque, puis s'efface vite. La fenetre de fondu est courte
+    a dessein : pendant qu'elle dure, on voit les DEUX ecrans l'un sur l'autre,
+    et deux titres superposes font desordre. Le contenu d'entree n'entre
+    qu'apres (voir les retards ci-dessous), si bien que les deux mouvements se
+    succedent au lieu de se melanger.
+  */
   @keyframes ouverture-retrait {
     0%,
-    72% {
+    88% {
       opacity: 1;
     }
     100% {
@@ -273,23 +327,28 @@
   }
 
   /*
-    Deuxieme visite dans la meme session, ou animations reduites : le script
-    du <head> a repondu avant la premiere peinture, le rideau n'est jamais
+    Deuxieme visite dans la meme session, ou animations reduites : le script du
+    <head> a repondu avant la premiere peinture, le rideau n'est jamais
     affiche. `display: none` plutot qu'une opacite : rien n'est peint, rien
-    n'est anime, et l'image de marque n'est meme pas demandee.
+    n'est anime, et l'image n'est meme pas demandee.
   */
   html[data-ouverture="non"] .ecran-ouverture {
     display: none;
   }
 
-  .splash-marque {
-    animation: splash-marque 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Le nom et la devise suivent le symbole, decales pour laisser l'oeil. */
+  .ouverture-nom {
+    animation: ouverture-texte 0.62s cubic-bezier(0.16, 1, 0.3, 1) 0.42s both;
   }
 
-  @keyframes splash-marque {
+  .ouverture-devise {
+    animation: ouverture-texte 0.62s cubic-bezier(0.16, 1, 0.3, 1) 0.58s both;
+  }
+
+  @keyframes ouverture-texte {
     from {
       opacity: 0;
-      transform: scale(0.88);
+      transform: translateY(6px);
     }
     to {
       opacity: 1;
@@ -297,37 +356,104 @@
     }
   }
 
-  /* Halo qui s'ouvre derriere la marque, une seule fois. */
-  .splash-halo {
-    animation: splash-halo 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  /* ---------------------------------------------------------------- */
+  /* Page d'entree de l'agent                                           */
+  /* ---------------------------------------------------------------- */
+
+  /*
+    Le contenu arrive apres le rideau, dans l'ordre de lecture : titre, phrase,
+    action. Les retards sont courts — l'agent qui revient pour la dixieme fois
+    ne doit jamais attendre son bouton.
+  */
+  .entree-titre {
+    animation: ouverture-texte 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.62s both;
   }
 
-  @keyframes splash-halo {
+  .entree-phrase {
+    animation: ouverture-texte 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.74s both;
+  }
+
+  .entree-action {
+    animation: ouverture-texte 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.86s both;
+  }
+
+  /*
+    Sans rideau (deuxieme visite, animations reduites), ces retards seraient
+    une attente pure : l'agent fixerait un ecran vide pendant 1,6 s. Le meme
+    attribut qui supprime le rideau ramene donc l'entree a un mouvement court.
+  */
+  html[data-ouverture="non"] .entree-titre {
+    animation-delay: 0.06s;
+  }
+
+  html[data-ouverture="non"] .entree-phrase {
+    animation-delay: 0.16s;
+  }
+
+  html[data-ouverture="non"] .entree-action {
+    animation-delay: 0.26s;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Confirmation d'envoi                                               */
+  /* ---------------------------------------------------------------- */
+
+  /*
+    Un dossier parti, c'est une femme qui a obtenu un rendez-vous. L'ecran le
+    marque, sans fanfare : le sceau se pose, la coche se trace, le reste suit.
+    Rien ne clignote et rien ne se repete — l'agent en verra plusieurs par
+    jour.
+  */
+  .sceau-confirmation {
+    animation: sceau-pose 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes sceau-pose {
     from {
       opacity: 0;
-      transform: scale(0.4);
-    }
-    60% {
-      opacity: 0.55;
+      transform: scale(0.72);
     }
     to {
-      opacity: 0.28;
-      transform: scale(1);
+      opacity: 1;
+      transform: none;
     }
   }
 
-  /* Le trait se trace sous le nom : le « chemin » de Siira. */
-  .splash-trait {
-    transform-origin: left center;
-    animation: splash-trait 0.65s cubic-bezier(0.65, 0, 0.35, 1) 0.3s both;
+  /* La coche s'ecrit, elle n'apparait pas d'un bloc. */
+  .sceau-coche {
+    stroke-dasharray: 36;
+    stroke-dashoffset: 36;
+    animation: sceau-coche 0.45s cubic-bezier(0.65, 0, 0.35, 1) 0.34s both;
   }
 
-  @keyframes splash-trait {
+  @keyframes sceau-coche {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .confirmation-titre {
+    animation: ouverture-texte 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.46s both;
+  }
+
+  .confirmation-phrase {
+    animation: ouverture-texte 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.58s both;
+  }
+
+  /* La feuille blanche remonte sur le bandeau, une seule fois. */
+  .confirmation-feuille {
+    animation: confirmation-feuille 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  }
+
+  @keyframes confirmation-feuille {
     from {
-      transform: scaleX(0);
+      opacity: 0;
+      transform: translateY(18px);
     }
     to {
-      transform: scaleX(1);
+      opacity: 1;
+      transform: none;
     }
   }
 

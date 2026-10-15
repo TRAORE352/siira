@@ -104,6 +104,28 @@ function chrome() {
   await page.waitForTimeout(900);
   await cliche("16-consult-resultat");
 
+  /* Orientation : le centre propose, l'agent envoie le dossier. */
+  await page
+    .getByRole("button", { name: /Continuer vers l'orientation/ })
+    .click();
+  await page.waitForURL(/\/orientation$/, { timeout: 20000 });
+  await page.waitForTimeout(900);
+  await cliche("17-orientation");
+
+  /* Envoi : doit mener a l'ecran de confirmation, pas a la fiche. */
+  await page.getByRole("button", { name: /Envoyer le dossier/ }).click();
+  await page.waitForURL(/\/confirmation$/, { timeout: 20000 });
+  await page.waitForTimeout(1400);
+  await cliche("18-confirmation");
+
+  /* Ce que l'ecran doit dire, mesure et non devine. */
+  const texteConfirmation = await page.evaluate(() => document.body.innerText);
+  for (const attendu of ["Le dossier est parti", "Le rendez-vous", "À dire à"]) {
+    if (!texteConfirmation.includes(attendu)) {
+      erreurs.push(`confirmation : "${attendu}" absent`);
+    }
+  }
+
   console.log(
     erreurs.length === 0
       ? "aucune erreur console"
