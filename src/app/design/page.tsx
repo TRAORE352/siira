@@ -94,7 +94,7 @@ export default function PageDesign() {
                       {c.hex} / {c.usage}
                     </span>
                     {c.contraste ? (
-                      <span className="block text-sm text-sable-500">Contraste {c.contraste}</span>
+                      <span className="block text-sm text-sable-600">Contraste {c.contraste}</span>
                     ) : null}
                   </span>
                 </div>

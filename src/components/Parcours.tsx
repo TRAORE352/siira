@@ -193,7 +193,7 @@ export function Rappel({
   return (
     <div className="flex items-center justify-between gap-3 rounded-[var(--radius-moyen)] border border-sable-200 bg-sable-100/60 px-3.5 py-2.5">
       <span className="min-w-0">
-        <span className="block text-xs text-sable-500">{libelle}</span>
+        <span className="block text-xs text-sable-600">{libelle}</span>
         <span className="block truncate text-[0.95rem] font-medium text-prune-900">
           {valeur}
         </span>

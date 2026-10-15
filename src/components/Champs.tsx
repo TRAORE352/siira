@@ -43,12 +43,18 @@ function Enveloppe({
         }
       >
         {label}
+        {/*
+          La marque d'obligation est en rose-700, pas en rose-600 : sur la
+          feuille claire, le rose de marque ne donne que 4,43 pour 1, sous le
+          seuil de 4,5 exigé pour le petit texte. La teinte foncée donne 6:1
+          et reste la couleur de la marque.
+        */}
         {labelMasque ? null : obligatoire ? (
-          <span className="ml-1 text-rose-600" aria-hidden="true">
+          <span className="ml-1 text-rose-700" aria-hidden="true">
             *
           </span>
         ) : (
-          <span className="ml-1.5 font-normal text-sable-500">(facultatif)</span>
+          <span className="ml-1.5 font-normal text-sable-600">(facultatif)</span>
         )}
       </label>
       {aide ? (
@@ -142,7 +148,7 @@ export function ZoneTexte({
         className={clsx(CADRE, "min-h-36 resize-y leading-relaxed", erreur ? FAUTIF : NORMAL, className)}
       />
       {compteur ? (
-        <p className="text-right text-sm text-sable-500" aria-live="polite">
+        <p className="text-right text-sm text-sable-600" aria-live="polite">
           {compteur.actuel} sur {compteur.max} caracteres
         </p>
       ) : null}

@@ -111,7 +111,7 @@ export function FicheModifiable({
             className="text-[0.95rem] font-medium text-prune-800"
           >
             Depuis combien de semaines
-            <span className="ml-1.5 font-normal text-sable-500">(facultatif)</span>
+            <span className="ml-1.5 font-normal text-sable-600">(facultatif)</span>
           </label>
           <input
             id="duree"
