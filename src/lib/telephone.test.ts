@@ -8,6 +8,7 @@ import {
   numeroCanonique,
   numeroLisible,
   numeroValide,
+  ressembleAMobile,
 } from "./telephone";
 
 describe("chiffresSeuls", () => {
@@ -56,6 +57,23 @@ describe("erreurNumero", () => {
     }
   });
 
+  it("accepte les lignes fixes et les tranches récentes", () => {
+    // 20 Bobo-Dioulasso, 25 Ouagadougou, et des préfixes mobiles ouverts après
+    // la rédaction de ce code. Refuser un vrai numéro est la pire des fautes.
+    for (const n of ["20123456", "25123456", "04123456", "08123456", "09123456"]) {
+      expect(erreurNumero(n), n).toBeNull();
+    }
+  });
+
+  it("n'invente aucune règle de préfixe", () => {
+    // Tous les premiers chiffres possibles passent, dès lors que la longueur
+    // est bonne : c'est le serveur qui tranchera en Phase 2.
+    for (let d = 0; d <= 9; d += 1) {
+      const n = `${d}1234567`;
+      expect(erreurNumero(n), n).toBeNull();
+    }
+  });
+
   it("accepte un numéro saisi avec son indicatif", () => {
     expect(erreurNumero("+226 70 12 34 56")).toBeNull();
   });
@@ -69,15 +87,19 @@ describe("erreurNumero", () => {
     expect(erreurNumero("701234")).toBe("Il manque 2 chiffres à ce numéro.");
   });
 
-  it("refuse un préfixe qui n'est pas burkinabè", () => {
-    for (const n of ["12345678", "98765432", "04123456", "08123456", "09123456"]) {
-      expect(erreurNumero(n), n).toBe("Ce numéro ne ressemble pas à un numéro burkinabè.");
-    }
-  });
-
   it("numeroValide suit erreurNumero", () => {
     expect(numeroValide("70123456")).toBe(true);
-    expect(numeroValide("12345678")).toBe(false);
+    expect(numeroValide("7012345")).toBe(false);
+  });
+});
+
+describe("ressembleAMobile", () => {
+  it("reconnaît les mobiles, sans jamais servir à refuser", () => {
+    expect(ressembleAMobile("70123456")).toBe(true);
+    expect(ressembleAMobile("06123456")).toBe(true);
+    // Une ligne fixe n'est pas un mobile, mais reste un numéro valide.
+    expect(ressembleAMobile("25123456")).toBe(false);
+    expect(erreurNumero("25123456")).toBeNull();
   });
 });
 

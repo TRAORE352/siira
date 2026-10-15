@@ -100,8 +100,14 @@ le couple en Phase 2, sans changer l'écran.
 
 | Saisie | Règle |
 |---|---|
-| Numéro | 8 chiffres, indicatif `+226` fixé. Préfixes mobiles acceptés : `01`, `02`, `03`, `05`, `06`, `07`, et les anciens numéros en `5`, `6`, `7`. |
+| Numéro | 8 chiffres, indicatif `+226` fixé. **Aucun préfixe n'est refusé** : mobiles, lignes fixes et tranches récentes passent tous. |
 | Code | 6 chiffres, n'importe lesquels en Phase 1. |
+
+Seule la longueur est contrôlée, délibérément. Une liste de préfixes « connus »
+écrite dans le code vieillit mal — le plan de numérotation burkinabè a changé
+en 2021, les opérateurs ouvrent de nouvelles tranches sans prévenir — et finit
+par bloquer de vraies personnes devant leur propre numéro. C'est le serveur qui
+tranchera en Phase 2.
 
 Un même numéro retrouve toujours le même agent de démonstration — et donc les
 mêmes patientes — plutôt qu'un agent tiré au hasard à chaque connexion.

@@ -44,6 +44,11 @@ function chrome() {
     console.log(fichier);
   }
 
+  /* 0. Page d'entrée. */
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(600);
+  await cliche("00-entree");
+
   /* 1. Connexion, vide. */
   await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
   await page.waitForTimeout(600);
@@ -55,13 +60,32 @@ function chrome() {
   await page.waitForTimeout(300);
   await cliche("02-connexion-remplie");
 
-  /* 3. Erreur de numéro. */
-  await page.getByLabel(/Numéro de téléphone/).fill("12345678");
+  /*
+   * 3. Numéros que l'application doit accepter.
+   * Celui qui a été refusé à tort en production figure en tête : un numéro
+   * valide ne doit JAMAIS produire de message d'erreur.
+   */
+  for (const essai of ["25123456", "04123456", "09123456", "60123456", "01234567"]) {
+    await page.getByLabel(/Numéro de téléphone/).fill(essai);
+    await page.getByLabel(/Code secret/).fill("123456");
+    await page.getByRole("button", { name: /Ouvrir mon espace/ }).click();
+    await page.waitForTimeout(500);
+    const refuse = await page.getByText(/ne ressemble pas/).count();
+    const arrive = /\/agent$/.test(page.url());
+    console.log(`  ${essai} : ${arrive ? "ACCEPTE" : refuse ? "REFUSE A TORT" : "bloque"}`);
+    if (!arrive) throw new Error(`Le numéro ${essai} aurait dû être accepté`);
+    /* Revenir à la connexion pour l'essai suivant. */
+    await page.evaluate(() => sessionStorage.clear());
+    await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
+  }
+
+  /* 4. Erreur réelle : un numéro trop court. */
+  await page.getByLabel(/Numéro de téléphone/).fill("7012");
   await page.getByRole("button", { name: /Ouvrir mon espace/ }).click();
   await page.waitForTimeout(400);
   await cliche("03-connexion-erreur");
 
-  /* 4. Accueil de l'agent. */
+  /* 5. Accueil de l'agent. */
   await page.getByLabel(/Numéro de téléphone/).fill("70123456");
   await page.getByLabel(/Code secret/).fill("123456");
   await page.getByRole("button", { name: /Ouvrir mon espace/ }).click();

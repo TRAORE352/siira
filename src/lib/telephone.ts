@@ -41,17 +41,33 @@ export function formaterNumero(saisie: string): string {
   return n.replace(/(\d{2})(?=\d)/g, "$1 ").trim();
 }
 
-/** Les deux premiers chiffres désignent-ils un mobile burkinabè ? */
-function prefixeConnu(n: string): boolean {
+/** Les deux premiers chiffres désignent-ils un mobile burkinabè ?
+ *
+ * Sert uniquement à des fins d'affichage ou de statistiques : cette fonction
+ * ne doit JAMAIS servir à refuser une saisie (voir `erreurNumero`).
+ */
+export function ressembleAMobile(saisie: string): boolean {
+  const n = chiffresSeuls(saisie);
+  if (n.length < LONGUEUR_NUMERO) return false;
   const tete = n[0];
-  // Ancien format, encore très répandu.
   if (tete === "5" || tete === "6" || tete === "7") return true;
-  // Format actuel : 0 suivi d'un chiffre d'opérateur mobile.
   if (tete === "0") return ["1", "2", "3", "5", "6", "7"].includes(n[1]);
   return false;
 }
 
-/** Message d'erreur en français simple, ou `null` si le numéro convient. */
+/**
+ * Message d'erreur en français simple, ou `null` si le numéro convient.
+ *
+ * On ne contrôle QUE la longueur.
+ *
+ * La tentation est grande de refuser les préfixes « inconnus ». C'est une
+ * faute : le plan de numérotation burkinabè a changé en 2021, il comporte des
+ * lignes fixes (20 à Bobo-Dioulasso, 25 à Ouagadougou) autant que des mobiles,
+ * et les opérateurs ouvrent de nouvelles tranches sans prévenir. Une liste de
+ * préfixes écrite ici vieillit mal et finit par bloquer de vraies personnes
+ * devant leur propre numéro — une faute bien plus grave que de laisser passer
+ * une saisie farfelue, que le serveur rejettera de toute façon en Phase 2.
+ */
 export function erreurNumero(saisie: string): string | null {
   const n = chiffresSeuls(saisie);
   if (n.length === 0) return "Entrez votre numéro de téléphone.";
@@ -60,9 +76,6 @@ export function erreurNumero(saisie: string): string | null {
     return reste === 1
       ? "Il manque un chiffre à ce numéro."
       : `Il manque ${reste} chiffres à ce numéro.`;
-  }
-  if (!prefixeConnu(n)) {
-    return "Ce numéro ne ressemble pas à un numéro burkinabè.";
   }
   return null;
 }

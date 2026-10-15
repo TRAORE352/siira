@@ -157,6 +157,27 @@ tout code à 6 chiffres ouvrent l'espace. Un même numéro retrouve toujours le
 même agent de démonstration, par la somme de ses chiffres, sinon la liste des
 patientes changerait à chaque connexion.
 
+**D29. Le numéro n'est contrôlé que sur sa longueur. Aucun préfixe n'est refusé.**
+La première version vérifiait que le numéro commençait par un préfixe mobile
+« connu ». Elle refusait en production des numéros parfaitement réels :
+les lignes fixes (`20` à Bobo-Dioulasso, `25` à Ouagadougou) et les tranches
+`04`, `08`, `09`. Le plan de numérotation burkinabè a changé en 2021 et les
+opérateurs ouvrent de nouvelles tranches sans prévenir : **toute liste de
+préfixes écrite dans le code vieillit et finit par bloquer un agent devant son
+propre numéro.** Laisser passer une saisie farfelue — que le serveur rejettera
+en Phase 2 — est une faute sans conséquence ; empêcher quelqu'un de se
+connecter n'en est pas une. `ressembleAMobile()` subsiste pour l'affichage et
+les statistiques, avec l'interdiction explicite de servir à refuser une saisie.
+Un test parcourt les dix premiers chiffres possibles pour que la règle ne
+puisse pas être resserrée par inadvertance.
+
+**D30. La page d'entrée de l'agent est un écran, pas une carte de visite.**
+Elle ne portait qu'un logo, un titre et un petit bouton perdus dans du beige.
+Elle occupe désormais tout l'écran sur le fond de marque, et annonce les trois
+temps du travail de l'agent — dépister, orienter, suivre — dans l'ordre où il
+les vit. L'action descend en bas, à portée du pouce. Les autres espaces, qui
+travaillent sur ordinateur, gardent la page de présentation sobre.
+
 **D26. Les six cases du code sont une seule zone de saisie.**
 Les six `input` séparés que l'on voit partout cassent le collage d'un code reçu
 par SMS, perturbent le clavier numérique de certains téléphones et déroutent
