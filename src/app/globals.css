@@ -250,15 +250,36 @@
     chaque element entre une fois, sans rebond ni rotation. Duree totale sous
     la seconde, pour ne jamais retarder un agent presse.
   */
-  .splash-sortie {
-    animation: splash-sortie 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  /*
+    Le rideau est servi dans le HTML, donc il doit savoir partir sans aide.
+    Cette animation est sa seule sortie : elle ne depend ni de React, ni d'un
+    minuteur, ni meme de javascript actif. Il tient environ 1,15 s — le temps
+    du demarrage reel — puis s'efface. `forwards` fige l'etat final : une fois
+    parti, il ne revient pas.
+  */
+  .ecran-ouverture {
+    animation: ouverture-retrait 1.6s linear forwards;
   }
 
-  @keyframes splash-sortie {
-    to {
+  @keyframes ouverture-retrait {
+    0%,
+    72% {
+      opacity: 1;
+    }
+    100% {
       opacity: 0;
       visibility: hidden;
     }
+  }
+
+  /*
+    Deuxieme visite dans la meme session, ou animations reduites : le script
+    du <head> a repondu avant la premiere peinture, le rideau n'est jamais
+    affiche. `display: none` plutot qu'une opacite : rien n'est peint, rien
+    n'est anime, et l'image de marque n'est meme pas demandee.
+  */
+  html[data-ouverture="non"] .ecran-ouverture {
+    display: none;
   }
 
   .splash-marque {

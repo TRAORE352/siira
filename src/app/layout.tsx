@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
-import { Ouverture } from "@/components/Ouverture";
+import { Ouverture, ScriptOuverture } from "@/components/Ouverture";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ESPACE_ACTIF, nomEspace, presentationEspace } from "@/lib/espaces";
 import "./globals.css";
@@ -53,6 +53,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fr" className={`${titre.variable} ${texte.variable}`}>
+      <head>
+        {/*
+          Décide avant la première peinture si l'écran d'ouverture doit
+          s'afficher. Dans le <head> et bloquant à dessein : après, il serait
+          trop tard et le rideau clignoterait.
+        */}
+        {ESPACE_ACTIF === "agent" ? <ScriptOuverture /> : null}
+      </head>
       <body>
         <a href="#contenu" className="lien-evitement">
           Aller au contenu
