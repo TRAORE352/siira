@@ -23,6 +23,7 @@ import {
   LIBELLE_RESULTAT,
   LIBELLE_SEIN,
   LIBELLE_STATUT_ORIENTATION,
+  dateCourte,
   dateLisible,
   depuis,
 } from "@/lib/libelles";
@@ -64,6 +65,12 @@ function Dossier({ id }: { id: string }) {
           <p className="mt-1 text-sable-600">
             {patiente.age} ans · {district?.nom ?? "—"}
             {patiente.village ? ` · ${patiente.village}` : ""}
+          </p>
+          <p className="mt-1 text-sm text-sable-500">
+            Dossier {patiente.code}
+            {orientation.envoyee_le
+              ? ` · Reçu le ${dateCourte(orientation.envoyee_le)}`
+              : ""}
           </p>
         </div>
         {consultation.niveau_valide ? (

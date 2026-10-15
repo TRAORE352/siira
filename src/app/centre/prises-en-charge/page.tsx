@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BadgeNiveau } from "@/components/BadgeNiveau";
+import { Champ } from "@/components/Champs";
 import { Espace } from "@/components/Espace";
 import { Carte, EtatVide, Squelette, TitreSection } from "@/components/Interface";
 import {
@@ -11,7 +12,7 @@ import {
 } from "@/lib/data";
 import { SOINS_PAR_NIVEAU, formaterFcfa } from "@/lib/financement";
 import { useDonnees } from "@/lib/hooks";
-import { LIBELLE_STATUT_FINANCEMENT } from "@/lib/libelles";
+import { LIBELLE_STATUT_FINANCEMENT, normaliserTexte } from "@/lib/libelles";
 import { LIENS_CENTRE } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import type { StatutFinancement } from "@/lib/types";
@@ -43,6 +44,7 @@ function Contenu() {
   const { profil } = useSession();
   const centreId = profil?.centre_id ?? "";
   const { donnees, pret } = useDonnees(() => listerPrisesEnCharge(centreId));
+  const [recherche, setRecherche] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
 
   function agir(action: () => void) {
@@ -54,14 +56,29 @@ function Contenu() {
     }
   }
 
+  const dossiers = useMemo(() => {
+    const liste = donnees ?? [];
+    if (!recherche.trim()) return liste;
+    const q = normaliserTexte(recherche);
+    return liste.filter((d) => normaliserTexte(d.patiente.nom).includes(q));
+  }, [donnees, recherche]);
+
   if (!pret) return <Squelette lignes={4} />;
-  const dossiers = donnees ?? [];
 
   return (
     <>
       <TitreSection aide="Les demandes de prise en charge de vos dossiers. Enregistrez l'accord d'un partenaire, ou refusez la demande.">
         Prises en charge
       </TitreSection>
+
+      <Champ
+        label="Rechercher une patiente"
+        labelMasque
+        placeholder="Rechercher une patiente…"
+        value={recherche}
+        onChange={(e) => setRecherche(e.target.value)}
+        className="mb-4 max-w-md"
+      />
 
       {erreur ? (
         <p role="alert" className="mb-4 text-sm font-medium text-rouge-fort">

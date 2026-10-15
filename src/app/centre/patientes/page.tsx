@@ -61,52 +61,64 @@ function Contenu() {
         Patientes
       </TitreSection>
 
-      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filtrer par niveau">
-        {(["tous", "rouge", "orange", "vert"] as const).map((f) => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setNiveau(f)}
-            aria-pressed={niveau === f}
-            className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
-              niveau === f
-                ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
-                : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
-            }`}
-          >
-            {f === "tous" ? "Toutes" : f[0].toUpperCase() + f.slice(1)} ({compteurs[f]})
-          </button>
-        ))}
-      </div>
+      <div className="mb-5 rounded-[var(--radius-grand)] border border-sable-200 bg-white p-4">
+        <div className="flex flex-wrap gap-x-8 gap-y-4">
+          <div>
+            <span className="mb-2 block text-sm font-medium text-sable-600">
+              Niveau d&apos;urgence
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {(["tous", "rouge", "orange", "vert"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setNiveau(f)}
+                  aria-pressed={niveau === f}
+                  className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
+                    niveau === f
+                      ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
+                      : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
+                  }`}
+                >
+                  {f === "tous" ? "Toutes" : f[0].toUpperCase() + f.slice(1)} ({compteurs[f]})
+                </button>
+              ))}
+            </div>
+          </div>
 
-      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filtrer par statut">
-        <button
-          type="button"
-          onClick={() => setStatut("tous")}
-          aria-pressed={statut === "tous"}
-          className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
-            statut === "tous"
-              ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
-              : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
-          }`}
-        >
-          Tous les statuts
-        </button>
-        {STATUTS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setStatut(s)}
-            aria-pressed={statut === s}
-            className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
-              statut === s
-                ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
-                : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
-            }`}
-          >
-            {LIBELLE_STATUT_ORIENTATION[s as keyof typeof LIBELLE_STATUT_ORIENTATION]}
-          </button>
-        ))}
+          <div>
+            <span className="mb-2 block text-sm font-medium text-sable-600">Statut</span>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setStatut("tous")}
+                aria-pressed={statut === "tous"}
+                className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
+                  statut === "tous"
+                    ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
+                    : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
+                }`}
+              >
+                Tous
+              </button>
+              {STATUTS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStatut(s)}
+                  aria-pressed={statut === s}
+                  className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
+                    statut === s
+                      ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
+                      : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
+                  }`}
+                >
+                  {LIBELLE_STATUT_ORIENTATION[s as keyof typeof LIBELLE_STATUT_ORIENTATION]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {visibles.length === 0 ? (

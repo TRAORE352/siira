@@ -165,3 +165,11 @@ export const DELAI_NIVEAU: Record<Niveau, string> = {
   orange: "Voir un spécialiste dans les 30 jours",
   vert: "Revoir la patiente dans 3 mois",
 };
+
+/** Minuscules sans accents, pour les recherches insensibles aux accents. */
+export function normaliserTexte(texte: string): string {
+  return texte
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
