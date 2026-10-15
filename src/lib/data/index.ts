@@ -633,6 +633,52 @@ export function listerPrisesEnCharge(centreId: string): PriseEnCharge[] {
   });
 }
 
+/**
+ * Enregistre qu'un partenaire a accordé la prise en charge.
+ * La demande passe à « accordée », les autres demandes du même dossier
+ * passent à « retirée » (un seul partenaire finance), et le budget du
+ * partenaire diminue du montant accordé.
+ */
+export function accorderPriseEnCharge(financementId: string): void {
+  modifier((e) => {
+    const financement = e.financements.find((f) => f.id === financementId);
+    if (!financement) throw new Error("Demande introuvable.");
+    if (financement.statut !== "proposee") {
+      throw new Error("Cette demande n'est plus disponible.");
+    }
+    financement.statut = "confirmee";
+    for (const autre of e.financements) {
+      if (
+        autre.orientation_id === financement.orientation_id &&
+        autre.id !== financementId &&
+        autre.statut === "proposee"
+      ) {
+        autre.statut = "retiree";
+      }
+    }
+    const ong = e.ongs.find((o) => o.id === financement.ong_id);
+    if (ong) {
+      ong.budget_restant = Math.max(0, ong.budget_restant - financement.montant);
+    }
+  });
+}
+
+/** Enregistre le refus d'une demande de prise en charge. */
+export function refuserPriseEnCharge(
+  financementId: string,
+  raison: string | null,
+): void {
+  modifier((e) => {
+    const financement = e.financements.find((f) => f.id === financementId);
+    if (!financement) throw new Error("Demande introuvable.");
+    if (financement.statut !== "proposee") {
+      throw new Error("Cette demande n'est plus disponible.");
+    }
+    financement.statut = "refusee";
+    financement.raison_refus = raison?.trim() ? raison.trim() : null;
+  });
+}
+
 /* ------------------------------------------------------------------ */
 /* Abonnement et réinitialisation                                      */
 /* ------------------------------------------------------------------ */

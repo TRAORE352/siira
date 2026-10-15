@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { clsx } from "clsx";
 import { Logo } from "./Logo";
+import { BarreLaterale } from "./BarreLaterale";
 import { Chargement } from "./Interface";
 import { ACCUEIL_PAR_ROLE, LIBELLE_ROLE, fermerSession, useSession } from "@/lib/session";
 import { ESPACE_ACTIF, roleAutorise } from "@/lib/espaces";
@@ -72,16 +73,21 @@ export function Espace({
     return <div className="flex min-h-screen flex-col">{children}</div>;
   }
 
+  if (large) {
+    return (
+      <div className="flex min-h-screen">
+        <BarreLaterale profil={profil} liens={liens} />
+        <main id="contenu" className="flex-1 overflow-y-auto px-6 py-6 lg:px-10">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
-      <EnTete profil={profil} liens={liens} large={large} />
-      <main
-        id="contenu"
-        className={clsx(
-          "mx-auto w-full flex-1 px-4 py-6 sm:px-6",
-          large ? "max-w-6xl" : "max-w-2xl",
-        )}
-      >
+      <EnTete profil={profil} liens={liens} large={false} />
+      <main id="contenu" className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
         {children}
       </main>
     </div>

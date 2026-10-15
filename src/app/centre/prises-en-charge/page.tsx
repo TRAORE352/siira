@@ -1,9 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { BadgeNiveau } from "@/components/BadgeNiveau";
 import { Espace } from "@/components/Espace";
 import { Carte, EtatVide, Squelette, TitreSection } from "@/components/Interface";
-import { listerPrisesEnCharge } from "@/lib/data";
+import {
+  accorderPriseEnCharge,
+  listerPrisesEnCharge,
+  refuserPriseEnCharge,
+} from "@/lib/data";
 import { SOINS_PAR_NIVEAU, formaterFcfa } from "@/lib/financement";
 import { useDonnees } from "@/lib/hooks";
 import { LIBELLE_STATUT_FINANCEMENT } from "@/lib/libelles";
@@ -38,15 +43,31 @@ function Contenu() {
   const { profil } = useSession();
   const centreId = profil?.centre_id ?? "";
   const { donnees, pret } = useDonnees(() => listerPrisesEnCharge(centreId));
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  function agir(action: () => void) {
+    setErreur(null);
+    try {
+      action();
+    } catch (e) {
+      setErreur(e instanceof Error ? e.message : "Une erreur est survenue.");
+    }
+  }
 
   if (!pret) return <Squelette lignes={4} />;
   const dossiers = donnees ?? [];
 
   return (
     <>
-      <TitreSection aide="Les demandes de prise en charge de vos dossiers. L'accord des partenaires se règle en dehors de l'application : ici, l'état de chaque demande est affiché, rien n'est décidé.">
+      <TitreSection aide="Les demandes de prise en charge de vos dossiers. Enregistrez l'accord d'un partenaire, ou refusez la demande.">
         Prises en charge
       </TitreSection>
+
+      {erreur ? (
+        <p role="alert" className="mb-4 text-sm font-medium text-rouge-fort">
+          {erreur}
+        </p>
+      ) : null}
 
       {dossiers.length === 0 ? (
         <EtatVide
@@ -91,7 +112,7 @@ function Contenu() {
                     {dossier.demandes.map(({ financement, ong }) => (
                       <li
                         key={financement.id}
-                        className="flex items-center justify-between gap-3 py-3"
+                        className="flex flex-wrap items-center justify-between gap-3 py-3"
                       >
                         <div>
                           <p className="text-[0.95rem] text-prune-800">
@@ -101,13 +122,35 @@ function Contenu() {
                             {formaterFcfa(financement.montant)}
                           </p>
                         </div>
-                        <span
-                          className={`rounded-full border px-2.5 py-0.5 text-sm font-medium ${
-                            STYLE_STATUT[financement.statut]
-                          }`}
-                        >
-                          {LIBELLE_STATUT_FINANCEMENT[financement.statut]}
-                        </span>
+
+                        {financement.statut === "proposee" ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => agir(() => accorderPriseEnCharge(financement.id))}
+                              className="flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] bg-rose-600 px-3 text-[0.95rem] font-medium text-white hover:bg-rose-700"
+                            >
+                              Accorder
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                agir(() => refuserPriseEnCharge(financement.id, null))
+                              }
+                              className="flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border border-sable-300 bg-white px-3 text-[0.95rem] text-prune-800 hover:bg-sable-100"
+                            >
+                              Refuser
+                            </button>
+                          </div>
+                        ) : (
+                          <span
+                            className={`rounded-full border px-2.5 py-0.5 text-sm font-medium ${
+                              STYLE_STATUT[financement.statut]
+                            }`}
+                          >
+                            {LIBELLE_STATUT_FINANCEMENT[financement.statut]}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>

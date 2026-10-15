@@ -1,9 +1,8 @@
 "use client";
 
-import { use, useState } from "react";
+import { use } from "react";
 import { BadgeNiveau } from "@/components/BadgeNiveau";
-import { Bouton } from "@/components/Bouton";
-import { Liste, ZoneTexte } from "@/components/Champs";
+import { BoutonLien } from "@/components/Bouton";
 import { Espace, Retour } from "@/components/Espace";
 import {
   Carte,
@@ -12,9 +11,8 @@ import {
   MentionPasDeDiagnostic,
   MessageErreur,
   MessageInfo,
-  MessageSucces,
 } from "@/components/Interface";
-import { construireDossier, enregistrerSuivi } from "@/lib/data";
+import { construireDossier } from "@/lib/data";
 import { formaterFcfa } from "@/lib/financement";
 import { useDonnees } from "@/lib/hooks";
 import {
@@ -29,14 +27,9 @@ import {
   depuis,
 } from "@/lib/libelles";
 import { LIENS_CENTRE } from "@/lib/nav";
-import { useSession } from "@/lib/session";
-import type { EtapeSuivi, Fiche, ResultatSuivi } from "@/lib/types";
+import type { Fiche } from "@/lib/types";
 
-export default function PageDossier({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function PageDossier({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   return (
     <Espace role="centre" liens={LIENS_CENTRE} large>
@@ -46,15 +39,7 @@ export default function PageDossier({
 }
 
 function Dossier({ id }: { id: string }) {
-  const { profil } = useSession();
   const { donnees, pret } = useDonnees(() => construireDossier(id));
-
-  const [etape, setEtape] = useState<EtapeSuivi | "">("");
-  const [resultat, setResultat] = useState<ResultatSuivi>("en_attente");
-  const [note, setNote] = useState("");
-  const [erreur, setErreur] = useState<string | null>(null);
-  const [succes, setSucces] = useState<string | null>(null);
-  const [envoi, setEnvoi] = useState(false);
 
   if (!pret) return <Chargement texte="Ouverture du dossier" />;
   if (!donnees) {
@@ -69,37 +54,9 @@ function Dossier({ id }: { id: string }) {
   const { orientation, consultation, patiente, district, agent, financement, creneau, suivis } =
     donnees;
 
-  function enregistrer() {
-    setErreur(null);
-    setSucces(null);
-    if (!etape) {
-      setErreur("Choisissez l'étape atteinte.");
-      return;
-    }
-    if (!profil) return;
-    setEnvoi(true);
-    try {
-      enregistrerSuivi({
-        orientation_id: id,
-        etape: etape as EtapeSuivi,
-        resultat,
-        note: note.trim() || null,
-        auteur_id: profil.id,
-      });
-      setSucces("La suite donnée est enregistrée. L'agent la voit aussitôt.");
-      setNote("");
-      setEtape("");
-      setResultat("en_attente");
-    } catch {
-      setErreur("L'enregistrement n'a pas abouti. Recommencez.");
-    } finally {
-      setEnvoi(false);
-    }
-  }
-
   return (
     <>
-      <Retour href="/centre" libelle="Patientes reçues" />
+      <Retour href="/centre/patientes" libelle="Patientes" />
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -141,9 +98,7 @@ function Dossier({ id }: { id: string }) {
             <h2 className="mb-3 text-lg">Classement</h2>
             <dl>
               <Ligne libelle="Niveau proposé">
-                {consultation.niveau_propose
-                  ? mot(consultation.niveau_propose)
-                  : "—"}
+                {consultation.niveau_propose ? mot(consultation.niveau_propose) : "—"}
               </Ligne>
               <Ligne libelle="Niveau retenu par l'agent">
                 {consultation.niveau_valide ? mot(consultation.niveau_valide) : "—"}
@@ -171,12 +126,8 @@ function Dossier({ id }: { id: string }) {
           <Carte>
             <h2 className="mb-3 text-lg">Rendez-vous</h2>
             <dl>
-              {creneau ? (
-                <Ligne libelle="Date">{dateLisible(creneau.debut)}</Ligne>
-              ) : null}
-              <Ligne libelle="État">
-                {LIBELLE_STATUT_ORIENTATION[orientation.statut]}
-              </Ligne>
+              {creneau ? <Ligne libelle="Date">{dateLisible(creneau.debut)}</Ligne> : null}
+              <Ligne libelle="État">{LIBELLE_STATUT_ORIENTATION[orientation.statut]}</Ligne>
               <Ligne libelle="Financement">
                 {financement?.statut === "confirmee"
                   ? formaterFcfa(financement.montant)
@@ -187,58 +138,14 @@ function Dossier({ id }: { id: string }) {
           </Carte>
 
           <Carte>
-            <h2 className="mb-3 text-lg">Enregistrer la suite donnée</h2>
-            {erreur ? <MessageErreur texte={erreur} className="mb-3" /> : null}
-            {succes ? (
-              <div className="mb-3">
-                <MessageSucces>{succes}</MessageSucces>
-              </div>
-            ) : null}
-
-            <div className="flex flex-col gap-4">
-              <Liste
-                label="Étape atteinte"
-                obligatoire
-                placeholder="Choisissez une étape"
-                options={(
-                  ["recue", "examens", "resultat", "absente"] as EtapeSuivi[]
-                ).map((e) => ({ valeur: e, libelle: LIBELLE_ETAPE[e] }))}
-                value={etape}
-                onChange={(e) => setEtape(e.target.value as EtapeSuivi)}
-              />
-              {etape === "resultat" ? (
-                <Liste
-                  label="Résultat"
-                  options={(
-                    ["benin", "a_surveiller", "cancer_confirme"] as ResultatSuivi[]
-                  ).map((r) => ({ valeur: r, libelle: LIBELLE_RESULTAT[r] }))}
-                  value={resultat === "en_attente" ? "" : resultat}
-                  placeholder="Choisissez un résultat"
-                  onChange={(e) => setResultat(e.target.value as ResultatSuivi)}
-                />
-              ) : null}
-              <ZoneTexte
-                label="Note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
-              <Bouton onClick={enregistrer} chargement={envoi}>
-                Enregistrer
-              </Bouton>
-            </div>
-          </Carte>
-
-          <Carte>
-            <h2 className="mb-3 text-lg">Historique</h2>
+            <h2 className="mb-3 text-lg">Historique du suivi</h2>
             {suivis.length === 0 ? (
               <MessageInfo>Aucune étape enregistrée pour le moment.</MessageInfo>
             ) : (
               <ol className="flex flex-col gap-3">
                 {suivis.map((s) => (
                   <li key={s.id} className="border-l-2 border-sable-300 pl-3">
-                    <p className="font-medium text-prune-900">
-                      {LIBELLE_ETAPE[s.etape]}
-                    </p>
+                    <p className="font-medium text-prune-900">{LIBELLE_ETAPE[s.etape]}</p>
                     {s.resultat !== "en_attente" ? (
                       <p className="text-[0.95rem] text-prune-800">
                         {LIBELLE_RESULTAT[s.resultat]}
@@ -251,6 +158,10 @@ function Dossier({ id }: { id: string }) {
               </ol>
             )}
           </Carte>
+
+          <BoutonLien href="/centre/suivi" variante="second">
+            Suivi des soins →
+          </BoutonLien>
         </div>
       </div>
     </>
@@ -262,8 +173,7 @@ function mot(n: "vert" | "orange" | "rouge"): string {
 }
 
 function LignesFiche({ fiche }: { fiche: Fiche }) {
-  const ouiNon = (v: boolean | null) =>
-    v === null ? "Non précisé" : v ? "Oui" : "Non";
+  const ouiNon = (v: boolean | null) => (v === null ? "Non précisé" : v ? "Oui" : "Non");
   return (
     <>
       <Ligne libelle="Sein concerné">
@@ -277,9 +187,7 @@ function LignesFiche({ fiche }: { fiche: Fiche }) {
         </>
       ) : null}
       <Ligne libelle="Depuis">
-        {fiche.duree_semaines === null
-          ? "Non précisé"
-          : `${fiche.duree_semaines} semaines`}
+        {fiche.duree_semaines === null ? "Non précisé" : `${fiche.duree_semaines} semaines`}
       </Ligne>
       <Ligne libelle="Douleur">
         {fiche.douleur ? LIBELLE_DOULEUR[fiche.douleur] : "Non précisé"}
@@ -298,12 +206,8 @@ function LignesFiche({ fiche }: { fiche: Fiche }) {
       {fiche.ecoulement && fiche.ecoulement !== "aucun" ? (
         <Ligne libelle="D'un seul côté">{ouiNon(fiche.ecoulement_un_cote)}</Ligne>
       ) : null}
-      <Ligne libelle="Ganglion sous l'aisselle">
-        {ouiNon(fiche.ganglion_aisselle)}
-      </Ligne>
-      <Ligne libelle="Antécédents familiaux">
-        {ouiNon(fiche.antecedents_familiaux)}
-      </Ligne>
+      <Ligne libelle="Ganglion sous l'aisselle">{ouiNon(fiche.ganglion_aisselle)}</Ligne>
+      <Ligne libelle="Antécédents familiaux">{ouiNon(fiche.antecedents_familiaux)}</Ligne>
       {fiche.autres ? <Ligne libelle="Autre">{fiche.autres}</Ligne> : null}
     </>
   );
