@@ -46,19 +46,28 @@ describe("lireEspace", () => {
   });
 
   /*
-   * L'espace ONG a existé. Un déploiement resté sur cette valeur ne doit pas
-   * faire semblant de fonctionner : il n'y a plus d'espace ONG, la valeur est
-   * inconnue comme une autre.
+   * Le cas le plus dangereux : une adresse survit a son espace. La variable
+   * vit chez l'hebergeur, personne ne la retire avec le code. Si « ong »
+   * etait traite comme inconnu, l'ancienne adresse ouvrirait l'application
+   * COMPLETE — donc tous les ecrans de l'agent et du centre.
    */
-  it("« ong » n'est plus un espace", () => {
-    expect(lireEspace("ong")).toBe("complet");
-    expect(lireEspace("ONG")).toBe("complet");
+  it("« ong » ferme l'adresse, il ne l'ouvre pas en grand", () => {
+    expect(lireEspace("ong")).toBe("ferme");
+    expect(lireEspace("ONG")).toBe("ferme");
+    expect(lireEspace(" ong ")).toBe("ferme");
   });
 });
 
 describe("rolesEspace", () => {
   it("l'application complète admet tous les rôles", () => {
     expect(rolesEspace("complet").sort()).toEqual([...ROLES].sort());
+  });
+
+  it("une adresse fermée n'admet aucun rôle", () => {
+    expect(rolesEspace("ferme")).toEqual([]);
+    for (const role of ROLES) {
+      expect(roleAutorise("ferme", role)).toBe(false);
+    }
   });
 
   it("la plateforme ne connaît plus le rôle ONG", () => {
@@ -119,6 +128,25 @@ describe("cheminAutorise", () => {
     for (const chemin of ["/ong", "/ong/regles", "/ong/impact"]) {
       expect(cheminAutorise("agent", chemin)).toBe(false);
       expect(cheminAutorise("centre", chemin)).toBe(false);
+    }
+  });
+
+  /*
+   * Une adresse fermee ne doit rien ouvrir, pas meme la connexion : un
+   * formulaire qui ne mene nulle part est pire qu'un refus clair.
+   */
+  it("une adresse fermée n'ouvre que sa racine, qui explique la situation", () => {
+    expect(cheminAutorise("ferme", "/")).toBe(true);
+    for (const chemin of [
+      "/connexion",
+      "/agent",
+      "/agent/consultation/nouvelle",
+      "/centre",
+      "/admin",
+      "/design",
+      "/ong",
+    ]) {
+      expect(cheminAutorise("ferme", chemin)).toBe(false);
     }
   });
 

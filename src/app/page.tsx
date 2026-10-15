@@ -18,8 +18,35 @@ import {
  * complète, elle reste la page de présentation du projet.
  */
 export default function Accueil() {
+  if (ESPACE_ACTIF === "ferme") return <AdresseFermee />;
   if (ESPACE_ACTIF === "agent") return <AccueilAgent />;
   return <AccueilGeneral />;
+}
+
+/* ------------------------------------------------------------------ */
+/* Adresse dont l'espace a été retiré                                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Une adresse peut survivre à son espace : la variable d'environnement vit
+ * chez l'hébergeur, et personne ne la retire en même temps que le code.
+ * Plutôt que de se rabattre sur l'application complète — ce qui ouvrirait
+ * tous les écrans à une adresse qui ne devrait plus rien ouvrir — on le dit,
+ * et on n'offre aucune porte d'entrée.
+ */
+function AdresseFermee() {
+  return (
+    <main
+      id="contenu"
+      className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 text-center"
+    >
+      <Logo taille="moyen" lien={false} />
+
+      <h1 className="mt-8 text-3xl">{titreEspace(ESPACE_ACTIF)}</h1>
+
+      <p className="mt-4 text-prune-700">{presentationEspace(ESPACE_ACTIF)}</p>
+    </main>
+  );
 }
 
 /* ------------------------------------------------------------------ */
