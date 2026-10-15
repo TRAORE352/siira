@@ -29,8 +29,12 @@ const ECRANS = [
   ["/agent/consultation/nouvelle", "pro-agent-saaba", 360],
   ["/agent/patiente/pat-1", "pro-agent-saaba", 360],
   ["/centre", "pro-centre-bogodogo", 1280],
-  ["/centre/dossier/ori-1", "pro-centre-bogodogo", 1280],
+  ["/centre/patientes", "pro-centre-bogodogo", 1280],
+  ["/centre/patientes/ori-1", "pro-centre-bogodogo", 1280],
+  ["/centre/suivi", "pro-centre-bogodogo", 1280],
+  ["/centre/prises-en-charge", "pro-centre-bogodogo", 1280],
   ["/centre/disponibilites", "pro-centre-bogodogo", 1280],
+  ["/centre/compte", "pro-centre-bogodogo", 1280],
   ["/admin", "pro-admin", 1280],
 ];
 
