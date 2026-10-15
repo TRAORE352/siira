@@ -33,8 +33,24 @@ const ATTENDU = {
     mention: "Espace agent de santé",
     titre: "Siira, espace agent de santé",
     entree: "/agent",
-    comptes: ["Salimata Ouédraogo", "Boukary Sawadogo", "Mariam Kaboré"],
-    interdits: ["Dr Alimata Zongo", "Clarisse Tapsoba", "Hamidou Barry", "Équipe Siira"],
+    /*
+     * L'agent ne se connecte plus par compte mais par numéro de téléphone et
+     * code à 6 chiffres : on vérifie donc la présence de cette saisie, et
+     * l'absence totale de compte de démonstration — y compris le sien.
+     */
+    comptes: [],
+    connexionTelephone: true,
+    interdits: [
+      "Salimata Ouédraogo",
+      "Boukary Sawadogo",
+      "Mariam Kaboré",
+      "Dr Alimata Zongo",
+      "Clarisse Tapsoba",
+      "Hamidou Barry",
+      "Équipe Siira",
+      "Comptes de démonstration",
+      "Compte de démonstration",
+    ],
     refuses: ["/centre", "/centre/disponibilites", "/ong", "/ong/impact", "/admin", "/design"],
   },
   centre: {
@@ -101,6 +117,33 @@ async function lire(chemin, options = {}) {
   const connexion = await lire("/connexion");
   verifier("la connexion répond", connexion.statut === 200, `statut ${connexion.statut}`);
   verifier(`le titre annonce « ${attendu.titre} »`, connexion.texte.includes(attendu.titre));
+
+  /*
+   * L'agent se connecte par numéro de téléphone et code à 6 chiffres. On
+   * contrôle le rendu servi, pas les sources : c'est ce que reçoit le
+   * téléphone de l'agent qui compte.
+   */
+  if (attendu.connexionTelephone) {
+    verifier(
+      "la connexion demande un numéro de téléphone",
+      connexion.texte.includes("Numéro de téléphone"),
+    );
+    verifier("l’indicatif du Burkina Faso est affiché", connexion.texte.includes("+226"));
+    verifier("la connexion demande un code secret", connexion.texte.includes("Code secret"));
+    verifier(
+      "le code annoncé compte bien 6 chiffres",
+      connexion.texte.includes("6 chiffres"),
+    );
+    verifier(
+      "aucun champ de mot de passe n’est servi",
+      !connexion.texte.includes('type="password"'),
+    );
+    verifier(
+      "aucune adresse de démonstration n’est servie",
+      !connexion.texte.includes("@siira.demo"),
+    );
+  }
+
   for (const nom of attendu.comptes) {
     verifier(`le compte « ${nom} » est proposé`, connexion.texte.includes(nom));
   }

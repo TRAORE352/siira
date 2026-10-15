@@ -143,6 +143,44 @@ rendre la main. Le vérificateur d'espaces contrôle en plus que tous les
 fichiers javascript demandés par une page sont réellement servis, ce qui
 détecte ce mélange de constructions, en local comme en production.
 
+**D25. L'agent se connecte par numéro de téléphone et code à 6 chiffres.**
+Un agent de santé au Burkina Faso n'a pas forcément d'adresse électronique, et
+retenir un mot de passe libre sur un clavier de téléphone d'entrée de gamme est
+une source d'échec quotidienne. Il a en revanche toujours son numéro. L'écran
+demande donc deux choses : le numéro, avec l'indicatif `+226` affiché mais non
+saisissable — il ne change jamais, le rendre modifiable n'offre qu'une occasion
+de se tromper — et un code à 6 chiffres. `lib/telephone.ts` valide les préfixes
+mobiles burkinabè, format actuel comme ancien, et les messages d'erreur disent
+ce qui manque (« Il manque 2 chiffres à ce numéro ») plutôt que « numéro
+invalide ». En Phase 1 aucune vérification n'a lieu : tout numéro valide et
+tout code à 6 chiffres ouvrent l'espace. Un même numéro retrouve toujours le
+même agent de démonstration, par la somme de ses chiffres, sinon la liste des
+patientes changerait à chaque connexion.
+
+**D26. Les six cases du code sont une seule zone de saisie.**
+Les six `input` séparés que l'on voit partout cassent le collage d'un code reçu
+par SMS, perturbent le clavier numérique de certains téléphones et déroutent
+les lecteurs d'écran. Ici, un champ unique rendu transparent couvre la rangée
+et reçoit la frappe ; les six cases ne font que montrer son contenu. Le champ
+reste réellement présent et focusable — jamais `display:none`, qui le couperait
+du clavier.
+
+**D27. Aucun compte de démonstration sur l'adresse de l'agent.**
+L'écran que voit l'agent doit être celui qu'il ouvrira tous les matins, pas une
+maquette avec une liste de personnages. Les autres espaces gardent la connexion
+par compte : ils travaillent sur ordinateur, et l'adresse de démonstration doit
+ouvrir les quatre rôles côte à côte pour le jury. Le vérificateur d'espaces
+contrôle désormais qu'aucun nom de démonstration, aucune adresse `@siira.demo`
+et aucun champ de mot de passe ne sont servis sur l'adresse de l'agent.
+
+**D28. L'accueil de l'agent porte son propre en-tête.**
+`Espace` accepte `entete="aucun"` : l'écran pose alors son bandeau de marque
+d'un bord à l'autre, avec la salutation, le centre de rattachement, le numéro
+connecté et trois nombres (patientes, en attente, à revoir). La barre commune,
+pensée pour les écrans d'ordinateur, écrasait cette hiérarchie. L'action
+principale — « Nouvelle consultation » — descend en barre fixe, à portée du
+pouce : en haut de page, il fallait remonter toute la liste pour l'atteindre.
+
 ---
 
 ## Données de démonstration

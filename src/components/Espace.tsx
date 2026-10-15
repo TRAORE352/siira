@@ -25,12 +25,19 @@ export function Espace({
   liens,
   children,
   large = false,
+  entete = "standard",
 }: {
   role: Role;
   liens?: LienNav[];
   children: ReactNode;
   /** Vrai pour les écrans d'ordinateur (centre, ONG). */
   large?: boolean;
+  /**
+   * « aucun » laisse l'écran poser son propre en-tête et gérer sa mise en page.
+   * L'accueil de l'agent s'en sert pour son bandeau de marque, qui doit aller
+   * d'un bord à l'autre et porter la salutation.
+   */
+  entete?: "standard" | "aucun";
 }) {
   const { profil, pret } = useSession();
   const router = useRouter();
@@ -59,6 +66,10 @@ export function Espace({
         <Chargement texte="Ouverture de votre espace" />
       </main>
     );
+  }
+
+  if (entete === "aucun") {
+    return <div className="flex min-h-screen flex-col">{children}</div>;
   }
 
   return (

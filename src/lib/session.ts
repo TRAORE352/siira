@@ -43,6 +43,55 @@ export function trouverCompte(email: string): Profil | undefined {
   return REFERENTIELS.profils.find((p) => p.email.toLowerCase() === cherche);
 }
 
+/*
+ * Connexion de l'agent par numéro de téléphone.
+ *
+ * Phase 1 : aucun serveur ne vérifie quoi que ce soit. Tout numéro burkinabè
+ * valide et tout code à 6 chiffres ouvrent l'espace. Le numéro est retenu pour
+ * que l'écran puisse l'afficher et que le même numéro retrouve toujours le
+ * même agent de démonstration — sinon la liste des patientes changerait d'une
+ * connexion à l'autre, ce qui serait incompréhensible pour qui teste.
+ *
+ * Phase 2 : Supabase Auth vérifiera le couple numéro / code. Les écrans qui
+ * appellent `useSession()` ne changeront pas.
+ */
+const CLE_NUMERO = "siira.numero.v1";
+
+/** Agents de démonstration, dans l'ordre d'attribution. */
+function agentsDemo(): Profil[] {
+  return REFERENTIELS.profils.filter((p) => p.role === "agent");
+}
+
+/**
+ * Attribue toujours le même agent à un même numéro, par la somme de ses
+ * chiffres. Un numéro inconnu reçoit donc un agent stable, pas un au hasard.
+ */
+export function agentPourNumero(numero: string): Profil | undefined {
+  const agents = agentsDemo();
+  if (agents.length === 0) return undefined;
+  const chiffres = numero.replace(/\D/g, "");
+  let somme = 0;
+  for (const c of chiffres) somme += Number(c);
+  return agents[somme % agents.length];
+}
+
+/** Ouvre la session d'un agent à partir de son numéro, sous forme canonique. */
+export function ouvrirSessionParNumero(numeroCanonique: string): Profil | undefined {
+  const profil = agentPourNumero(numeroCanonique);
+  if (!profil) return undefined;
+  if (typeof window !== "undefined") {
+    window.sessionStorage.setItem(CLE_NUMERO, numeroCanonique);
+  }
+  ouvrirSession(profil.id);
+  return profil;
+}
+
+/** Numéro avec lequel la session a été ouverte, s'il y en a un. */
+export function lireNumeroSession(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.sessionStorage.getItem(CLE_NUMERO);
+}
+
 export function ouvrirSession(profilId: string) {
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(CLE, profilId);

@@ -69,11 +69,18 @@
   --radius-petit: 0.375rem;
   --radius-moyen: 0.625rem;
   --radius-grand: 1rem;
+  --radius-feuille: 1.75rem;
 
   /* Ombres discretes. Aucune ombre lourde. */
   --shadow-carte: 0 1px 2px rgba(42, 26, 32, 0.06), 0 1px 3px rgba(42, 26, 32, 0.04);
   --shadow-releve: 0 4px 12px rgba(42, 26, 32, 0.08);
   --shadow-barre: 0 -1px 0 rgba(42, 26, 32, 0.08);
+  /* Pose la feuille blanche au-dessus du bandeau sombre, sans trait dur. */
+  --shadow-feuille: 0 -18px 40px rgba(42, 26, 32, 0.18);
+  /* Relief du bouton principal : une lueur de sa propre couleur, pas du gris. */
+  --shadow-action: 0 8px 20px -6px rgba(214, 51, 108, 0.45);
+  /* Barre d'onglets du telephone : separation par la lumiere, pas par un trait. */
+  --shadow-onglets: 0 -8px 24px rgba(42, 26, 32, 0.1);
 
   /* Typographie */
   --font-titre: var(--police-titre), Georgia, "Times New Roman", serif;
@@ -177,6 +184,60 @@
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+
+  /*
+    Fond de marque : prune profond, legerement rechauffe de rose dans un angle.
+    Sert de socle aux ecrans d'entree et a l'en-tete de l'agent.
+  */
+  .fond-marque {
+    background-color: var(--color-prune-900);
+    background-image:
+      radial-gradient(120% 90% at 85% -10%, rgba(214, 51, 108, 0.32), transparent 60%),
+      radial-gradient(90% 70% at -10% 10%, rgba(214, 51, 108, 0.12), transparent 55%);
+  }
+
+  /*
+    Feuille de contenu qui remonte sur le fond de marque : c'est elle qui donne
+    la profondeur, sans ombre portee grise ni bordure.
+  */
+  .feuille {
+    border-top-left-radius: var(--radius-feuille);
+    border-top-right-radius: var(--radius-feuille);
+    background-color: var(--color-sable-50);
+    box-shadow: var(--shadow-feuille);
+  }
+
+  /* Chiffres de meme largeur : un numero ou un code ne tressaute pas a la saisie. */
+  .chiffres-fixes {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Reponse tactile : l'element s'enfonce legerement sous le doigt. */
+  .pression {
+    transition:
+      transform 0.12s ease-out,
+      background-color 0.15s ease-out,
+      box-shadow 0.15s ease-out;
+  }
+  .pression:active:not(:disabled) {
+    transform: scale(0.985);
+  }
+
+  /* Case de code en attente de saisie : un battement sobre, jamais clignotant. */
+  .case-active {
+    animation: respiration 1.8s ease-in-out infinite;
+  }
+
+  @keyframes respiration {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(214, 51, 108, 0.35);
+    }
+    50% {
+      box-shadow: 0 0 0 4px rgba(214, 51, 108, 0.12);
     }
   }
 

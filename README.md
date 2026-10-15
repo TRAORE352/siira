@@ -84,24 +84,35 @@ node scripts/recette.js --repetitions 5
 npm run espaces                       # les quatre adresses, espaces et PWA
 ```
 
-Dernier relevé : **73 tests unitaires**, **audit propre sur 13 écrans**,
-**recette réussie 5 fois de suite (170 vérifications)**,
-**les quatre espaces conformes en local (116 vérifications)**, et Chrome
+Dernier relevé : **91 tests unitaires**, **audit propre sur 13 écrans**,
+**recette réussie**, **les quatre espaces conformes en local**, et Chrome
 considère l'application installable sur l'adresse de l'agent.
 
 ---
 
 ## Comptes de démonstration
 
-La connexion est simulée en Phase 1 : sur l'écran de connexion, il suffit de
-toucher un compte pour ouvrir son espace. Les adresses ci-dessous fonctionnent
-aussi dans le formulaire, avec n'importe quel mot de passe.
+**L'agent de santé se connecte avec son numéro de téléphone et un code à
+6 chiffres.** Aucun compte n'est proposé sur l'adresse de l'agent : l'écran est
+celui qu'il ouvrira tous les matins. En Phase 1, tout numéro burkinabè valide
+et tout code à 6 chiffres ouvrent l'espace — c'est Supabase Auth qui vérifiera
+le couple en Phase 2, sans changer l'écran.
+
+| Saisie | Règle |
+|---|---|
+| Numéro | 8 chiffres, indicatif `+226` fixé. Préfixes mobiles acceptés : `01`, `02`, `03`, `05`, `06`, `07`, et les anciens numéros en `5`, `6`, `7`. |
+| Code | 6 chiffres, n'importe lesquels en Phase 1. |
+
+Un même numéro retrouve toujours le même agent de démonstration — et donc les
+mêmes patientes — plutôt qu'un agent tiré au hasard à chaque connexion.
+Essayez `70 12 34 56` avec le code `123456`.
+
+Les autres espaces travaillent sur ordinateur et gardent la connexion par
+compte, car l'adresse de démonstration doit ouvrir les quatre rôles côte à
+côte. Sur l'écran de connexion, il suffit de toucher un compte.
 
 | Rôle | Adresse | Personne |
 |---|---|---|
-| Agent | `agent.saaba@siira.demo` | Salimata Ouédraogo, centre de santé de Saaba |
-| Agent | `agent.ziniare@siira.demo` | Boukary Sawadogo, centre de santé de Ziniaré |
-| Agent | `agent.koubri@siira.demo` | Mariam Kaboré, centre de santé de Koubri |
 | Centre | `centre.bogodogo@siira.demo` | Dr Alimata Zongo, CHU de Bogodogo |
 | Centre | `centre.tengandogo@siira.demo` | Dr Issa Compaoré, CHU de Tengandogo |
 | Centre | `centre.yalgado@siira.demo` | Dr Rasmata Nikiéma, CHU Yalgado Ouédraogo |
@@ -109,6 +120,10 @@ aussi dans le formulaire, avec n'importe quel mot de passe.
 | ONG | `ong.yennenga@siira.demo` | Clarisse Tapsoba, Fonds Yennenga |
 | ONG | `ong.wendpanga@siira.demo` | Hamidou Barry, Alliance Wendpanga |
 | Admin | `admin@siira.demo` | Équipe Siira |
+
+Les trois agents de démonstration (Salimata Ouédraogo à Saaba, Boukary
+Sawadogo à Ziniaré, Mariam Kaboré à Koubri) restent accessibles par leur
+adresse sur l'adresse de démonstration complète.
 
 En Phase 2, ces comptes auront de vrais mots de passe, qui seront notés ici et
 jamais publiés.

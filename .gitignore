@@ -49,3 +49,4 @@ next-env.d.ts
 
 # Captures de verification (regenerables par scripts/captures-adresses.js)
 /shots-prod/
+/shots-design/
