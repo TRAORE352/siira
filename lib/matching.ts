@@ -140,7 +140,7 @@ export function calculerMatching(
   // avec la mention « Hors délai recommandé ».
   const secours = centres
     .filter((c) => c.actif)
-    .map((centre) => {
+    .map<CentreScore | null>((centre) => {
       const prochain = prochainCreneauLibre(centre);
       if (!prochain) return null;
       const d = distanceKm(
@@ -155,7 +155,7 @@ export function calculerMatching(
         distanceKm: d,
         prochainCreneau: prochain,
         joursAvantCreneau: Math.max(0, joursEntre(maintenant, new Date(prochain.debut))),
-      } satisfies CentreScore;
+      };
     })
     .filter((x): x is CentreScore => x !== null)
     .sort((a, b) => a.distanceKm - b.distanceKm)[0];

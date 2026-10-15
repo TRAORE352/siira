@@ -4,7 +4,13 @@ import assert from "node:assert/strict";
 import { classer } from "../lib/regles";
 import { calculerMatching } from "../lib/matching";
 import type { CentreAvecCreneaux } from "../lib/matching";
-import type { FicheStructuree } from "../lib/types";
+import {
+  contributionOng,
+  montantDemande,
+  regleCorrespond,
+} from "../lib/financement";
+import { trouverCasDemo } from "../lib/cache-demo";
+import type { FicheStructuree, RegleFinancement, Tarif } from "../lib/types";
 
 let echecs = 0;
 
@@ -177,6 +183,79 @@ verifier(
   horsDelai.secours?.centre.id,
   "c1",
 );
+
+// ---------------------------------------------------------------------------
+// Financement (section 6.3)
+// ---------------------------------------------------------------------------
+console.log("Financement :");
+
+const tarifs: Tarif[] = [
+  { centreId: "c1", soin: "consultation", montant: 5000 },
+  { centreId: "c1", soin: "echographie", montant: 15000 },
+  { centreId: "c1", soin: "biopsie", montant: 40000 },
+  { centreId: "c1", soin: "transport", montant: 10000 },
+];
+
+verifier("montant orange = 30 000 FCFA", montantDemande("orange", tarifs), 30000);
+verifier("montant rouge = 70 000 FCFA", montantDemande("rouge", tarifs), 70000);
+verifier("contribution ne_peut_pas = total", contributionOng("ne_peut_pas", 70000), 70000);
+verifier("contribution partielle = moitié", contributionOng("partielle", 70000), 35000);
+
+const regle: RegleFinancement = {
+  id: "r1",
+  ongId: "ong1",
+  districts: ["d1", "d3"],
+  niveaux: ["rouge"],
+  situations: ["partielle", "ne_peut_pas"],
+  active: true,
+};
+
+verifier(
+  "règle correspond (rouge, Saaba, ne peut pas payer)",
+  regleCorrespond(regle, { districtId: "d1", niveau: "rouge", capacitePaiement: "ne_peut_pas" }, 100000, 70000),
+  true,
+);
+verifier(
+  "peut_payer → jamais financé",
+  regleCorrespond(regle, { districtId: "d1", niveau: "rouge", capacitePaiement: "peut_payer" }, 100000, 70000),
+  false,
+);
+verifier(
+  "district hors règle → exclu",
+  regleCorrespond(regle, { districtId: "d2", niveau: "rouge", capacitePaiement: "ne_peut_pas" }, 100000, 70000),
+  false,
+);
+verifier(
+  "niveau orange non couvert (règle rouge) → exclu",
+  regleCorrespond(regle, { districtId: "d1", niveau: "orange", capacitePaiement: "ne_peut_pas" }, 100000, 70000),
+  false,
+);
+verifier(
+  "budget insuffisant → exclu",
+  regleCorrespond(regle, { districtId: "d1", niveau: "rouge", capacitePaiement: "ne_peut_pas" }, 60000, 70000),
+  false,
+);
+verifier(
+  "partielle : budget = moitié suffit",
+  regleCorrespond(regle, { districtId: "d1", niveau: "rouge", capacitePaiement: "partielle" }, 35000, 70000),
+  true,
+);
+verifier(
+  "règle inactive → exclue",
+  regleCorrespond({ ...regle, active: false }, { districtId: "d1", niveau: "rouge", capacitePaiement: "ne_peut_pas" }, 100000, 70000),
+  false,
+);
+
+// ---------------------------------------------------------------------------
+// Cache de démo (section 8.4)
+// ---------------------------------------------------------------------------
+console.log("Cache de démo :");
+verifier(
+  "récit d'Awa reconnu",
+  trouverCasDemo("Elle a une boule au sein gauche depuis deux mois, ça ne fait pas mal, la peau est un peu tirée.")?.slug,
+  "awa",
+);
+verifier("récit sans rapport → null", trouverCasDemo("texte quelconque sans rapport"), null);
 
 console.log("");
 if (echecs > 0) {
