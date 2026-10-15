@@ -25,8 +25,6 @@ const VUES = [
   ["https://siira-agent.vercel.app", "/agent", "pro-agent-saaba", 360, 780, "agent-03-patientes-360"],
   ["https://siira-centre.vercel.app", "/", null, 1280, 900, "centre-01-entree-1280"],
   ["https://siira-centre.vercel.app", "/centre", "pro-centre-bogodogo", 1280, 900, "centre-02-patientes-1280"],
-  ["https://siira-ong.vercel.app", "/", null, 1280, 900, "ong-01-entree-1280"],
-  ["https://siira-ong.vercel.app", "/ong", "pro-ong-a", 1280, 900, "ong-02-demandes-1280"],
 ];
 
 (async () => {

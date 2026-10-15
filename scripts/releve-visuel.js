@@ -20,7 +20,6 @@ const ECRANS = [
   ["/connexion", null, 360],
   ["/agent", "pro-agent-saaba", 360],
   ["/centre", "pro-centre-bogodogo", 1280],
-  ["/ong", "pro-ong-a", 1280],
 ];
 
 (async () => {

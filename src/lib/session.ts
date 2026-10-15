@@ -28,9 +28,9 @@ export function sessionAutorisee(profil: Profil): boolean {
 
 /*
  * La session vit dans le stockage de l'ONGLET (sessionStorage), pas du
- * navigateur : pendant la démonstration, l'agent, le centre et l'ONG sont
- * ouverts côte à côte dans trois onglets du même navigateur, chacun avec son
- * propre compte. Les données, elles, restent partagées entre tous les onglets.
+ * navigateur : pendant la démonstration, l'agent et le centre sont ouverts
+ * côte à côte dans deux onglets du même navigateur, chacun avec son propre
+ * compte. Les données, elles, restent partagées entre tous les onglets.
  */
 const CLE = "siira.session.v1";
 

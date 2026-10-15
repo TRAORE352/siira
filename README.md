@@ -29,20 +29,20 @@ son espace par la variable `NEXT_PUBLIC_ESPACE`, et n'ouvre que celui-là : les
 | Adresse | Espace | Pour qui |
 |---|---|---|
 | <https://siira-agent.vercel.app> | `agent` | L'agent de santé, sur son téléphone. Application installable. |
-| <https://siira-centre.vercel.app> | `centre` | Le centre spécialisé, sur ordinateur. |
-| <https://siira-ong.vercel.app> | `ong` | L'ONG partenaire, sur ordinateur. |
-| <https://siira-chi.vercel.app> | application complète | La démonstration du jury : les quatre rôles sur une seule adresse. |
+| <https://siira-centre.vercel.app> | `centre` | Le centre de santé ou le centre spécialisé, sur ordinateur. |
+| <https://siira-chi.vercel.app> | application complète | La démonstration du jury : tous les rôles sur une seule adresse. |
 
-**Pourquoi une quatrième adresse ?** L'état de la démonstration vit dans le
+**Pourquoi une troisième adresse ?** L'état de la démonstration vit dans le
 stockage du navigateur, qui est propre à chaque adresse. Sur l'application
-complète, les trois espaces ouverts dans trois onglets partagent les mêmes
+complète, les deux espaces ouverts dans deux onglets partagent les mêmes
 données : c'est le seul endroit où le parcours complet se déroule sous les yeux
-du jury. Les trois adresses dédiées servent à remettre à chaque partenaire un
-lien qui n'ouvre que son espace. Le partage des données entre les trois
-adresses viendra avec Supabase (Phase 2), où l'état vivra sur le serveur.
+du jury. Les deux adresses dédiées servent à remettre à chaque partenaire un
+lien qui n'ouvre que son espace. Le partage des données entre les deux
+adresses dédiées viendra avec Supabase (Phase 2), où l'état vivra sur le
+serveur.
 
 Le dépôt est relié à Vercel, avec `main` comme branche de production : chaque
-push sur `main` met les quatre adresses à jour.
+push sur `main` met les trois adresses à jour.
 
 ---
 
@@ -66,8 +66,8 @@ L'application est servie sur <http://localhost:3000>.
 | `npm run typecheck` | Vérification des types, sans rien produire |
 | `npm run lint` | Analyse du code |
 | `npm run recette` | Rejoue le parcours complet dans un vrai navigateur |
-| `npm run audit` | Vérifie les 13 écrans : débordements, cibles tactiles, libellés, titres |
-| `npm run espaces` | Vérifie les quatre adresses en local, espaces et installation compris |
+| `npm run audit` | Vérifie les 10 écrans : débordements, cibles tactiles, libellés, titres |
+| `npm run espaces` | Vérifie les trois adresses en local, espaces et installation compris |
 | `node scripts/verifier-espaces.js --base <url> --espace agent --pwa` | Vérifie une adresse donnée |
 | `./scripts/relancer.sh` | Reconstruit et relance le serveur de production sur le port 3100 |
 
@@ -76,16 +76,16 @@ L'application est servie sur <http://localhost:3000>.
 ### Vérifier que tout fonctionne
 
 ```bash
-npm test                              # 73 tests unitaires
+npm test                              # 96 tests unitaires
 npm run typecheck && npm run lint     # types et style
 ./scripts/relancer.sh                 # construction + serveur de production
-npm run audit                         # 13 écrans
+npm run audit                         # 10 écrans
 node scripts/recette.js --repetitions 5
-npm run espaces                       # les quatre adresses, espaces et PWA
+npm run espaces                       # les trois adresses, espaces et PWA
 ```
 
-Dernier relevé : **91 tests unitaires**, **audit propre sur 13 écrans**,
-**recette réussie**, **les quatre espaces conformes en local**, et Chrome
+Dernier relevé : **96 tests unitaires**, **audit propre sur 10 écrans**,
+**recette réussie**, **les trois adresses conformes en local**, et Chrome
 considère l'application installable sur l'adresse de l'agent.
 
 ---
@@ -114,7 +114,7 @@ mêmes patientes — plutôt qu'un agent tiré au hasard à chaque connexion.
 Essayez `70 12 34 56` avec le code `123456`.
 
 Les autres espaces travaillent sur ordinateur et gardent la connexion par
-compte, car l'adresse de démonstration doit ouvrir les quatre rôles côte à
+compte, car l'adresse de démonstration doit ouvrir les deux espaces côte à
 côte. Sur l'écran de connexion, il suffit de toucher un compte.
 
 | Rôle | Adresse | Personne |
@@ -123,8 +123,6 @@ côte. Sur l'écran de connexion, il suffit de toucher un compte.
 | Centre | `centre.tengandogo@siira.demo` | Dr Issa Compaoré, CHU de Tengandogo |
 | Centre | `centre.yalgado@siira.demo` | Dr Rasmata Nikiéma, CHU Yalgado Ouédraogo |
 | Centre | `centre.ziniare@siira.demo` | Dr Paul Ilboudo, CHR de Ziniaré |
-| ONG | `ong.yennenga@siira.demo` | Clarisse Tapsoba, Fonds Yennenga |
-| ONG | `ong.wendpanga@siira.demo` | Hamidou Barry, Alliance Wendpanga |
 | Admin | `admin@siira.demo` | Équipe Siira |
 
 Les trois agents de démonstration (Salimata Ouédraogo à Saaba, Boukary
@@ -138,13 +136,12 @@ jamais publiés.
 
 ## Faire la démonstration
 
-Ouvrez **trois onglets du même navigateur** : chaque onglet garde son propre
+Ouvrez **deux onglets du même navigateur** : chaque onglet garde son propre
 compte, et les données sont partagées entre eux.
 
 1. **Onglet 1 — agent** : `agent.saaba@siira.demo`
 2. **Onglet 2 — centre** : le centre retenu par le matching (souvent le CHU
    Yalgado Ouédraogo pour une patiente de Saaba)
-3. **Onglet 3 — ONG** : `ong.yennenga@siira.demo`
 
 Puis, dans l'onglet de l'agent :
 
@@ -155,13 +152,18 @@ Puis, dans l'onglet de l'agent :
 3. Cochez le consentement, touchez « Analyser le cas » → **niveau rouge**, règles
    R1 et R5, spécialiste sous 7 jours.
 4. « Continuer vers l'orientation » → centre, rendez-vous et montant proposés.
-5. « Envoyer le dossier » → il apparaît chez le centre en moins de 3 secondes.
-6. Onglet ONG : la demande est là, **sans aucune donnée d'identité**. « Je
-   finance » → le budget baisse, l'agent voit le financement confirmé.
-7. Onglet centre : enregistrez « Patiente reçue », puis « Résultat disponible ».
-   L'agent et le tableau d'impact suivent.
+   La prise en charge est enregistrée auprès des ONG qui couvrent le cas ; la
+   réponse se traite en dehors de Siira.
+5. « Envoyer le dossier » → l'agent arrive sur un **écran de confirmation** :
+   le dossier est parti, le rendez-vous est rappelé, et le message à lire à la
+   patiente est affiché. Le dossier apparaît chez le centre en moins de
+   3 secondes.
+6. Onglet centre : le dossier porte l'état du financement (« Financé » ou
+   « En attente »). Enregistrez « Patiente reçue », puis « Résultat
+   disponible ». L'agent suit l'avancement.
 
-Pour recommencer : espace admin → « Réinitialiser la démo ».
+Pour recommencer : espace admin → « Réinitialiser la démo ». L'espace admin
+affiche aussi les budgets des ONG partenaires.
 
 **Deux autres cas préparés** : Aminata, 34 ans, Koubri, paiement partiel
 (« Elle sent une petite boule au sein droit depuis une semaine, elle bouge sous
@@ -176,16 +178,15 @@ avant ses règles chaque mois, pas de boule. ») donne vert, sans orientation.
 src/
   app/
     (auth)/connexion/        connexion et comptes de démonstration
-    agent/                   accueil, consultation, résultat, orientation, fiche patiente
+    agent/                   accueil, consultation, résultat, orientation, confirmation d'envoi, fiche patiente
     centre/                  liste, dossier, disponibilités
-    ong/                     demandes, règles, impact
-    admin/                   état de la démonstration et réinitialisation
+    admin/                   état de la démonstration, budgets des ONG, réinitialisation
     design/                  page de référence du système de design
   components/                composants d'interface réutilisables
   lib/
     regles.ts                classement du niveau d'urgence (section 6.1 du dossier)
     matching.ts              choix du centre (6.2)
-    financement.ts           montant et correspondance avec les ONG (6.3)
+    financement.ts           montant et ONG susceptibles de couvrir le cas (6.3)
     cache-demo.ts            réponses d'IA enregistrées pour la démonstration
     demo.ts                  données fictives
     data/                    couche d'accès aux données (interface + implémentation)
@@ -204,14 +205,14 @@ de santé sans lire le code autour, et modifiable sans toucher aux écrans.
 ## Tests
 
 ```bash
-npm test          # 53 tests : règles, matching, financement
-npm run recette   # parcours complet, 34 vérifications dans un navigateur
+npm test          # 96 tests : règles, matching, financement
+npm run recette   # parcours complet, 29 vérifications dans un navigateur
 ```
 
-La recette vérifie le scénario de la section 15 du dossier : trois rôles ouverts
-en même temps, classement d'Awa en rouge, envoi du dossier, apparition chez le
-centre en moins de 3 secondes, demande anonyme chez l'ONG, financement, suivi,
-tableau d'impact. Elle s'enchaîne cinq fois avec `--repetitions 5`.
+La recette vérifie le scénario de la section 15 du dossier : deux espaces
+ouverts en même temps, classement d'Awa en rouge, envoi du dossier, écran de
+confirmation, apparition chez le centre en moins de 3 secondes, état du
+financement affiché, suivi. Elle s'enchaîne cinq fois avec `--repetitions 5`.
 
 ---
 
@@ -219,12 +220,12 @@ tableau d'impact. Elle s'enchaîne cinq fois avec `--repetitions 5`.
 
 Supabase (tables, RLS, fonction `confirmer_financement` en transaction),
 connexion réelle, routes API, intégration DeepSeek, temps réel serveur, tests
-de bout en bout Playwright sur les quatre adresses.
+de bout en bout Playwright sur les trois adresses.
 
 Variables d'environnement attendues : URL et clé publique Supabase, clé de
 service Supabase (serveur uniquement), clé DeepSeek (serveur uniquement).
 Aucune clé ne doit porter le préfixe `NEXT_PUBLIC_` hormis les deux premières.
-La variable `NEXT_PUBLIC_ESPACE` (`agent`, `centre` ou `ong`) désigne l'espace
+La variable `NEXT_PUBLIC_ESPACE` (`agent` ou `centre`) désigne l'espace
 d'une adresse ; vide, elle sert l'application complète.
 
 ---

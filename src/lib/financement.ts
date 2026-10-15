@@ -1,8 +1,13 @@
 /**
  * Financement des soins par les ONG.
  *
- * FICHIER UNIQUE. Montant demande, correspondance avec les regles d'une ONG,
- * et attribution du cas a la premiere ONG qui accepte.
+ * FICHIER UNIQUE. Montant demande et correspondance avec les regles d'une ONG
+ * partenaire.
+ *
+ * Les ONG ne sont plus un espace de l'application : elles ne se connectent pas
+ * et n'acceptent rien ici. Ce fichier sert a savoir QUI pourrait prendre en
+ * charge un cas, pour l'annoncer a l'agent ; l'accord lui-meme se traite en
+ * dehors de Siira.
  */
 
 import type {

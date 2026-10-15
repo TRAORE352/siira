@@ -9,9 +9,9 @@ import { ESPACE_ACTIF } from "@/lib/espaces";
  *
  * L'agent de santé se connecte avec son numéro de téléphone et un code à
  * 6 chiffres : c'est ce qu'il a sur lui, et ce qu'il sait taper. Les autres
- * espaces (centre spécialisé, ONG, équipe Siira) travaillent sur ordinateur et
+ * espaces (centre spécialisé, équipe Siira) travaillent sur ordinateur et
  * gardent la connexion par compte le temps de la démonstration, car l'adresse
- * complète doit pouvoir ouvrir les quatre rôles côte à côte.
+ * complète doit pouvoir ouvrir les deux espaces côte à côte.
  */
 export default function Connexion() {
   if (ESPACE_ACTIF === "agent") return <ConnexionAgent />;

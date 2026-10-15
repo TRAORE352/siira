@@ -57,8 +57,9 @@ Source : <https://lawsofux.com/>
 Sources : <https://design-system.service.gov.uk/patterns/question-pages/> et
 <https://service-manual.nhs.uk/content/how-we-write>
 
-- **« Une chose par page »** du GOV.UK, appliqué au parcours : identité et récit,
-  puis résultat, puis orientation. Trois écrans, trois moments.
+- **« Une chose par page »** du GOV.UK, appliqué au parcours : la consultation
+  pose une question à la fois, puis viennent le résultat, l'orientation et la
+  confirmation d'envoi. Un écran, un moment.
 - **Écriture NHS** : phrases courtes, voix active, mots du quotidien. « Une boule
   dans le sein », pas « masse mammaire ». « Depuis combien de semaines », pas
   « durée d'évolution ».
@@ -83,8 +84,8 @@ et <https://developer.apple.com/design/human-interface-guidelines/accessibility>
   résultat : il occupe un grand bandeau en haut, avant tout le reste.
 - La liste du centre est triée par gravité (rouge, puis orange, puis date) :
   l'information critique n'est jamais à chercher.
-- Les chiffres d'impact sont tous calculés à partir des cas réels ; aucun n'est
-  écrit en dur.
+- Les chiffres de pilotage (espace admin, accueil de l'agent, liste du centre)
+  sont tous calculés à partir des cas réels ; aucun n'est écrit en dur.
 
 ### Performance sur réseau faible
 
@@ -199,4 +200,4 @@ d'écran.
 - Audit automatisé (`scripts/audit.js`) sur 4 largeurs : aucun débordement
   horizontal, aucun défaut d'accessibilité de base, aucune erreur console.
 - Parcours complet rejoué dans un vrai navigateur (`scripts/recette.js`),
-  agent à 360 px et centre/ONG à 1280 px.
+  agent à 360 px et centre à 1280 px.

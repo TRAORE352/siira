@@ -4,7 +4,7 @@ import { ESPACE_ACTIF, cheminAutorise, cheminRefus } from "@/lib/espaces";
 /**
  * Une adresse, un espace.
  *
- * Sur une adresse dédiée (agent, centre, ONG), les écrans des autres espaces ne
+ * Sur une adresse dédiée (agent, centre), les écrans de l'autre espace ne
  * sont pas seulement retirés de la navigation : ils sont refusés avant tout
  * rendu. Le navigateur ne reçoit donc jamais le contenu d'un autre espace, même
  * en tapant l'adresse à la main.

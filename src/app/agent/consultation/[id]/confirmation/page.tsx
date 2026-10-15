@@ -8,6 +8,7 @@ import { Carte, Chargement, Ligne, MessageErreur } from "@/components/Interface"
 import {
   detailPatiente,
   listerOngs,
+  listerSuivis,
   messagePourLaPatiente,
   trouverCentre,
   trouverConsultation,
@@ -15,7 +16,12 @@ import {
   trouverOrientationParConsultation,
 } from "@/lib/data";
 import { useDonnees } from "@/lib/hooks";
-import { dateLisible } from "@/lib/libelles";
+import {
+  LIBELLE_ETAPE,
+  LIBELLE_RESULTAT,
+  dateLisible,
+  depuis,
+} from "@/lib/libelles";
 
 /**
  * Confirmation d'envoi du dossier.
@@ -55,6 +61,8 @@ function Confirmation({ id }: { id: string }) {
       orientation,
       centre: trouverCentre(orientation.centre_id),
       creneau: trouverCreneau(orientation.creneau_id),
+      /* Ce que le centre a fait depuis : l'écran doit rester vivant. */
+      suivis: listerSuivis(orientation.id),
       ongs: listerOngs(),
     };
   });
@@ -77,7 +85,7 @@ function Confirmation({ id }: { id: string }) {
     );
   }
 
-  const { patiente, centre, creneau } = donnees;
+  const { patiente, centre, creneau, suivis } = donnees;
   const prenom = patiente.nom.split(/\s+/)[0];
 
   return (
@@ -142,6 +150,36 @@ function Confirmation({ id }: { id: string }) {
             </Carte>
           ) : null}
 
+          {/*
+            Ce que le centre a fait depuis. Tant qu'il n'a rien fait, cette
+            carte annonce l'attente plutôt que de laisser un vide : l'agent
+            doit pouvoir revenir ici pour savoir où en est sa patiente, sans
+            se demander si l'écran est figé.
+          */}
+          {suivis.length > 0 ? (
+            <Carte className="mt-4">
+              <h2 className="mb-3 text-lg">Suite donnée par le centre</h2>
+              <ol className="flex flex-col gap-3">
+                {suivis.map((s) => (
+                  <li key={s.id} className="border-l-2 border-rose-300 pl-3">
+                    <p className="font-medium text-prune-900">
+                      {LIBELLE_ETAPE[s.etape]}
+                    </p>
+                    {s.resultat !== "en_attente" ? (
+                      <p className="text-[0.95rem] text-prune-800">
+                        {LIBELLE_RESULTAT[s.resultat]}
+                      </p>
+                    ) : null}
+                    {s.note ? (
+                      <p className="text-sm text-sable-600">{s.note}</p>
+                    ) : null}
+                    <p className="text-sm text-sable-500">{depuis(s.cree_le)}</p>
+                  </li>
+                ))}
+              </ol>
+            </Carte>
+          ) : null}
+
           {/* Ce que l'agent doit dire, maintenant, avant que la patiente parte. */}
           <Carte className="mt-4 border-rose-200 bg-rose-50">
             <h2 className="mb-2 text-lg">À dire à {prenom} maintenant</h2>
@@ -175,7 +213,9 @@ function Confirmation({ id }: { id: string }) {
           </div>
 
           <p className="mt-6 text-center text-xs leading-relaxed text-sable-600">
-            Vous serez prévenue ici dès que le centre aura reçu {prenom}.
+            {suivis.length > 0
+              ? `Cet écran suit ${prenom} jusqu'au bout de sa prise en charge.`
+              : `Dès que le centre aura reçu ${prenom}, cela s'affichera ici.`}
           </p>
         </div>
       </div>

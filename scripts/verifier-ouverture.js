@@ -20,10 +20,23 @@ const dire=(t,v)=>{console.log((v?"  OK  ":"  KO  ")+t);if(v){ok++;}else{ko++;}}
  * alors que le document n'est pas encore "complete", donc avant l'hydratation.
  */
 await p.goto(BASE+"/",{waitUntil:"commit"});
+/*
+ * Le rideau doit venir du HTML SERVI, pas d'un composant monte apres coup.
+ * Le prouver par le document lui-meme plutot que par un instant : en local le
+ * serveur repond si vite que la page est deja "complete" a la mesure, et un
+ * critere base sur readyState echouerait alors que tout est correct.
+ */
+/*
+ * La preuve se lit dans le HTML SERVI : si le rideau y est, il est peint
+ * avant tout javascript, ce qui est precisement la garantie recherchee.
+ * Ne pas interroger le DOM pour cela — entre deux evaluations le document
+ * peut ne pas encore etre analyse, et on mesurerait un instant, pas un fait.
+ */
+const htmlBrut=await (await fetch(BASE+"/")).text();
+const dansLeHtml=htmlBrut.includes("ecran-ouverture");
 await p.waitForSelector(".ecran-ouverture",{state:"attached",timeout:15000});
-const avantFin=await p.evaluate(()=>document.readyState!=="complete");
 const a=await etat(p);
-dire("rideau present avant la fin du chargement",a.present&&a.visible&&avantFin);
+dire("rideau servi dans le HTML, avant tout javascript",dansLeHtml&&a.present&&a.visible);
 dire("transparent aux clics (ne bloque jamais une action)",a.clics==="none");
 await p.screenshot({path:"/opt/dev/siira/shots-design/20-ouverture.png"});
 

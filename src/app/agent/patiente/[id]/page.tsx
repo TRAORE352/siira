@@ -187,7 +187,8 @@ function FichePatiente({ id }: { id: string }) {
               </p>
             ) : financement.statut === "proposee" ? (
               <p className="text-[0.95rem] text-prune-800">
-                Demande envoyée. En attente de la réponse d&apos;une ONG.
+                Prise en charge demandée. La réponse du partenaire est traitée
+                en dehors de Siira.
               </p>
             ) : (
               <p className="text-[0.95rem] text-prune-800">Financement en attente.</p>

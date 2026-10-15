@@ -249,7 +249,8 @@ export default function PageDesign() {
             <div className="grid gap-3">
               <MessageSucces>Le dossier a ete envoye au CHU de Bogodogo.</MessageSucces>
               <MessageInfo titre="Financement">
-                La demande est partie a 2 ONG. Vous serez prevenu des qu&apos;une repond.
+                Une prise en charge est demandee. La reponse du partenaire est
+                traitee en dehors de Siira.
               </MessageInfo>
               <MessageErreur
                 texte="L'analyse prend trop de temps. Vous pouvez remplir la fiche a la main."

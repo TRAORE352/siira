@@ -2,15 +2,14 @@
 /**
  * Recette Siira : le parcours complet, dans un vrai navigateur.
  *
- * Trois onglets ouverts en même temps, comme pendant la démonstration :
- * l'agent sur un téléphone, le centre et l'ONG sur ordinateur.
+ * Deux onglets ouverts en même temps, comme pendant la démonstration :
+ * l'agent sur un téléphone, le centre sur ordinateur.
  *
  *  1. l'agent saisit le cas d'Awa  -> niveau rouge attendu (R1, R5)
  *  2. il valide, le centre et la date sont proposés
- *  3. il envoie le dossier         -> il apparaît chez le centre sans recharger
- *  4. la demande apparaît chez l'ONG, sans aucune donnée d'identité
- *  5. l'ONG finance                -> budget et bloc financement mis à jour
- *  6. le centre enregistre la suite -> l'agent et l'impact suivent
+ *  3. il envoie le dossier         -> écran de confirmation, puis il apparaît
+ *                                     chez le centre sans recharger
+ *  4. le centre enregistre la suite -> l'agent suit l'avancement
  *
  * Usage : node scripts/recette.js [--repetitions 1]
  */
@@ -67,8 +66,6 @@ async function connecter(page, email) {
       "centre.bogodogo@siira.demo": "pro-centre-bogodogo",
       "centre.tengandogo@siira.demo": "pro-centre-tengandogo",
       "centre.yalgado@siira.demo": "pro-centre-yalgado",
-      "ong.yennenga@siira.demo": "pro-ong-a",
-      "ong.wendpanga@siira.demo": "pro-ong-b",
       "admin@siira.demo": "pro-admin",
     };
     sessionStorage.setItem("siira.session.v1", profils[mail]);
@@ -91,11 +88,10 @@ async function prechauffer(navigateur) {
     "/agent/consultation/nouvelle",
     "/agent/consultation/con-1/resultat",
     "/agent/consultation/con-1/orientation",
+    "/agent/consultation/con-1/confirmation",
     "/agent/patiente/pat-1",
     "/centre",
     "/centre/dossier/ori-1",
-    "/ong",
-    "/ong/impact",
     "/admin",
   ]) {
     await page.goto(BASE + chemin, { waitUntil: "domcontentloaded" }).catch(() => {});
@@ -106,7 +102,7 @@ async function prechauffer(navigateur) {
 async function passage(navigateur, numero) {
   etapes.push(`\n--- Passage ${numero} ---`);
 
-  // Un seul navigateur, trois onglets : les données sont partagées entre les
+  // Un seul navigateur, deux onglets : les données sont partagées entre les
   // onglets, mais chaque onglet a son propre compte connecté.
   const contexte = await navigateur.newContext({
     viewport: { width: 1280, height: 900 },
@@ -115,10 +111,9 @@ async function passage(navigateur, numero) {
   const agent = await contexte.newPage();
   await agent.setViewportSize({ width: 360, height: 780 }); // téléphone
   const centre = await contexte.newPage();
-  const ong = await contexte.newPage();
 
   const erreursJs = [];
-  for (const [nom, p] of [["agent", agent], ["centre", centre], ["ong", ong]]) {
+  for (const [nom, p] of [["agent", agent], ["centre", centre]]) {
     p.on("pageerror", (e) => erreursJs.push(`${nom}: ${e.message}`));
     p.on("console", (m) => {
       if (m.type() === "error" && !m.text().includes("hydrat"))
@@ -126,7 +121,7 @@ async function passage(navigateur, numero) {
     });
   }
 
-  /* 0. Remise à zéro par l'admin, puis connexion des trois rôles. */
+  /* 0. Remise à zéro par l'admin, puis connexion des deux rôles. */
   await connecter(agent, "admin@siira.demo");
   await agent.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
   await agent.getByRole("button", { name: "Réinitialiser la démo" }).click();
@@ -136,21 +131,12 @@ async function passage(navigateur, numero) {
 
   await connecter(agent, "agent.saaba@siira.demo");
   await connecter(centre, "centre.bogodogo@siira.demo");
-  await connecter(ong, "ong.yennenga@siira.demo");
 
   await agent.goto(`${BASE}/agent`, { waitUntil: "domcontentloaded" });
   await agent.waitForSelector("text=Nouvelle consultation");
   verifier("Connexion de l'agent", await agent.isVisible("text=Mes patientes"));
 
   verifier("Connexion du centre", true);
-
-  await ong.goto(`${BASE}/ong`, { waitUntil: "domcontentloaded" });
-  await ong.waitForSelector("text=Demandes de financement");
-  const budgetAvant = await ong.evaluate(() => {
-    const m = document.body.innerText.match(/Budget restant\s*([\d\s]+)FCFA/);
-    return m ? Number(m[1].replace(/\s/g, "")) : null;
-  });
-  verifier("Connexion de l'ONG", budgetAvant !== null, `budget ${budgetAvant} FCFA`);
 
   /* 1. Saisie du cas d'Awa, en cinq étapes. */
   await agent.getByRole("link", { name: "Nouvelle consultation" }).click();
@@ -240,8 +226,9 @@ async function passage(navigateur, numero) {
     texteOrientation.includes("Bonjour Awa"),
   );
   verifier(
-    "Les ONG correspondantes sont annoncées",
-    /demande sera envoyée à \d+ ONG/.test(texteOrientation),
+    "La prise en charge pressentie est annoncée",
+    /prise en charge est enregistrée pour/.test(texteOrientation) ||
+      /Aucun partenaire ne couvre ce cas/.test(texteOrientation),
   );
 
   /*
@@ -270,7 +257,8 @@ async function passage(navigateur, numero) {
   /* 3. Envoi du dossier : il doit apparaître chez le centre. */
   const envoi = Date.now();
   await agent.getByRole("button", { name: "Envoyer le dossier" }).click();
-  await agent.waitForURL(/\/agent\/patiente\//);
+  /* L'envoi conduit a l'ecran de confirmation, pas a la fiche de la patiente. */
+  await agent.waitForURL(/\/confirmation$/, { timeout: 20000 });
 
   const delaiCentre = await attendre(
     centre,
@@ -284,40 +272,42 @@ async function passage(navigateur, numero) {
   );
   verifier("Mise à jour sans recharger la page du centre", delaiCentre >= 0);
 
-  /* 4. La demande arrive chez l'ONG, sans identité. */
-  await attendre(ong, () => /Cas \d+/.test(document.body.innerText), {
-    message: "la demande n'est pas arrivée chez l'ONG",
-  });
-  const texteOng = await ong.evaluate(() => document.body.innerText);
-  verifier("La demande apparaît chez l'ONG", /Cas \d+/.test(texteOng));
-  verifier("Aucun nom de patiente chez l'ONG", !texteOng.includes("Awa"));
-  verifier("Aucun village chez l'ONG", !texteOng.includes("Compaoré"));
-  verifier("L'âge et le district sont visibles", texteOng.includes("41 ans"));
-
-  /* 5. L'ONG finance. */
-  await ong.getByRole("button", { name: "Je finance" }).first().click();
-  await ong.waitForSelector("text=Confirmer le financement");
-  await ong.getByRole("button", { name: "Confirmer", exact: true }).click();
-  await ong.waitForSelector("text=est financé");
-
-  const budgetApres = await ong.evaluate(() => {
-    const m = document.body.innerText.match(/Budget restant\s*([\d\s]+)FCFA/);
-    return m ? Number(m[1].replace(/\s/g, "")) : null;
-  });
-  verifier(
-    "Le budget de l'ONG a diminué",
-    budgetApres !== null && budgetApres < budgetAvant,
-    `${budgetAvant} -> ${budgetApres} FCFA`,
-  );
-
+  /*
+   * 4. L'agent voit que son geste a abouti.
+   *
+   * C'est l'écran que l'application doit à l'agent : le dossier est parti,
+   * voici le rendez-vous, voici ce qu'il faut dire à la patiente maintenant.
+   */
+  /*
+   * Ne pas attendre une NAVIGATION ici : l'envoi du dossier, verifie a
+   * l'etape 3, a deja conduit l'agent sur cet ecran. `waitForURL` attendrait
+   * alors un evenement qui ne reviendra pas. On attend le CONTENU, qui est la
+   * garantie reelle.
+   */
   await attendre(
     agent,
-    () => document.body.innerText.includes("Soins financés par"),
-    { message: "le financement n'est pas remonté chez l'agent" },
+    () => document.body.innerText.includes("Le dossier est parti"),
+    { message: "l'ecran de confirmation ne s'est pas affiche" },
   );
-  verifier("L'agent voit le financement confirmé", true);
+  const texteConfirmation = await agent.evaluate(() => document.body.innerText);
+  verifier(
+    "L'agent arrive sur l'écran de confirmation",
+    /confirmation$/.test(agent.url()),
+  );
+  verifier(
+    "La confirmation annonce que le dossier est parti",
+    texteConfirmation.includes("Le dossier est parti"),
+  );
+  verifier(
+    "La confirmation rappelle le rendez-vous",
+    texteConfirmation.includes("Le rendez-vous"),
+  );
+  verifier(
+    "La confirmation donne le message à lire à la patiente",
+    texteConfirmation.includes("Bonjour Awa"),
+  );
 
-  /* 6. Le centre enregistre la suite donnée. */
+  /* 5. Le centre enregistre la suite donnée. */
   await centre.getByRole("link", { name: "Awa Compaoré" }).first().click();
   await centre.waitForURL(/\/centre\/dossier\//);
   await centre.waitForSelector("text=Enregistrer la suite donnée");
@@ -349,15 +339,6 @@ async function passage(navigateur, numero) {
     { message: "le résultat n'est pas remonté chez l'agent" },
   );
   verifier("L'agent voit le résultat", true);
-
-  /* 7. Le tableau d'impact de l'ONG a bougé. */
-  await ong.goto(`${BASE}/ong/impact`, { waitUntil: "domcontentloaded" });
-  await ong.waitForSelector("text=Femmes financées");
-  const texteImpact = await ong.evaluate(() => document.body.innerText);
-  const femmes = Number((texteImpact.match(/Femmes financées\s*(\d+)/) || [])[1]);
-  const resultats = Number((texteImpact.match(/Résultats connus\s*(\d+)/) || [])[1]);
-  verifier("Le tableau d'impact compte la femme financée", femmes >= 1, `${femmes}`);
-  verifier("Le résultat connu est compté", resultats >= 1, `${resultats}`);
 
   verifier(
     "Aucune erreur dans la console",

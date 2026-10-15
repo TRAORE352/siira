@@ -42,8 +42,8 @@ alors le relais. Mesuré pendant la recette : le dossier arrive chez le centre e
 environ 2 secondes, sous les 3 secondes exigées.
 
 **D6. La session est propre à chaque onglet (`sessionStorage`), les données sont partagées (`localStorage`).**
-Pendant la démonstration, l'agent, le centre et l'ONG sont ouverts côte à côte
-dans trois onglets du même navigateur. Avec une session en `localStorage`, se
+Pendant la démonstration, l'agent et le centre sont ouverts côte à côte
+dans deux onglets du même navigateur. Avec une session en `localStorage`, se
 connecter dans un onglet déconnectait les autres : la démonstration était
 impossible. Séparer les deux stockages résout cela proprement.
 
@@ -103,15 +103,15 @@ version différente de celle du dépôt. Les secrets ne passent jamais par le
 dépôt : `.env.local` est ignoré, et les variables de la Phase 2 seront saisies
 dans les réglages Vercel.
 
-**D21. Trois adresses dédiées, plus une adresse de démonstration.**
-Quatre projets Vercel servent le même dépôt : `siira-agent`,
-`siira-centre`, `siira-ong`, et `siira` pour l'application complète. Chacun
-fixe son espace par `NEXT_PUBLIC_ESPACE`. Raison : le commanditaire veut trois
-liens, un par public, et une adresse qui n'ouvre que son espace évite qu'un
+**D21. Deux adresses dédiées, plus une adresse de démonstration.**
+Trois projets Vercel servent le même dépôt : `siira-agent`,
+`siira-centre`, et `siira` pour l'application complète. Chacun
+fixe son espace par `NEXT_PUBLIC_ESPACE`. Raison : le commanditaire veut un
+lien par public, et une adresse qui n'ouvre que son espace évite qu'un
 agent découvre les écrans du centre. L'adresse complète est conservée parce que
 l'état de la démonstration vit dans le stockage du navigateur, propre à chaque
-adresse : c'est la seule où le parcours complet se joue entre trois onglets. Le
-partage entre les trois adresses viendra avec Supabase, en Phase 2.
+adresse : c'est la seule où le parcours complet se joue entre deux onglets. Le
+partage entre les deux adresses dédiées viendra avec Supabase, en Phase 2.
 
 **D22. Les autres espaces sont refusés, pas seulement cachés.**
 Un middleware s'exécute avant tout rendu et renvoie vers la connexion si le
@@ -190,7 +190,7 @@ du clavier.
 L'écran que voit l'agent doit être celui qu'il ouvrira tous les matins, pas une
 maquette avec une liste de personnages. Les autres espaces gardent la connexion
 par compte : ils travaillent sur ordinateur, et l'adresse de démonstration doit
-ouvrir les quatre rôles côte à côte pour le jury. Le vérificateur d'espaces
+ouvrir les deux espaces côte à côte pour le jury. Le vérificateur d'espaces
 contrôle désormais qu'aucun nom de démonstration, aucune adresse `@siira.demo`
 et aucun champ de mot de passe ne sont servis sur l'adresse de l'agent.
 
@@ -236,6 +236,33 @@ Quand le titre de la question dit déjà « Son nom », le champ ne répète pas
 « Nom de la patiente » au-dessus de lui : `labelMasque` le réserve aux lecteurs
 d'écran. Le libellé reste donc présent dans l'arbre d'accessibilité — il n'est
 pas supprimé, seulement retiré de la vue.
+
+**D35. L'espace ONG est supprimé : les ONG financent, elles ne décident plus dans Siira.**
+La plateforme n'a plus que deux espaces métier — l'agent de santé sur son
+téléphone, le centre de santé ou le centre spécialisé sur ordinateur — plus
+l'espace technique `admin` de l'équipe Siira. `Role` ne vaut donc plus que
+`agent`, `centre` ou `admin`, les écrans `/ong`, `/ong/regles` et `/ong/impact`
+sont retirés, et les comptes de démonstration ONG n'existent plus. Raison :
+l'accord de prise en charge se négocie dans la réalité par téléphone, par
+courrier et en réunion, pas dans une application ; prétendre le contraire
+obligeait à maquetter une décision qui ne se prend pas là. Siira enregistre
+donc la demande et affiche le résultat (« Financé » / « En attente »), et les
+textes le disent sans détour : « Une prise en charge est enregistrée pour X.
+La réponse vous sera communiquée en dehors de Siira. »
+
+**Ce qui reste.** Les ONG demeurent les bailleurs du dispositif : un dossier
+est financé par telle ONG, l'agent et le centre voient l'état du financement,
+`lib/financement.ts` calcule toujours le montant et les ONG susceptibles de
+couvrir le cas, et `/admin` affiche toujours leurs budgets. Seule leur
+connexion disparaît, pas leur rôle.
+
+**D36. L'envoi d'un dossier débouche sur un écran de confirmation.**
+`/agent/consultation/[id]/confirmation` répond à trois questions, dans cet
+ordre : est-ce parti ? quand est le rendez-vous ? qu'est-ce que je dis à la
+patiente maintenant ? Avant, l'application renvoyait sans rien dire vers la
+fiche de la patiente : l'agent ne savait pas si son geste avait abouti, au
+moment précis où une femme vient d'obtenir un rendez-vous. L'écran affiche donc
+l'accusé d'envoi, le rappel du rendez-vous et le message à lire à voix haute.
 
 ---
 

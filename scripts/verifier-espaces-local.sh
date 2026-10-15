@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verifie les quatre adresses possibles de Siira, en local.
+# Verifie les trois adresses possibles de Siira, en local.
 #
 # Pour chaque espace : construction avec la variable correspondante, demarrage
 # sur son port, controle par scripts/verifier-espaces.js, puis arret.
@@ -11,7 +11,7 @@
 set -u
 cd "$(dirname "$0")/.."
 
-for combo in "agent:3101" "centre:3102" "ong:3103" "complet:3100"; do
+for combo in "agent:3101" "centre:3102" "complet:3100"; do
   espace=${combo%%:*}
   port=${combo##*:}
 

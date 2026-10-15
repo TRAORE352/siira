@@ -1,20 +1,24 @@
 /**
  * Espaces de Siira.
  *
- * Le dossier demande une seule application, pour trois publics : l'agent qui
- * travaille sur un téléphone d'entrée de gamme, puis le centre spécialisé et
- * l'ONG qui travaillent sur ordinateur. Chaque public reçoit son adresse, et
- * chaque adresse est un déploiement du même code, qui déclare son espace par
- * la variable `NEXT_PUBLIC_ESPACE` :
+ * Une seule application, pour deux publics : l'agent de santé, qui travaille
+ * sur un téléphone d'entrée de gamme, et le centre spécialisé, qui travaille
+ * sur ordinateur. Chaque public reçoit son adresse, et chaque adresse est un
+ * déploiement du même code, qui déclare son espace par la variable
+ * `NEXT_PUBLIC_ESPACE` :
  *
  *   NEXT_PUBLIC_ESPACE=agent   -> espace agent de santé
  *   NEXT_PUBLIC_ESPACE=centre  -> espace centre spécialisé
- *   NEXT_PUBLIC_ESPACE=ong     -> espace ONG partenaire
- *   (variable absente)         -> application complète, les quatre rôles
+ *   (variable absente)         -> application complète, pour la démonstration
+ *
+ * Les ONG ne sont plus un espace : elles financent des soins, mais ne se
+ * connectent pas ici. Leur accord se traite hors de l'application, et seul le
+ * résultat — « ces soins sont pris en charge, par telle ONG » — est affiché à
+ * l'agent et au centre.
  *
  * L'application complète est l'adresse de démonstration : c'est la seule où
- * les trois espaces partagent les mêmes données, puisque l'état de la
- * démonstration vit dans le stockage du navigateur, propre à chaque adresse.
+ * les espaces partagent les mêmes données, puisque l'état de la démonstration
+ * vit dans le stockage du navigateur, propre à chaque adresse.
  *
  * Ce fichier ne dépend de rien et n'est pas marqué « client » : il est lu par
  * le middleware, qui s'exécute sur le serveur, comme par les écrans.
@@ -22,29 +26,36 @@
 
 import type { Profil, Role } from "./types";
 
-export type Espace = "agent" | "centre" | "ong" | "complet";
+export type Espace = "agent" | "centre" | "complet";
 
-export const ROLES: readonly Role[] = ["agent", "centre", "ong", "admin"];
+export const ROLES: readonly Role[] = ["agent", "centre", "admin"];
 
 /** Page d'accueil de chaque rôle. */
 export const ACCUEIL_PAR_ROLE: Record<Role, string> = {
   agent: "/agent",
   centre: "/centre",
-  ong: "/ong",
   admin: "/admin",
 };
 
 export const LIBELLE_ROLE: Record<Role, string> = {
   agent: "Agent de santé",
   centre: "Centre spécialisé",
-  ong: "ONG partenaire",
   admin: "Équipe Siira",
 };
 
-/** Lit la valeur brute de configuration. Toute valeur inconnue donne l'application complète. */
+/**
+ * Lit la valeur brute de configuration.
+ *
+ * Une valeur inconnue donne l'application complète — y compris `ong`, qui a
+ * existé puis disparu. Un déploiement resté sur cette valeur ouvrirait donc
+ * TOUS les écrans au lieu de n'en ouvrir aucun : c'est pourquoi la variable
+ * est retirée côté hébergeur en même temps que ce code, et pourquoi l'ancienne
+ * adresse est fermée. Sur une plateforme à données réelles, il faudrait
+ * refuser de démarrer plutôt que de se rabattre sur « tout ouvert ».
+ */
 export function lireEspace(valeur: string | undefined): Espace {
   const v = (valeur ?? "").trim().toLowerCase();
-  return v === "agent" || v === "centre" || v === "ong" ? v : "complet";
+  return v === "agent" || v === "centre" ? v : "complet";
 }
 
 /** Espace de cette adresse, fixé au moment de la construction. */
@@ -94,8 +105,6 @@ export function nomEspace(espace: Espace): string {
       return "Siira, espace agent de santé";
     case "centre":
       return "Siira, espace centre spécialisé";
-    case "ong":
-      return "Siira, espace ONG partenaire";
     default:
       return "Siira, le chemin vers les soins";
   }
@@ -107,8 +116,6 @@ export function titreEspace(espace: Espace): string {
       return "L’espace des agents de santé";
     case "centre":
       return "L’espace des centres spécialisés";
-    case "ong":
-      return "L’espace des ONG partenaires";
     default:
       return "Le chemin vers les soins";
   }
@@ -120,8 +127,6 @@ export function presentationEspace(espace: Espace): string {
       return "Enregistrez une patiente, dictez ce qu’elle ressent, validez le niveau d’urgence et envoyez le dossier au centre spécialisé.";
     case "centre":
       return "Recevez les dossiers orientés vers votre centre, suivez les examens et enregistrez les résultats.";
-    case "ong":
-      return "Financez les soins des femmes qui ne peuvent pas en payer les frais. Aucune donnée d’identité ne vous est transmise.";
     default:
       return "Siira accompagne une femme du premier doute jusqu’à sa prise en charge par un spécialiste.";
   }
@@ -134,8 +139,6 @@ export function mentionEspace(espace: Espace): string | null {
       return "Espace agent de santé";
     case "centre":
       return "Espace centre spécialisé";
-    case "ong":
-      return "Espace ONG partenaire";
     default:
       return null;
   }

@@ -50,7 +50,15 @@ export type ResultatSuivi =
   | "a_surveiller"
   | "cancer_confirme";
 
-export type Role = "agent" | "centre" | "ong" | "admin";
+/*
+ * Rôles de la plateforme.
+ *
+ * Les ONG ne sont plus un rôle : elles ne se connectent pas et ne décident
+ * rien ici. Elles restent présentes comme BAILLEURS — un financement porte le
+ * nom de celle qui prend les soins en charge — mais l'accord se traite hors
+ * de l'application.
+ */
+export type Role = "agent" | "centre" | "admin";
 
 export interface District {
   id: string;

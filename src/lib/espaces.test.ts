@@ -23,15 +23,14 @@ import {
 import { PROFILS } from "./demo";
 
 describe("lireEspace", () => {
-  it("reconnaît les trois espaces dédiés", () => {
+  it("reconnaît les deux espaces dédiés", () => {
     expect(lireEspace("agent")).toBe("agent");
     expect(lireEspace("centre")).toBe("centre");
-    expect(lireEspace("ong")).toBe("ong");
   });
 
   it("accepte la casse et les espaces autour", () => {
     expect(lireEspace("  Agent ")).toBe("agent");
-    expect(lireEspace("ONG")).toBe("ong");
+    expect(lireEspace("CENTRE")).toBe("centre");
   });
 
   it("retombe sur l'application complète quand rien n'est déclaré", () => {
@@ -45,22 +44,36 @@ describe("lireEspace", () => {
     expect(lireEspace("tous")).toBe("complet");
     expect(lireEspace("agent; drop")).toBe("complet");
   });
+
+  /*
+   * L'espace ONG a existé. Un déploiement resté sur cette valeur ne doit pas
+   * faire semblant de fonctionner : il n'y a plus d'espace ONG, la valeur est
+   * inconnue comme une autre.
+   */
+  it("« ong » n'est plus un espace", () => {
+    expect(lireEspace("ong")).toBe("complet");
+    expect(lireEspace("ONG")).toBe("complet");
+  });
 });
 
 describe("rolesEspace", () => {
-  it("l'application complète admet les quatre rôles", () => {
+  it("l'application complète admet tous les rôles", () => {
     expect(rolesEspace("complet").sort()).toEqual([...ROLES].sort());
+  });
+
+  it("la plateforme ne connaît plus le rôle ONG", () => {
+    expect(ROLES).not.toContain("ong");
+    expect(ROLES).toEqual(["agent", "centre", "admin"]);
   });
 
   it("une adresse dédiée n'admet que son rôle", () => {
     expect(rolesEspace("agent")).toEqual(["agent"]);
     expect(rolesEspace("centre")).toEqual(["centre"]);
-    expect(rolesEspace("ong")).toEqual(["ong"]);
   });
 
-  it("l'agent n'accède pas à l'espace ONG, ni l'inverse", () => {
-    expect(roleAutorise("ong", "agent")).toBe(false);
-    expect(roleAutorise("agent", "ong")).toBe(false);
+  it("l'agent n'accède pas à l'espace du centre, ni l'inverse", () => {
+    expect(roleAutorise("centre", "agent")).toBe(false);
+    expect(roleAutorise("agent", "centre")).toBe(false);
     expect(roleAutorise("agent", "agent")).toBe(true);
     expect(roleAutorise("centre", "admin")).toBe(false);
     expect(roleAutorise("complet", "admin")).toBe(true);
@@ -69,7 +82,7 @@ describe("rolesEspace", () => {
 
 describe("cheminAutorise", () => {
   it("l'application complète ouvre tous les chemins", () => {
-    for (const chemin of ["/", "/connexion", "/agent", "/centre", "/ong", "/admin", "/design"]) {
+    for (const chemin of ["/", "/connexion", "/agent", "/centre", "/admin", "/design"]) {
       expect(cheminAutorise("complet", chemin)).toBe(true);
     }
   });
@@ -86,23 +99,27 @@ describe("cheminAutorise", () => {
     expect(cheminAutorise("agent", "/agent/patiente/pat-1")).toBe(true);
   });
 
-  it("l'espace agent refuse les écrans du centre, de l'ONG, de l'admin et du design", () => {
-    for (const chemin of ["/centre", "/centre/dossier/ori-1", "/ong", "/ong/regles", "/admin", "/design"]) {
+  it("l'espace agent refuse les écrans du centre, de l'admin et du design", () => {
+    for (const chemin of ["/centre", "/centre/dossier/ori-1", "/admin", "/design"]) {
       expect(cheminAutorise("agent", chemin)).toBe(false);
     }
   });
 
-  it("l'espace centre refuse les écrans de l'agent et de l'ONG", () => {
+  it("l'espace centre refuse les écrans de l'agent", () => {
     expect(cheminAutorise("centre", "/centre")).toBe(true);
     expect(cheminAutorise("centre", "/centre/disponibilites")).toBe(true);
     expect(cheminAutorise("centre", "/agent")).toBe(false);
-    expect(cheminAutorise("centre", "/ong/impact")).toBe(false);
   });
 
-  it("l'espace ONG refuse les écrans de l'agent et du centre", () => {
-    expect(cheminAutorise("ong", "/ong/impact")).toBe(true);
-    expect(cheminAutorise("ong", "/agent")).toBe(false);
-    expect(cheminAutorise("ong", "/centre")).toBe(false);
+  /*
+   * Les écrans de l'ONG ont été supprimés. Une adresse enregistrée dans un
+   * téléphone ou un favori ne doit mener nulle part, sur aucun espace.
+   */
+  it("les anciens écrans de l'ONG ne sont ouverts par aucune adresse dédiée", () => {
+    for (const chemin of ["/ong", "/ong/regles", "/ong/impact"]) {
+      expect(cheminAutorise("agent", chemin)).toBe(false);
+      expect(cheminAutorise("centre", chemin)).toBe(false);
+    }
   });
 
   it("ne confond pas un préfixe voisin avec une autorisation", () => {
@@ -115,29 +132,41 @@ describe("accueilEspace et cheminRefus", () => {
   it("chaque espace a une adresse d'entrée claire", () => {
     expect(accueilEspace("agent")).toBe(ACCUEIL_PAR_ROLE.agent);
     expect(accueilEspace("centre")).toBe(ACCUEIL_PAR_ROLE.centre);
-    expect(accueilEspace("ong")).toBe(ACCUEIL_PAR_ROLE.ong);
     expect(accueilEspace("complet")).toBe("/");
   });
 
   it("un écran refusé renvoie vers la connexion sur une adresse dédiée", () => {
     expect(cheminRefus("agent")).toBe("/connexion");
-    expect(cheminRefus("ong")).toBe("/connexion");
+    expect(cheminRefus("centre")).toBe("/connexion");
     expect(cheminRefus("complet")).toBe("/");
   });
 });
 
 describe("comptesDeLespace", () => {
-  const espaces: Espace[] = ["agent", "centre", "ong", "complet"];
+  const espaces: Espace[] = ["agent", "centre", "complet"];
 
   it("ne propose que des comptes du bon rôle", () => {
-    expect(comptesDeLespace("agent", PROFILS).map((p) => p.role)).toEqual(["agent", "agent", "agent"]);
+    expect(comptesDeLespace("agent", PROFILS).map((p) => p.role)).toEqual([
+      "agent",
+      "agent",
+      "agent",
+    ]);
     expect(comptesDeLespace("centre", PROFILS).map((p) => p.role)).toEqual([
       "centre",
       "centre",
       "centre",
       "centre",
     ]);
-    expect(comptesDeLespace("ong", PROFILS).map((p) => p.role)).toEqual(["ong", "ong"]);
+  });
+
+  /* Plus aucun compte ONG ne doit pouvoir se connecter, nulle part. */
+  it("aucun compte ONG ne subsiste", () => {
+    expect(PROFILS.some((p) => p.role === "ong" as string)).toBe(false);
+    for (const espace of espaces) {
+      expect(
+        comptesDeLespace(espace, PROFILS).some((p) => p.ong_id !== null),
+      ).toBe(false);
+    }
   });
 
   it("l'application complète propose tous les comptes de démonstration", () => {
@@ -154,7 +183,7 @@ describe("comptesDeLespace", () => {
 
   it("aucun compte d'un espace n'apparaît sur un autre espace", () => {
     const agents = new Set(comptesDeLespace("agent", PROFILS).map((p) => p.id));
-    const ongs = new Set(comptesDeLespace("ong", PROFILS).map((p) => p.id));
-    for (const id of ongs) expect(agents.has(id)).toBe(false);
+    const centres = new Set(comptesDeLespace("centre", PROFILS).map((p) => p.id));
+    for (const id of centres) expect(agents.has(id)).toBe(false);
   });
 });

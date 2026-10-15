@@ -51,30 +51,23 @@ const ATTENDU = {
       "Comptes de démonstration",
       "Compte de démonstration",
     ],
-    refuses: ["/centre", "/centre/disponibilites", "/ong", "/ong/impact", "/admin", "/design"],
+    refuses: ["/centre", "/centre/disponibilites", "/ong", "/ong/regles", "/ong/impact", "/admin", "/design"],
   },
   centre: {
     mention: "Espace centre spécialisé",
     titre: "Siira, espace centre spécialisé",
     entree: "/centre",
     comptes: ["Dr Alimata Zongo", "Dr Issa Compaoré", "Dr Rasmata Nikiéma", "Dr Paul Ilboudo"],
-    interdits: ["Salimata Ouédraogo", "Clarisse Tapsoba", "Équipe Siira"],
-    refuses: ["/agent", "/agent/consultation/nouvelle", "/ong", "/admin", "/design"],
-  },
-  ong: {
-    mention: "Espace ONG partenaire",
-    titre: "Siira, espace ONG partenaire",
-    entree: "/ong",
-    comptes: ["Clarisse Tapsoba", "Hamidou Barry"],
-    interdits: ["Salimata Ouédraogo", "Dr Alimata Zongo", "Équipe Siira"],
-    refuses: ["/agent", "/centre", "/centre/dossier/ori-1", "/admin", "/design"],
+    interdits: ["Salimata Ouédraogo", "Clarisse Tapsoba", "Hamidou Barry", "Équipe Siira"],
+    refuses: ["/agent", "/agent/consultation/nouvelle", "/ong", "/ong/regles", "/ong/impact", "/admin", "/design"],
   },
   complet: {
     mention: null,
     titre: "Siira, le chemin vers les soins",
     entree: "/",
-    comptes: ["Salimata Ouédraogo", "Dr Alimata Zongo", "Clarisse Tapsoba", "Équipe Siira"],
-    interdits: [],
+    comptes: ["Salimata Ouédraogo", "Dr Alimata Zongo", "Équipe Siira"],
+    /* Les comptes ONG ont ete supprimes : ils ne doivent reapparaitre nulle part. */
+    interdits: ["Clarisse Tapsoba", "Hamidou Barry"],
     refuses: [],
   },
 };
@@ -98,7 +91,7 @@ async function lire(chemin, options = {}) {
 (async () => {
   const attendu = ATTENDU[ESPACE];
   if (!attendu) {
-    console.error(`Espace inconnu : ${ESPACE}. Attendu : agent, centre, ong ou complet.`);
+    console.error(`Espace inconnu : ${ESPACE}. Attendu : agent, centre ou complet.`);
     process.exit(2);
   }
 

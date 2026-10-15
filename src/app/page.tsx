@@ -76,7 +76,7 @@ function AccueilAgent() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Centre, ONG, application complète : écran d'ordinateur               */
+/* Centre et application complète : écran d'ordinateur                  */
 /* ------------------------------------------------------------------ */
 
 function AccueilGeneral() {

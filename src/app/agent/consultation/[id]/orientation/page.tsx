@@ -227,8 +227,8 @@ function Orientation({ id }: { id: string }) {
 
             {!montant ? (
               <MessageInfo>
-                La patiente peut payer ses soins. Aucune demande n&apos;est envoyée aux
-                ONG.
+                La patiente peut payer ses soins. Aucune prise en charge
+                n&apos;est demandée.
               </MessageInfo>
             ) : (
               <>
@@ -242,12 +242,17 @@ function Orientation({ id }: { id: string }) {
                     {formaterFcfa(montant.montant)}
                   </Ligne>
                 </dl>
+                {/*
+                  Les ONG ne décident plus dans l'application : l'accord se
+                  traite en dehors. On annonce donc ce que Siira fait vraiment
+                  — enregistrer une demande — sans promettre une réponse ici.
+                */}
                 <p className="mt-3 text-[0.95rem] text-prune-800">
                   {ongs.length === 0
-                    ? "Aucune ONG ne couvre ce cas pour le moment. Le dossier part quand même, le financement reste en attente."
-                    : `La demande sera envoyée à ${ongs.length} ONG : ${ongs
+                    ? "Aucun partenaire ne couvre ce cas pour le moment. Le dossier part quand même, la prise en charge reste à obtenir."
+                    : `Une demande de prise en charge est enregistrée pour ${ongs
                         .map((o) => o.nom)
-                        .join(", ")}.`}
+                        .join(", ")}. La réponse vous sera communiquée en dehors de Siira.`}
                 </p>
               </>
             )}
