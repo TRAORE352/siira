@@ -38,7 +38,11 @@ export function TitreSection({
   return (
     <div className="mb-4 flex items-end justify-between gap-4">
       <div>
-        <Titre className="text-xl sm:text-2xl">{children}</Titre>
+        <Titre
+          className={principal ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"}
+        >
+          {children}
+        </Titre>
         {aide ? <p className="mt-1 text-sm text-sable-600">{aide}</p> : null}
       </div>
       {action}
