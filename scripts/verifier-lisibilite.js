@@ -170,6 +170,8 @@ const AUDIT = () => {
         const vus = [];
         for (const e of document.querySelectorAll("main *")) {
           if (e.children.length > 0 || e.offsetParent === null) continue;
+          /* Ce qui appartient à la barre elle-même n'est pas caché par elle. */
+          if (barre.contains(e)) continue;
           const t = e.textContent.trim();
           if (!t) continue;
           const r = e.getBoundingClientRect();

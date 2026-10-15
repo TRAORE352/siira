@@ -109,7 +109,7 @@ function Resultat({ id }: { id: string }) {
 
   return (
     <>
-      <Retour href="/agent" libelle="Mes patientes" />
+      <Retour href="/agent/patientes" libelle="Mes patientes" />
 
       <p className="mb-3 text-sm text-sable-600">
         {patiente.nom} · {patiente.age} ans

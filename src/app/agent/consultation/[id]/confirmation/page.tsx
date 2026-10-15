@@ -76,7 +76,7 @@ function Confirmation({ id }: { id: string }) {
           titre="Dossier introuvable"
           texte="Ce dossier n'a pas été envoyé, ou il n'existe plus. Revenez à la liste de vos patientes."
           action={
-            <Bouton variante="second" onClick={() => router.push("/agent")}>
+            <Bouton variante="second" onClick={() => router.push("/agent/patientes")}>
               Mes patientes
             </Bouton>
           }
@@ -206,7 +206,7 @@ function Confirmation({ id }: { id: string }) {
               variante="second"
               taille="grand"
               className="w-full"
-              onClick={() => router.push("/agent")}
+              onClick={() => router.push("/agent/patientes")}
             >
               Retour à mes patientes
             </Bouton>

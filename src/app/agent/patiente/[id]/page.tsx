@@ -72,7 +72,7 @@ function FichePatiente({ id }: { id: string }) {
 
   return (
     <>
-      <Retour href="/agent" libelle="Mes patientes" />
+      <Retour href="/agent/patientes" libelle="Mes patientes" />
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

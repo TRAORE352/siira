@@ -318,6 +318,18 @@ qui n'est pas venue au rendez-vous reste signalée en rouge sur sa carte, à
 l'endroit où l'agent agit. Si le besoin d'un état du jour revient, une seule
 ligne discrète suffira — pas trois cadres.
 
+**D42. Après la connexion, l'agent arrive sur un accueil qui propose, et la
+liste des patientes a sa propre adresse.**
+L'accueil s'ouvrait directement sur la liste : un écran utile, mais qui oblige
+à savoir où l'on va avant de le savoir. Il porte désormais deux grandes zones
+d'appui — « Nouvelle consultation » en rose, « Mes patientes » avec le nombre
+de patientes et, quand il y en a, le nombre à revoir — plus l'invitation à
+installer l'application quand le navigateur la propose. La liste vit sur
+`/agent/patientes`, avec l'action principale fixée en bas à portée du pouce.
+Les liens « Mes patientes » des écrans de confirmation et des fiches pointent
+désormais là, et non vers l'accueil. Écran de choix, puis liste, puis dossier :
+une décision par écran.
+
 ---
 
 ## Données de démonstration

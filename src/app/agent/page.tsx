@@ -2,17 +2,23 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BadgeNiveau } from "@/components/BadgeNiveau";
 import { Espace } from "@/components/Espace";
 import { Installation } from "@/components/Installation";
-import { EtatVide, Squelette } from "@/components/Interface";
 import { Marque } from "@/components/Logo";
 import { listerPatientesAgent } from "@/lib/data";
 import type { PatienteEnListe } from "@/lib/data";
 import { useDonnees } from "@/lib/hooks";
-import { LIBELLE_STATUT_ORIENTATION, depuisCourt } from "@/lib/libelles";
 import { fermerSession, useSession } from "@/lib/session";
 
+/**
+ * Accueil de l'agent.
+ *
+ * Après la connexion, l'agent doit voir une page qui lui dit quoi faire, pas
+ * une liste à déchiffrer : trois grandes zones d'appui, un mot chacune.
+ * L'application n'a que deux chemins (enregistrer un cas, retrouver une
+ * patiente) et une invitation (installer l'application) ; l'accueil les montre
+ * tous les trois, et rien d'autre.
+ */
 export default function AccueilAgent() {
   return (
     <Espace role="agent" entete="aucun">
@@ -29,54 +35,40 @@ function Contenu() {
   );
 
   const liste = donnees ?? [];
+  const aRevoir = liste.filter((d) => d.absente).length;
 
   return (
     <>
       <EnTeteAgent nom={profil?.nom ?? ""} centre={profil?.centre_sante ?? null} />
 
-      <main id="contenu" className="feuille relative -mt-6 flex-1 px-4 pt-6 pb-32 sm:px-6">
-        <div className="mx-auto w-full max-w-2xl">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-xl">Mes patientes</h2>
-            {liste.length > 0 ? (
-              /*
-                « 3 suivies » ne voulait rien dire tout seul, et le texte
-                d'aide était en sable-500 : 4,34 pour 1 sur la feuille, sous
-                le seuil de 4,5 exigé pour le petit texte. sable-600 est le
-                jeton que le système de design réserve à cet usage (6,9:1).
-              */
-              <span className="chiffres-fixes text-sm text-sable-600">
-                {liste.length} patiente{liste.length > 1 ? "s" : ""}
-              </span>
-            ) : null}
-          </div>
+      <main id="contenu" className="feuille relative -mt-6 flex flex-1 flex-col px-4 pt-8 pb-12 sm:px-6">
+        {/*
+          Le bloc est centré verticalement : deux options dans une feuille de
+          800 px laisseraient un grand vide sous le bouton, qui se lirait comme
+          un écran inachevé.
+        */}
+        <div className="mx-auto my-auto flex w-full max-w-2xl flex-col gap-3">
+          <Option
+            principale
+            href="/agent/consultation/nouvelle"
+            libelle="Nouvelle consultation"
+          />
 
-          <div className="mt-4">
-            {!pret ? (
-              <Squelette lignes={3} />
-            ) : liste.length === 0 ? (
-              <EtatVide
-                titre="Aucune patiente pour le moment"
-                texte="Dès que vous enregistrez une première consultation, elle apparaît ici."
-              />
-            ) : (
-              <ul className="flex flex-col gap-2.5">
-                {liste.map((d) => (
-                  <li key={d.patiente.id}>
-                    <LignePatiente detail={d} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <Option
+            href="/agent/patientes"
+            libelle="Mes patientes"
+            detail={
+              pret
+                ? `${liste.length} patiente${liste.length > 1 ? "s" : ""}`
+                : null
+            }
+            alerte={aRevoir > 0 ? `${aRevoir} à revoir` : null}
+          />
 
-          <div className="mt-6">
-            <Installation />
-          </div>
+          {/* N'apparaît que si le navigateur propose vraiment l'installation. */}
+          <Installation />
         </div>
       </main>
-
-      <BarreOnglets />
     </>
   );
 }
@@ -84,13 +76,10 @@ function Contenu() {
 /*
  * En-tête : marque, salutation. Rien d'autre.
  *
- * Il portait aussi le numéro de téléphone de l'agent et trois compteurs
- * (patientes, en attente, à revoir) dans des cadres. Le numéro ne sert à rien
- * ici — l'agent sait avec lequel il s'est connecté — et les trois nombres
- * comptaient ce que la liste juste en dessous montre déjà : « 4 patientes »
- * quand quatre cartes sont visibles, « 0 à revoir » quand aucune carte ne
- * porte l'alerte. Cet écran sert à trouver une patiente et à enregistrer une
- * consultation ; ce qui ne sert pas est du bruit.
+ * Le numéro de téléphone et trois compteurs y ont vécu : le numéro ne sert à
+ * rien (l'agent sait avec lequel il s'est connecté) et les nombres comptaient
+ * ce que la liste montrait déjà. Ce qu'il reste à savoir est maintenant porté
+ * par l'option « Mes patientes », là où cela sert à décider.
  */
 function EnTeteAgent({ nom, centre }: { nom: string; centre: string | null }) {
   const router = useRouter();
@@ -138,126 +127,58 @@ function salutation(): string {
   return "Bonsoir";
 }
 
-/* ------------------------------------------------------------------ */
-/* Ligne d'une patiente                                                 */
-/* ------------------------------------------------------------------ */
-
-function LignePatiente({ detail }: { detail: PatienteEnListe }) {
-  const { patiente, consultation, orientation, absente, dernier_mouvement } = detail;
-  const niveau = consultation?.niveau_valide ?? consultation?.niveau_propose ?? null;
-
-  const statut = orientation
-    ? LIBELLE_STATUT_ORIENTATION[orientation.statut]
-    : consultation?.statut === "close"
-      ? "Surveillance à domicile"
-      : "Consultation en cours";
+/**
+ * Une option de l'accueil : une grande zone d'appui, un mot, et à droite ce
+ * qu'on y trouve. La hauteur de 80 px se touche sans regarder, même avec le
+ * pouce, même en marchant.
+ */
+function Option({
+  href,
+  libelle,
+  detail,
+  alerte,
+  principale = false,
+}: {
+  href: string;
+  libelle: string;
+  /** Ce qu'on trouve derrière : un nombre, par exemple. */
+  detail?: string | null;
+  /** Ce qui presse, dit en deux mots et en rouge. */
+  alerte?: string | null;
+  principale?: boolean;
+}) {
+  if (principale) {
+    return (
+      <Link
+        href={href}
+        className="pression flex min-h-[5rem] items-center justify-center gap-2 rounded-[var(--radius-grand)] bg-rose-600 px-5 text-[1.05rem] font-medium text-white shadow-[var(--shadow-action)] hover:bg-rose-700"
+      >
+        <span aria-hidden="true" className="text-xl leading-none">
+          +
+        </span>
+        {libelle}
+      </Link>
+    );
+  }
 
   return (
     <Link
-      href={`/agent/patiente/${patiente.id}`}
-      className="pression block rounded-[var(--radius-grand)] border border-sable-200 bg-white p-4 shadow-[var(--shadow-carte)] hover:border-sable-300 hover:bg-sable-50"
+      href={href}
+      className="pression flex min-h-[5rem] items-center justify-between gap-3 rounded-[var(--radius-grand)] border border-sable-200 bg-white px-5 shadow-[var(--shadow-carte)] hover:border-sable-300 hover:bg-sable-50"
     >
-      <div className="flex items-start gap-3">
-        <Initiales nom={patiente.nom} niveau={niveau} />
+      <span className="min-w-0 text-[1.05rem] font-medium text-prune-900">{libelle}</span>
 
-        <div className="min-w-0 flex-1">
-          {/*
-            Le nom tient une ligne à lui seul. À 360 px, la colonne de texte
-            fait 238 px : partagée avec l'étiquette de niveau, elle coupait le
-            nom (« Korotimi Zoun… »). L'agent doit pouvoir lire le nom de sa
-            patiente, et un nom de trois mots passe donc sur deux lignes
-            plutôt que d'être raccourci.
-          */}
-          <p className="line-clamp-2 text-[1.05rem] font-medium text-prune-900">{patiente.nom}</p>
-
-          {/* Les faits de la fiche, et le niveau d'urgence à leur droite. */}
-          <div className="mt-0.5 flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-sm text-sable-600">
-              <span className="chiffres-fixes">{patiente.age}</span> ans ·{" "}
-              {detail.district?.nom ?? "District non précisé"}
-            </p>
-            {niveau ? <BadgeNiveau niveau={niveau} className="shrink-0" /> : null}
-          </div>
-
-          {/*
-            État du dossier, et depuis quand il en est là. La date affichée est
-            celle du dernier mouvement du dossier, pas celle de l'inscription :
-            une date plus vieille que l'état qu'elle accompagne se lirait de
-            travers (« Résultat disponible il y a trois semaines »).
-          */}
-          <div className="mt-2 flex items-baseline justify-between gap-3 text-sm">
-            <span className="min-w-0 truncate text-prune-700">{statut}</span>
-            <span className="chiffres-fixes shrink-0 text-sable-600">
-              {depuisCourt(dernier_mouvement)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {absente ? (
-        <p className="mt-3 flex items-start gap-2 rounded-[var(--radius-petit)] border border-rouge-bord bg-rouge-bg px-3 py-2 text-sm font-medium text-rouge-texte">
-          <span aria-hidden="true">!</span>
-          Elle n&apos;est pas venue au rendez-vous. Allez la voir.
-        </p>
-      ) : null}
+      <span className="flex shrink-0 items-baseline gap-2 text-sm">
+        {detail ? (
+          <span className="chiffres-fixes text-sable-600">{detail}</span>
+        ) : null}
+        {alerte ? (
+          <span className="font-medium text-rouge-texte">{alerte}</span>
+        ) : null}
+        <span aria-hidden="true" className="text-prune-600">
+          &rarr;
+        </span>
+      </span>
     </Link>
-  );
-}
-
-/**
- * Pastille d'initiales, teintée par le niveau d'urgence.
- * Elle donne un point d'accroche à l'œil dans une liste, sans photo ni icône.
- */
-function Initiales({ nom, niveau }: { nom: string; niveau: string | null }) {
-  const lettres = nom
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((m) => m[0]?.toUpperCase() ?? "")
-    .join("");
-
-  const teinte =
-    niveau === "rouge"
-      ? "border-rouge-bord bg-rouge-bg text-rouge-texte"
-      : niveau === "orange"
-        ? "border-orange-bord bg-orange-bg text-orange-texte"
-        : niveau === "vert"
-          ? "border-vert-bord bg-vert-bg text-vert-texte"
-          : "border-sable-200 bg-sable-100 text-prune-700";
-
-  return (
-    <span
-      aria-hidden="true"
-      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${teinte}`}
-    >
-      {lettres}
-    </span>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Barre d'onglets, au pouce                                            */
-/* ------------------------------------------------------------------ */
-
-/**
- * Deux actions seulement, dont celle que l'agent fait le plus : enregistrer
- * une nouvelle consultation. Elle reste à portée du pouce sur tout l'écran,
- * plutôt qu'en haut de page où il faut remonter la liste pour l'atteindre.
- */
-function BarreOnglets() {
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-sable-200 bg-white/92 pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-onglets)] backdrop-blur">
-      <div className="mx-auto flex w-full max-w-2xl items-center gap-3 px-4 py-3 sm:px-6">
-        <Link
-          href="/agent/consultation/nouvelle"
-          className="pression flex min-h-[3.25rem] flex-1 items-center justify-center gap-2 rounded-[var(--radius-moyen)] bg-rose-600 px-4 text-base font-medium text-white shadow-[var(--shadow-action)] hover:bg-rose-700"
-        >
-          <span aria-hidden="true" className="text-xl leading-none">
-            +
-          </span>
-          Nouvelle consultation
-        </Link>
-      </div>
-    </div>
   );
 }

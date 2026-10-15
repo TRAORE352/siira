@@ -26,6 +26,7 @@ const ECRANS = [
   ["/connexion", null, 360],
   ["/design", null, 1280],
   ["/agent", "pro-agent-saaba", 360],
+  ["/agent/patientes", "pro-agent-saaba", 360],
   ["/agent/consultation/nouvelle", "pro-agent-saaba", 360],
   ["/agent/patiente/pat-1", "pro-agent-saaba", 360],
   ["/centre", "pro-centre-bogodogo", 1280],
