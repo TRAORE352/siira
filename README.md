@@ -18,6 +18,12 @@ données fictives locales. Les règles de classement, le matching et le
 financement sont réellement codés et testés. La Phase 2 (Supabase, IA DeepSeek,
 temps réel serveur) attend la validation du commanditaire.
 
+**En ligne :** <https://siira-chi.vercel.app>
+
+Le dépôt est relié à Vercel, avec `main` comme branche de production : chaque
+push sur `main` met la production à jour. Siira peut donc être montrée depuis
+n'importe quel téléphone ou ordinateur, sans installation.
+
 ---
 
 ## Installation et lancement

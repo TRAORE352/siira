@@ -87,6 +87,22 @@ unités à une ONG. Arrondi vers le haut, pour ne jamais sous-financer.
 Exigence AD-02. Un double clic volontaire est demandé, l'action étant
 irréversible et potentiellement déclenchée devant le jury.
 
+**D19. Exception de lint limitée aux scripts en ligne de commande.**
+Les fichiers de `scripts/` sont lancés directement par Node et sont écrits en
+CommonJS : `require` y est la forme normale, pas une faute. Plutôt que de
+désactiver la règle partout, l'exception est enfermée dans un bloc limité à
+`scripts/**/*.js` (`eslint.config.mjs`). L'application reste en TypeScript
+strict avec imports ES, et la règle s'y applique toujours. Le dossier exige un
+lint sans erreur (section 16) : c'est désormais le cas sur l'ensemble du dépôt.
+
+**D20. Le déploiement de production suit la branche `main`.**
+Le projet Vercel `siira` est relié au dépôt GitHub `TRAORE352/siira`, avec
+`main` comme branche de production. Un push sur `main` déclenche donc la mise
+en ligne : pas de déploiement manuel à faire, et pas de risque de publier une
+version différente de celle du dépôt. Les secrets ne passent jamais par le
+dépôt : `.env.local` est ignoré, et les variables de la Phase 2 seront saisies
+dans les réglages Vercel.
+
 ---
 
 ## Données de démonstration
