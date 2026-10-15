@@ -153,41 +153,74 @@ function Contenu() {
         </div>
 
         <Carte>
-          <h2 className="mb-3 text-lg">Agenda des rendez-vous</h2>
+          <h2 className="mb-1 text-lg">Agenda des rendez-vous</h2>
+          <p className="mb-4 text-sm text-sable-600">
+            Cliquez sur un créneau pour le marquer libre ou pris.
+          </p>
           {jours.length === 0 ? (
             <EtatVide
               titre="Aucun rendez-vous à venir"
               texte="Ajoutez un créneau libre pour le voir apparaître ici."
             />
           ) : (
-            <div className="flex flex-col gap-5">
-              {jours.map(([cle, creneaux]) => (
-                <div key={cle}>
-                  <p className="mb-2 text-sm font-medium text-prune-800">{libelleJour(cle)}</p>
-                  <ul className="flex flex-col divide-y divide-sable-100 overflow-hidden rounded-[var(--radius-moyen)] border border-sable-200">
-                    {creneaux.map((c) => (
-                      <li
-                        key={c.id}
-                        className="flex items-center justify-between gap-3 px-3 py-2.5"
+            <div className="overflow-x-auto pb-1">
+              <div className="flex gap-3">
+                {jours.map(([cle, creneaux]) => {
+                  const aujourdhui = estAujourdhui(cle);
+                  return (
+                    <div
+                      key={cle}
+                      className={`flex min-w-[10rem] shrink-0 flex-col overflow-hidden rounded-[var(--radius-grand)] border bg-white ${
+                        aujourdhui ? "border-rose-300" : "border-sable-200"
+                      }`}
+                    >
+                      <div
+                        className={`border-b px-3 pb-2 pt-3 text-center ${
+                          aujourdhui
+                            ? "border-rose-200 bg-rose-50"
+                            : "border-sable-200 bg-sable-50"
+                        }`}
                       >
-                        <span className="text-[0.95rem] text-prune-800">{heureDe(c.debut)}</span>
-                        <button
-                          type="button"
-                          onClick={() => basculer(c.id, !c.libre)}
-                          aria-pressed={!c.libre}
-                          className={`rounded-full border px-2.5 py-0.5 text-sm font-medium transition-colors ${
-                            c.libre
-                              ? "border-vert-bord bg-vert-bg text-vert-texte"
-                              : "border-sable-300 bg-sable-100 text-sable-700"
+                        <p className="font-[family-name:var(--font-titre)] text-2xl leading-none text-prune-900">
+                          {jourNumero(cle)}
+                        </p>
+                        <p
+                          className={`mt-1 text-xs font-medium ${
+                            aujourdhui ? "text-rose-700" : "text-sable-600"
                           }`}
                         >
-                          {c.libre ? "Libre" : "Pris"}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+                          {aujourdhui ? "Aujourd'hui" : jourSemaine(cle)}
+                        </p>
+                      </div>
+                      <ul className="flex flex-col gap-1.5 p-3">
+                        {creneaux.map((c) => (
+                          <li key={c.id}>
+                            <button
+                              type="button"
+                              onClick={() => basculer(c.id, !c.libre)}
+                              aria-pressed={!c.libre}
+                              className={`flex w-full items-center justify-between gap-2 rounded-[var(--radius-moyen)] border px-2.5 py-2 text-left transition-colors ${
+                                c.libre
+                                  ? "border-vert-bord bg-vert-bg hover:border-vert-fort"
+                                  : "border-sable-300 bg-sable-100 hover:bg-sable-200"
+                              }`}
+                            >
+                              <span className="text-sm text-prune-800">{heureDe(c.debut)}</span>
+                              <span
+                                className={`text-xs font-medium ${
+                                  c.libre ? "text-vert-texte" : "text-sable-700"
+                                }`}
+                              >
+                                {c.libre ? "Libre" : "Pris"}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </Carte>
@@ -203,15 +236,23 @@ function cleJour(iso: string): string {
   ).padStart(2, "0")}`;
 }
 
-function libelleJour(cle: string): string {
+function jourNumero(cle: string): string {
+  return String(Number(cle.split("-")[2]));
+}
+
+function jourSemaine(cle: string): string {
   const [a, m, j] = cle.split("-").map(Number);
   const d = new Date(a, m - 1, j);
-  const l = d.toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  const l = d.toLocaleDateString("fr-FR", { weekday: "short" });
   return l.charAt(0).toUpperCase() + l.slice(1);
+}
+
+function estAujourdhui(cle: string): boolean {
+  const auj = new Date();
+  const cleAuj = `${auj.getFullYear()}-${String(auj.getMonth() + 1).padStart(2, "0")}-${String(
+    auj.getDate(),
+  ).padStart(2, "0")}`;
+  return cle === cleAuj;
 }
 
 function heureDe(iso: string): string {
