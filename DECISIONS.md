@@ -268,6 +268,32 @@ fiche de la patiente : l'agent ne savait pas si son geste avait abouti, au
 moment précis où une femme vient d'obtenir un rendez-vous. L'écran affiche donc
 l'accusé d'envoi, le rappel du rendez-vous et le message à lire à voix haute.
 
+**D37. Sur l'accueil de l'agent, le nom d'une patiente a sa ligne à lui.**
+À 360 px, la colonne de texte d'une carte fait 238 px. En partageant cette
+largeur avec l'étiquette de niveau, le nom se coupait — « Korotimi Zoun… » —
+et l'agent ne pouvait plus identifier la personne qu'il a en face de lui. Le
+nom occupe donc sa propre ligne (sur deux lignes au besoin, pour un nom de
+trois mots), l'étiquette de niveau rejoint l'âge et le district, et l'état du
+dossier garde une ligne entière. Mesures de référence : le nom le plus long de
+la démonstration demande 158 px pour 238 disponibles, et un nom de trois mots
+passe sur deux lignes sans être raccourci.
+
+**D38. La date affichée à côté de l'état d'un dossier est celle de ce dernier
+mouvement.**
+Elle était celle de l'inscription de la patiente, posée contre l'état du
+dossier : la carte annonçait « Résultat disponible il y a 3 semaines » pour un
+résultat arrivé 10 jours plus tôt. La date est désormais calculée dans
+`detailPatiente()` (champ `dernier_mouvement`) : dernier suivi enregistré par
+le centre, sinon l'envoi, sinon la consultation. Une date qui ne parle pas du
+même événement que le mot d'à côté ment à voix basse.
+
+**D39. Le texte d'aide est en `sable-600`, jamais en `sable-500`.**
+`sable-500` mesure 4,34 pour 1 sur le fond de la feuille, sous le seuil AA de
+4,5 exigé par le dossier (§11.2). Le jeton du texte d'aide est donc `sable-600`
+(6,9:1), comme le documente `DESIGN.md`. Même règle pour les temps relatifs :
+dans une liste étroite, `depuisCourt()` écrit « 3 j » ou « 1 sem. », ce qui
+laisse la place à l'état du dossier que la date accompagne.
+
 ---
 
 ## Données de démonstration
