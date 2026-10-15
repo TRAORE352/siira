@@ -11,8 +11,7 @@ import { listerPatientesAgent } from "@/lib/data";
 import type { PatienteEnListe } from "@/lib/data";
 import { useDonnees } from "@/lib/hooks";
 import { LIBELLE_STATUT_ORIENTATION, depuisCourt } from "@/lib/libelles";
-import { fermerSession, lireNumeroSession, useSession } from "@/lib/session";
-import { numeroLisible } from "@/lib/telephone";
+import { fermerSession, useSession } from "@/lib/session";
 
 export default function AccueilAgent() {
   return (
@@ -30,24 +29,10 @@ function Contenu() {
   );
 
   const liste = donnees ?? [];
-  const aSuivre = liste.filter((d) => d.absente).length;
-  /* Dossiers partis au centre dont le résultat n'est pas encore connu. */
-  const enAttente = liste.filter(
-    (d) =>
-      d.orientation &&
-      ["envoyee", "recue", "examens"].includes(d.orientation.statut),
-  ).length;
 
   return (
     <>
-      <EnTeteAgent
-        nom={profil?.nom ?? ""}
-        centre={profil?.centre_sante ?? null}
-        total={liste.length}
-        aSuivre={aSuivre}
-        enAttente={enAttente}
-        pret={pret}
-      />
+      <EnTeteAgent nom={profil?.nom ?? ""} centre={profil?.centre_sante ?? null} />
 
       <main id="contenu" className="feuille relative -mt-6 flex-1 px-4 pt-6 pb-32 sm:px-6">
         <div className="mx-auto w-full max-w-2xl">
@@ -96,27 +81,19 @@ function Contenu() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* En-tête : marque, salutation, synthèse du jour                       */
-/* ------------------------------------------------------------------ */
-
-function EnTeteAgent({
-  nom,
-  centre,
-  total,
-  aSuivre,
-  enAttente,
-  pret,
-}: {
-  nom: string;
-  centre: string | null;
-  total: number;
-  aSuivre: number;
-  enAttente: number;
-  pret: boolean;
-}) {
+/*
+ * En-tête : marque, salutation. Rien d'autre.
+ *
+ * Il portait aussi le numéro de téléphone de l'agent et trois compteurs
+ * (patientes, en attente, à revoir) dans des cadres. Le numéro ne sert à rien
+ * ici — l'agent sait avec lequel il s'est connecté — et les trois nombres
+ * comptaient ce que la liste juste en dessous montre déjà : « 4 patientes »
+ * quand quatre cartes sont visibles, « 0 à revoir » quand aucune carte ne
+ * porte l'alerte. Cet écran sert à trouver une patiente et à enregistrer une
+ * consultation ; ce qui ne sert pas est du bruit.
+ */
+function EnTeteAgent({ nom, centre }: { nom: string; centre: string | null }) {
   const router = useRouter();
-  const numero = lireNumeroSession();
   /* « Salimata Ouédraogo » → « Salimata » : on salue par le prénom. */
   const prenom = nom.split(" ")[0] ?? "";
 
@@ -128,15 +105,8 @@ function EnTeteAgent({
             <span className="flex h-11 w-11 items-center justify-center rounded-[0.9rem] bg-white/95 p-1">
               <Marque taille={32} />
             </span>
-            <span className="flex flex-col">
-              <span className="text-[0.95rem] font-medium text-white">
-                {centre ?? "Agent de santé"}
-              </span>
-              {numero ? (
-                <span className="chiffres-fixes text-xs text-rose-100/70">
-                  {numeroLisible(numero)}
-                </span>
-              ) : null}
+            <span className="text-[0.95rem] font-medium text-white">
+              {centre ?? "Agent de santé"}
             </span>
           </div>
 
@@ -156,13 +126,6 @@ function EnTeteAgent({
         <h1 className="mt-0.5 font-[family-name:var(--font-titre)] text-[1.9rem] leading-tight text-white">
           {prenom || "Bienvenue"}
         </h1>
-
-        {/* Synthèse : trois nombres, pas un tableau de bord. */}
-        <div className="mt-6 grid grid-cols-3 gap-2.5">
-          <Chiffre libelle="Patientes" valeur={total} pret={pret} />
-          <Chiffre libelle="En attente" valeur={enAttente} pret={pret} />
-          <Chiffre libelle="À revoir" valeur={aSuivre} pret={pret} alerte={aSuivre > 0} />
-        </div>
       </div>
     </header>
   );
@@ -173,33 +136,6 @@ function salutation(): string {
   if (h < 12) return "Bonjour";
   if (h < 18) return "Bon après-midi";
   return "Bonsoir";
-}
-
-function Chiffre({
-  libelle,
-  valeur,
-  pret,
-  alerte = false,
-}: {
-  libelle: string;
-  valeur: number;
-  pret: boolean;
-  alerte?: boolean;
-}) {
-  return (
-    <div className="rounded-[var(--radius-moyen)] border border-white/12 bg-white/8 px-3 py-2.5">
-      <p
-        className={
-          alerte
-            ? "chiffres-fixes text-2xl font-semibold text-rose-300"
-            : "chiffres-fixes text-2xl font-semibold text-white"
-        }
-      >
-        {pret ? valeur : "—"}
-      </p>
-      <p className="mt-0.5 text-xs leading-tight text-rose-100/70">{libelle}</p>
-    </div>
-  );
 }
 
 /* ------------------------------------------------------------------ */
