@@ -121,14 +121,43 @@ export function dateCourte(iso: string): string {
   )}`;
 }
 
-/** Il y a combien de temps, dit simplement. */
+/**
+ * Il y a combien de temps, dit simplement.
+ *
+ * Le singulier est écrit en clair : « il y a 1 semaines » se voyait sur
+ * l'accueil de l'agent, pour toute consultation vieille de 7 à 13 jours.
+ */
 export function depuis(iso: string): string {
-  const jours = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  const jours = joursDepuis(iso);
   if (jours <= 0) return "aujourd'hui";
   if (jours === 1) return "hier";
   if (jours < 7) return `il y a ${jours} jours`;
-  if (jours < 31) return `il y a ${Math.floor(jours / 7)} semaines`;
+  if (jours < 31) {
+    const semaines = Math.floor(jours / 7);
+    return `il y a ${semaines} ${semaines > 1 ? "semaines" : "semaine"}`;
+  }
   return `il y a ${Math.floor(jours / 30)} mois`;
+}
+
+/**
+ * Même chose, en plus court, pour les listes étroites.
+ *
+ * Sur un écran de 360 px, la ligne de la carte ne fait que 238 px : « il y a
+ * 3 semaines » y prenait la moitié et coupait l'état du dossier. La forme
+ * courte laisse la place à l'information qui compte, sans changer la façon
+ * de compter.
+ */
+export function depuisCourt(iso: string): string {
+  const jours = joursDepuis(iso);
+  if (jours <= 0) return "auj.";
+  if (jours === 1) return "hier";
+  if (jours < 7) return `${jours} j`;
+  if (jours < 31) return `${Math.floor(jours / 7)} sem.`;
+  return `${Math.floor(jours / 30)} mois`;
+}
+
+function joursDepuis(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
 }
 
 export const DELAI_NIVEAU: Record<Niveau, string> = {
