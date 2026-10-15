@@ -212,7 +212,7 @@ function FichePatiente({ id }: { id: string }) {
                     {s.note ? (
                       <p className="text-sm text-sable-600">{s.note}</p>
                     ) : null}
-                    <p className="text-sm text-sable-500">{depuis(s.cree_le)}</p>
+                    <p className="text-sm text-sable-600">{depuis(s.cree_le)}</p>
                   </li>
                 ))}
               </ol>
