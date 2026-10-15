@@ -8,6 +8,7 @@ import { clsx } from "clsx";
 import { Logo } from "./Logo";
 import { Chargement } from "./Interface";
 import { ACCUEIL_PAR_ROLE, LIBELLE_ROLE, fermerSession, useSession } from "@/lib/session";
+import { ESPACE_ACTIF, roleAutorise } from "@/lib/espaces";
 import type { Role } from "@/lib/types";
 
 export type { LienNav } from "@/lib/nav";
@@ -38,12 +39,21 @@ export function Espace({
     if (!pret) return;
     if (!profil) {
       router.replace("/connexion");
-    } else if (profil.role !== role) {
-      router.replace(ACCUEIL_PAR_ROLE[profil.role]);
+      return;
     }
+    if (!roleAutorise(ESPACE_ACTIF, profil.role)) {
+      /*
+       * Rôle d'un autre espace : la session est fermée. Sans cela, la
+       * redirection vers l'accueil de ce rôle renverrait ici, en boucle.
+       */
+      fermerSession();
+      router.replace("/connexion");
+      return;
+    }
+    if (profil.role !== role) router.replace(ACCUEIL_PAR_ROLE[profil.role]);
   }, [pret, profil, role, router]);
 
-  if (!pret || !profil || profil.role !== role) {
+  if (!pret || !profil || !roleAutorise(ESPACE_ACTIF, profil.role) || profil.role !== role) {
     return (
       <main id="contenu" className="flex min-h-screen items-center justify-center p-6">
         <Chargement texte="Ouverture de votre espace" />

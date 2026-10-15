@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { ServiceWorker } from "@/components/ServiceWorker";
+import { ESPACE_ACTIF, nomEspace, presentationEspace } from "@/lib/espaces";
 import "./globals.css";
 
 /* Polices servies par le site, deux graisses chacune pour rester leger. */
@@ -18,13 +20,20 @@ const texte = Inter({
 });
 
 export const metadata: Metadata = {
+  /* Le titre suit l'espace : l'onglet d'un agent ne dit pas la même chose que
+     celui d'un centre spécialisé. */
   title: {
-    default: "Siira, le chemin vers les soins",
+    default: nomEspace(ESPACE_ACTIF),
     template: "%s | Siira",
   },
-  description:
-    "Siira accompagne une femme du premier doute jusqu'a sa prise en charge par un specialiste, avec un financement des soins par des ONG partenaires.",
+  description: presentationEspace(ESPACE_ACTIF),
   applicationName: "Siira",
+  /* Installation sur le téléphone, notamment pour les agents. */
+  appleWebApp: {
+    capable: true,
+    title: "Siira",
+    statusBarStyle: "default",
+  },
   icons: {
     icon: [{ url: "/brand/icon-32.png", sizes: "32x32" }],
     apple: [{ url: "/brand/apple-icon.png" }],
@@ -48,6 +57,7 @@ export default function RootLayout({
           Aller au contenu
         </a>
         {children}
+        <ServiceWorker />
       </body>
     </html>
   );

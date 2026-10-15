@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BadgeNiveau } from "@/components/BadgeNiveau";
 import { BoutonLien } from "@/components/Bouton";
 import { Espace } from "@/components/Espace";
+import { Installation } from "@/components/Installation";
 import { Carte, EtatVide, Squelette, TitreSection } from "@/components/Interface";
 import { listerPatientesAgent } from "@/lib/data";
 import type { PatienteEnListe } from "@/lib/data";
@@ -54,6 +55,10 @@ function Contenu() {
           </ul>
         )}
       </div>
+
+      {/* Installation sur le téléphone : proposition discrète, affichée
+          uniquement quand le navigateur l'autorise. */}
+      <Installation />
     </>
   );
 }

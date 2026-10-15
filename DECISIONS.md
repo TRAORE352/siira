@@ -103,6 +103,46 @@ version différente de celle du dépôt. Les secrets ne passent jamais par le
 dépôt : `.env.local` est ignoré, et les variables de la Phase 2 seront saisies
 dans les réglages Vercel.
 
+**D21. Trois adresses dédiées, plus une adresse de démonstration.**
+Quatre projets Vercel servent le même dépôt : `siira-agent`,
+`siira-centre`, `siira-ong`, et `siira` pour l'application complète. Chacun
+fixe son espace par `NEXT_PUBLIC_ESPACE`. Raison : le commanditaire veut trois
+liens, un par public, et une adresse qui n'ouvre que son espace évite qu'un
+agent découvre les écrans du centre. L'adresse complète est conservée parce que
+l'état de la démonstration vit dans le stockage du navigateur, propre à chaque
+adresse : c'est la seule où le parcours complet se joue entre trois onglets. Le
+partage entre les trois adresses viendra avec Supabase, en Phase 2.
+
+**D22. Les autres espaces sont refusés, pas seulement cachés.**
+Un middleware s'exécute avant tout rendu et renvoie vers la connexion si le
+chemin demandé n'appartient pas à l'espace de l'adresse. Masquer un lien ne
+protège rien : l'adresse se tape à la main. Trois barrières se répondent :
+le middleware (serveur), la coquille `Espace` (qui ferme une session d'un autre
+rôle), et la liste des comptes proposés à la connexion.
+
+**D23. Application installable pour l'agent.**
+`app/manifest.ts` produit un manifeste par espace : installée depuis l'adresse
+de l'agent, l'application s'ouvre directement sur ses patientes, sans barre de
+navigateur. Le service worker (`public/sw.js`) reste volontairement modeste :
+réseau d'abord pour les écrans, cache d'abord pour les fichiers qui ne changent
+jamais. Il est enregistré depuis la mise en page, donc sur toutes les pages :
+s'il ne l'était qu'après la connexion, une personne sans session ne pourrait
+pas installer l'application, car l'invitation du navigateur suppose un service
+worker déjà actif. Le bouton d'installation n'apparaît que lorsque le
+navigateur le propose réellement ; sur iPhone, où il n'existe pas, une phrase
+explique la marche à suivre plutôt qu'un bouton inerte.
+
+**D24. L'arrêt des serveurs ne dépend plus de `fuser` ni de `lsof`.**
+Ces outils ne sont pas présents partout, et le script d'origine échouait en
+silence : un serveur restait en vie, servait un mélange de deux constructions et
+répondait des erreurs 500 sur des fichiers javascript disparus. Les contrôles
+devenaient alors faux sans que rien ne le signale. `scripts/liberer-ports.sh`
+retrouve le processus qui écoute sur un port par `/proc/net/tcp` et ses
+descripteurs de fichiers, et attend que le port cesse de répondre avant de
+rendre la main. Le vérificateur d'espaces contrôle en plus que tous les
+fichiers javascript demandés par une page sont réellement servis, ce qui
+détecte ce mélange de constructions, en local comme en production.
+
 ---
 
 ## Données de démonstration

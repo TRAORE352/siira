@@ -7,8 +7,16 @@ import { Champ } from "@/components/Champs";
 import { Carte, MessageErreur } from "@/components/Interface";
 import { Logo } from "@/components/Logo";
 import {
-  ACCUEIL_PAR_ROLE,
+  ESPACE_ACTIF,
   LIBELLE_ROLE,
+  comptesDeLespace,
+  mentionEspace,
+  roleAutorise,
+  rolesEspace,
+} from "@/lib/espaces";
+import {
+  ACCUEIL_PAR_ROLE,
+  fermerSession,
   listerComptesDemo,
   lireSession,
   ouvrirSession,
@@ -24,10 +32,19 @@ export default function Connexion() {
   const [erreurEmail, setErreurEmail] = useState<string | undefined>();
   const [envoi, setEnvoi] = useState(false);
 
-  // Déjà connecté : on renvoie directement vers son espace.
+  /*
+   * Déjà connecté : on renvoie vers son espace. Si le rôle connecté n'est pas
+   * celui de cette adresse (cas d'une session laissée par une autre version),
+   * la session est fermée plutôt que de provoquer une boucle de redirection.
+   */
   useEffect(() => {
     const profil = lireSession();
-    if (profil) router.replace(ACCUEIL_PAR_ROLE[profil.role]);
+    if (!profil) return;
+    if (!roleAutorise(ESPACE_ACTIF, profil.role)) {
+      fermerSession();
+      return;
+    }
+    router.replace(ACCUEIL_PAR_ROLE[profil.role]);
   }, [router]);
 
   function entrer(profil: Profil) {
@@ -52,6 +69,12 @@ export default function Connexion() {
       );
       return;
     }
+    if (!roleAutorise(ESPACE_ACTIF, profil.role)) {
+      setErreur(
+        `Ce compte n’ouvre pas cet espace. Il sert au rôle « ${LIBELLE_ROLE[profil.role]} ».`,
+      );
+      return;
+    }
     if (!motDePasse) {
       setErreur("Indiquez votre mot de passe.");
       return;
@@ -59,16 +82,22 @@ export default function Connexion() {
     entrer(profil);
   }
 
-  const comptes = listerComptesDemo();
+  const comptes = comptesDeLespace(ESPACE_ACTIF, listerComptesDemo());
+  const mention = mentionEspace(ESPACE_ACTIF);
+  const roleUnique = rolesEspace(ESPACE_ACTIF).length === 1;
 
   return (
     <main id="contenu" className="mx-auto w-full max-w-md px-5 py-10 sm:py-16">
       <Logo taille="moyen" lien={false} />
 
       <h1 className="mt-8 text-3xl">Se connecter</h1>
-      <p className="mt-2 text-prune-700">
-        Entrez les informations de votre compte pour ouvrir votre espace.
-      </p>
+      {mention ? (
+        <p className="mt-2 text-sm font-medium tracking-wide text-rose-700 uppercase">{mention}</p>
+      ) : (
+        <p className="mt-2 text-prune-700">
+          Entrez les informations de votre compte pour ouvrir votre espace.
+        </p>
+      )}
 
       <form onSubmit={soumettre} noValidate className="mt-6 flex flex-col gap-4">
         {erreur ? <MessageErreur titre="Connexion impossible" texte={erreur} /> : null}
@@ -99,10 +128,11 @@ export default function Connexion() {
       </form>
 
       {/* Comptes de démonstration : la connexion n'est pas encore reliée à un
-          serveur, ces boutons ouvrent directement l'espace correspondant. */}
+          serveur, ces boutons ouvrent directement l'espace correspondant. Sur
+          une adresse dédiée, seuls les comptes de cet espace sont proposés. */}
       <section aria-labelledby="titre-demo" className="mt-10">
         <h2 id="titre-demo" className="text-xl">
-          Comptes de démonstration
+          {roleUnique ? "Compte de démonstration" : "Comptes de démonstration"}
         </h2>
         <p className="mt-1 text-sm text-sable-600">
           Version de démonstration : touchez un compte pour ouvrir son espace.

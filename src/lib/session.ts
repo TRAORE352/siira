@@ -10,8 +10,21 @@
  */
 
 import { useSyncExternalStore } from "react";
-import type { Profil, Role } from "./types";
+import type { Profil } from "./types";
 import { REFERENTIELS } from "./data/magasin";
+import { ACCUEIL_PAR_ROLE, ESPACE_ACTIF, LIBELLE_ROLE, roleAutorise } from "./espaces";
+
+/*
+ * Les deux tables ci-dessous viennent de `espaces.ts`, qui est aussi lu par le
+ * middleware, côté serveur. On les ré-exporte ici pour que les écrans gardent
+ * une seule source d'import.
+ */
+export { ACCUEIL_PAR_ROLE, LIBELLE_ROLE };
+
+/** Ce rôle a-t-il le droit d'ouvrir l'espace de cette adresse ? */
+export function sessionAutorisee(profil: Profil): boolean {
+  return roleAutorise(ESPACE_ACTIF, profil.role);
+}
 
 /*
  * La session vit dans le stockage de l'ONGLET (sessionStorage), pas du
@@ -20,21 +33,6 @@ import { REFERENTIELS } from "./data/magasin";
  * propre compte. Les données, elles, restent partagées entre tous les onglets.
  */
 const CLE = "siira.session.v1";
-
-/** Page d'accueil de chaque rôle. */
-export const ACCUEIL_PAR_ROLE: Record<Role, string> = {
-  agent: "/agent",
-  centre: "/centre",
-  ong: "/ong",
-  admin: "/admin",
-};
-
-export const LIBELLE_ROLE: Record<Role, string> = {
-  agent: "Agent de santé",
-  centre: "Centre spécialisé",
-  ong: "ONG partenaire",
-  admin: "Équipe Siira",
-};
 
 export function listerComptesDemo(): Profil[] {
   return REFERENTIELS.profils;

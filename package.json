@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "recette": "node scripts/recette.js",
-    "audit": "node scripts/audit-ecrans.js"
+    "audit": "node scripts/audit-ecrans.js",
+    "espaces": "sh scripts/verifier-espaces-local.sh"
   },
   "dependencies": {
     "clsx": "^2.1.1",

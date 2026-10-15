@@ -18,11 +18,31 @@ données fictives locales. Les règles de classement, le matching et le
 financement sont réellement codés et testés. La Phase 2 (Supabase, IA DeepSeek,
 temps réel serveur) attend la validation du commanditaire.
 
-**En ligne :** <https://siira-chi.vercel.app>
+---
+
+## Les adresses de Siira
+
+Le même code est déployé sur plusieurs adresses Vercel. Chaque adresse déclare
+son espace par la variable `NEXT_PUBLIC_ESPACE`, et n'ouvre que celui-là : les
+écrans des autres espaces sont refusés, pas seulement retirés du menu.
+
+| Adresse | Espace | Pour qui |
+|---|---|---|
+| <https://siira-agent.vercel.app> | `agent` | L'agent de santé, sur son téléphone. Application installable. |
+| <https://siira-centre.vercel.app> | `centre` | Le centre spécialisé, sur ordinateur. |
+| <https://siira-ong.vercel.app> | `ong` | L'ONG partenaire, sur ordinateur. |
+| <https://siira-chi.vercel.app> | application complète | La démonstration du jury : les quatre rôles sur une seule adresse. |
+
+**Pourquoi une quatrième adresse ?** L'état de la démonstration vit dans le
+stockage du navigateur, qui est propre à chaque adresse. Sur l'application
+complète, les trois espaces ouverts dans trois onglets partagent les mêmes
+données : c'est le seul endroit où le parcours complet se déroule sous les yeux
+du jury. Les trois adresses dédiées servent à remettre à chaque partenaire un
+lien qui n'ouvre que son espace. Le partage des données entre les trois
+adresses viendra avec Supabase (Phase 2), où l'état vivra sur le serveur.
 
 Le dépôt est relié à Vercel, avec `main` comme branche de production : chaque
-push sur `main` met la production à jour. Siira peut donc être montrée depuis
-n'importe quel téléphone ou ordinateur, sans installation.
+push sur `main` met les quatre adresses à jour.
 
 ---
 
@@ -47,6 +67,8 @@ L'application est servie sur <http://localhost:3000>.
 | `npm run lint` | Analyse du code |
 | `npm run recette` | Rejoue le parcours complet dans un vrai navigateur |
 | `npm run audit` | Vérifie les 13 écrans : débordements, cibles tactiles, libellés, titres |
+| `npm run espaces` | Vérifie les quatre adresses en local, espaces et installation compris |
+| `node scripts/verifier-espaces.js --base <url> --espace agent --pwa` | Vérifie une adresse donnée |
 | `./scripts/relancer.sh` | Reconstruit et relance le serveur de production sur le port 3100 |
 
 ---
@@ -54,15 +76,18 @@ L'application est servie sur <http://localhost:3000>.
 ### Vérifier que tout fonctionne
 
 ```bash
-npm test                              # 53 tests unitaires
+npm test                              # 73 tests unitaires
 npm run typecheck && npm run lint     # types et style
 ./scripts/relancer.sh                 # construction + serveur de production
 npm run audit                         # 13 écrans
 node scripts/recette.js --repetitions 5
+npm run espaces                       # les quatre adresses, espaces et PWA
 ```
 
-Dernier relevé : **53 tests unitaires**, **audit propre sur 13 écrans**,
-**recette réussie 5 fois de suite (170 vérifications)**.
+Dernier relevé : **73 tests unitaires**, **audit propre sur 13 écrans**,
+**recette réussie 5 fois de suite (170 vérifications)**,
+**les quatre espaces conformes en local (116 vérifications)**, et Chrome
+considère l'application installable sur l'adresse de l'agent.
 
 ---
 
@@ -173,11 +198,13 @@ tableau d'impact. Elle s'enchaîne cinq fois avec `--repetitions 5`.
 
 Supabase (tables, RLS, fonction `confirmer_financement` en transaction),
 connexion réelle, routes API, intégration DeepSeek, temps réel serveur, tests
-de bout en bout Playwright, déploiement Vercel.
+de bout en bout Playwright sur les quatre adresses.
 
 Variables d'environnement attendues : URL et clé publique Supabase, clé de
 service Supabase (serveur uniquement), clé DeepSeek (serveur uniquement).
 Aucune clé ne doit porter le préfixe `NEXT_PUBLIC_` hormis les deux premières.
+La variable `NEXT_PUBLIC_ESPACE` (`agent`, `centre` ou `ong`) désigne l'espace
+d'une adresse ; vide, elle sert l'application complète.
 
 ---
 
