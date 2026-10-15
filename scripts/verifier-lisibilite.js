@@ -25,7 +25,7 @@ function argument(nom, defaut) {
   return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : defaut;
 }
 
-const BASE = argument("base", "http://localhost:3100");
+const BASE = argument("base", process.env.BASE || "http://localhost:3100");
 const CHEMIN = argument("chemin", "/agent");
 const COMPTE = argument("compte", "pro-agent-saaba");
 const LARGEUR = Number(argument("largeur", "360"));
@@ -52,6 +52,9 @@ const AUDIT = () => {
     if (e.children.length > 0 || e.offsetParent === null) continue;
     const texte = e.textContent.trim();
     if (!texte) continue;
+    /* Texte réservé aux lecteurs d'écran (classe `lecteur-seul`) : il est
+       réduit à un pixel à dessein, ce n'est pas un texte coupé. */
+    if (e.clientWidth <= 2 && e.clientHeight <= 2) continue;
     const s = getComputedStyle(e);
     /* Un texte coupé : la boîte coupe, et le contenu dépasse — en largeur
        quand la ligne ne revient jamais à la ligne, en hauteur quand le texte
