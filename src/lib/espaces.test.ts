@@ -104,6 +104,7 @@ describe("cheminAutorise", () => {
 
   it("l'espace agent ouvre ses écrans, y compris ceux des sous-dossiers", () => {
     expect(cheminAutorise("agent", "/agent")).toBe(true);
+    expect(cheminAutorise("agent", "/agent/patientes")).toBe(true);
     expect(cheminAutorise("agent", "/agent/consultation/nouvelle")).toBe(true);
     expect(cheminAutorise("agent", "/agent/patiente/pat-1")).toBe(true);
   });
