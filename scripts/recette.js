@@ -248,7 +248,7 @@ async function passage(navigateur, numero) {
 
   await connecter(centre, COMPTE_CENTRE[nomCentre]);
   await centre.goto(`${BASE}/centre`, { waitUntil: "domcontentloaded" });
-  await centre.waitForSelector("text=Patientes reçues");
+  await centre.waitForSelector("text=Nouveaux dossiers reçus en direct");
   verifier(
     "Awa n'est pas encore chez le centre",
     !(await centre.evaluate(() => document.body.innerText.includes("Awa Compaoré"))),
@@ -307,18 +307,26 @@ async function passage(navigateur, numero) {
     texteConfirmation.includes("Bonjour Awa"),
   );
 
-  /* 5. Le centre enregistre la suite donnée. */
+  /*
+   * 5. Le centre enregistre la suite donnée.
+   *
+   * Elle se saisit désormais sur « Suivi des soins », qui réunit les dossiers
+   * en cours de prise en charge, chacun avec son formulaire.
+   */
   await centre.getByRole("link", { name: "Awa Compaoré" }).first().click();
-  await centre.waitForURL(/\/centre\/dossier\//);
-  await centre.waitForSelector("text=Enregistrer la suite donnée");
+  await centre.waitForURL(/\/centre\/patientes\//);
+  await centre.waitForSelector("text=Résumé pour le spécialiste");
 
   const texteDossier = await centre.evaluate(() => document.body.innerText);
   verifier("Résumé pour le spécialiste présent", texteDossier.includes("Résumé"));
   verifier("Récit original visible", texteDossier.includes("boule au sein gauche"));
   verifier("Agent d'origine visible", texteDossier.includes("Salimata"));
 
-  await centre.selectOption("select", { label: "Patiente reçue" });
-  await centre.getByRole("button", { name: "Enregistrer" }).click();
+  await centre.goto(`${BASE}/centre/suivi`, { waitUntil: "domcontentloaded" });
+  await centre.waitForSelector("text=Suivi des soins");
+  const ficheAwa = centre.locator("li", { hasText: "Awa Compaoré" }).first();
+  await ficheAwa.locator("select").first().selectOption({ label: "Patiente reçue" });
+  await ficheAwa.getByRole("button", { name: "Enregistrer" }).click();
   await centre.waitForSelector("text=est enregistrée");
 
   await attendre(
@@ -328,10 +336,14 @@ async function passage(navigateur, numero) {
   );
   verifier("L'agent voit « patiente reçue »", true);
 
-  await centre.selectOption("select >> nth=0", { label: "Résultat disponible" });
-  await centre.selectOption("select >> nth=1", { label: "Cancer confirmé" });
-  await centre.getByRole("button", { name: "Enregistrer" }).click();
-  await centre.waitForSelector("text=est enregistrée");
+  /*
+   * Le résultat : le dossier quitte alors la liste des suivis en attente, ce
+   * qui est la preuve que l'étape a bien été enregistrée.
+   */
+  await ficheAwa.locator("select").first().selectOption({ label: "Résultat disponible" });
+  await ficheAwa.locator("select").nth(1).selectOption({ label: "Cancer confirmé" });
+  await ficheAwa.getByRole("button", { name: "Enregistrer" }).click();
+  await ficheAwa.waitFor({ state: "detached", timeout: 15000 });
 
   await attendre(
     agent,
