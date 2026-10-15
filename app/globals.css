@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* Charte graphique Siira — Octobre Rose 2026 (section 13 du cahier des charges).
+   Couleurs déclarées ici (Tailwind v4), aucune couleur écrite en dur ailleurs. */
+
+@theme {
+  /* Rose */
+  --color-rose-principal: #d6336c;
+  --color-rose-fonce: #a12651;
+  --color-rose-clair: #fbebf0;
+  --color-rose-bordure: #f3c2d3;
+
+  /* Neutres */
+  --color-fond: #ffffff;
+  --color-texte-principal: #2a1a20;
+  --color-texte-secondaire: #6e5a62;
+
+  /* Badges de niveau */
+  --color-niveau-rouge-fond: #fbe4ea;
+  --color-niveau-rouge-texte: #8e1040;
+  --color-niveau-orange-fond: #fcebdd;
+  --color-niveau-orange-texte: #8a4204;
+  --color-niveau-vert-fond: #e7f3ea;
+  --color-niveau-vert-texte: #1f5e33;
+
+  /* Rayons (12 px champs, 14 px boutons, 16 px cartes) */
+  --radius-champ: 12px;
+  --radius-bouton: 14px;
+  --radius-carte: 16px;
+}
+
+/* La police est injectée au runtime via next/font (variable --font-jakarta). */
+@theme inline {
+  --font-sans: var(--font-jakarta);
+}
+
+body {
+  background: var(--color-fond);
+  color: var(--color-texte-principal);
+  font-family: var(--font-sans);
+}
