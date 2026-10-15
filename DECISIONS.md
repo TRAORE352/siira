@@ -294,6 +294,19 @@ même événement que le mot d'à côté ment à voix basse.
 dans une liste étroite, `depuisCourt()` écrit « 3 j » ou « 1 sem. », ce qui
 laisse la place à l'état du dossier que la date accompagne.
 
+**D40. L'écran de connexion de l'agent ne dit plus que deux choses : où l'on
+est, et quoi saisir.**
+Il portait un slogan (« Le chemin vers les soins »), un paragraphe de
+présentation de l'application, un titre, une phrase d'explication, une aide
+sous les cases du code et deux phrases en pied de page — six blocs de texte
+pour deux champs. L'agent ouvre cet écran tous les matins : chaque ligne en
+plus est une ligne à lire avant de pouvoir travailler. Il reste donc le logo,
+une ligne qui nomme l'espace, un titre, les deux champs, et une seule phrase de
+dépannage. Le drapeau affiché dans l'indicatif disparaît au passage : le dossier
+interdit les emojis (§11.2), et « +226 » se lit aussi vite. Le bloc de saisie
+est centré verticalement, pour qu'une feuille vide sous le bouton ne donne pas
+l'impression d'un écran inachevé.
+
 ---
 
 ## Données de démonstration

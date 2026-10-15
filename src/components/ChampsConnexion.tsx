@@ -53,12 +53,9 @@ export function ChampTelephone({
         */}
         <span
           aria-hidden="true"
-          className="flex shrink-0 items-center gap-2 border-r border-sable-200 bg-sable-100 px-3.5 text-[1.05rem] font-medium text-prune-800"
+          className="chiffres-fixes flex shrink-0 items-center border-r border-sable-200 bg-sable-100 px-3.5 text-[1.05rem] font-medium text-prune-800"
         >
-          <span aria-hidden="true" className="text-lg leading-none">
-            🇧🇫
-          </span>
-          <span className="chiffres-fixes">{INDICATIF}</span>
+          {INDICATIF}
         </span>
 
         <input
@@ -166,7 +163,7 @@ export function ChampCode({
           maxLength={LONGUEUR_CODE}
           aria-label="Code secret à 6 chiffres"
           aria-invalid={erreur ? true : undefined}
-          aria-describedby={erreur ? `${id}-erreur` : `${id}-aide`}
+          aria-describedby={erreur ? `${id}-erreur` : undefined}
           value={valeur}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
@@ -209,11 +206,7 @@ export function ChampCode({
         <p id={`${id}-erreur`} role="alert" className="text-sm font-medium text-rouge-fort">
           {erreur}
         </p>
-      ) : (
-        <p id={`${id}-aide`} className="text-sm text-sable-600">
-          Le code à 6 chiffres que vous avez choisi.
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }
