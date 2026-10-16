@@ -35,7 +35,7 @@
 --
 -- L'agent s'identifie par son MATRICULE, pas par un courriel. Auth exige un
 -- identifiant de type courriel : l'inscription en fabrique un, interne et
--- jamais montré (AG1042@agents.siira.local). Le matricule réel voyage dans les
+-- jamais montré (AG1042@agents.siira.app). Le matricule réel voyage dans les
 -- métadonnées de l'inscription, et c'est lui que le profil garde.
 -- --------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ BEGIN
     NULLIF(donnees->>'centre_sante', ''),
     NULLIF(donnees->>'telephone', ''),
     -- Le courriel interne ne vaut pas une adresse : on ne le recopie pas.
-    CASE WHEN NEW.email LIKE '%@agents.siira.local' THEN NULL ELSE NEW.email END
+    CASE WHEN NEW.email LIKE '%@agents.siira.app' THEN NULL ELSE NEW.email END
   )
   ON CONFLICT (id) DO NOTHING;
 

@@ -14,25 +14,10 @@
 
 import type { Profil } from '../types';
 
+import { courrielInterne } from './identifiants';
 import { clientNavigateur } from './navigateur';
 
-/** Domaine interne : il n'existe pas, et ne doit jamais recevoir de courrier. */
-const DOMAINE_INTERNE = 'agents.siira.local';
-
-/**
- * Courriel interne d'un matricule. Déterministe : le même matricule, écrit
- * « ag 1042 » ou « AG-1042 », donne toujours le même identifiant — sinon un
- * tiret oublié ouvrirait un second compte.
- */
-export function courrielInterne(matricule: string): string {
-  const cle = matricule.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  return `${cle.toLowerCase()}@${DOMAINE_INTERNE}`;
-}
-
-/** Vrai quand ce courriel est un identifiant interne, pas une vraie adresse. */
-export function estCourrielInterne(courriel: string | null | undefined): boolean {
-  return Boolean(courriel?.endsWith(`@${DOMAINE_INTERNE}`));
-}
+export { courrielInterne, estCourrielInterne } from './identifiants';
 
 /** Ce qu'une inscription d'agent envoie à Auth. */
 export interface InscriptionReelle {
@@ -90,30 +75,37 @@ export async function matriculeEstLibre(matricule: string): Promise<boolean> {
 }
 
 /**
- * Crée le compte. Le profil, lui, naît du déclencheur `profil_a_l_inscription`
- * côté base : l'application n'écrit jamais directement dans `profils`, sinon
- * un compte sans profil resterait possible.
+ * Crée le compte, par la route serveur `/api/inscription`.
+ *
+ * Pourquoi pas `signUp` directement : derrière un identifiant interne il n'y a
+ * aucune boîte, et `signUp` tente d'y envoyer une confirmation — Supabase
+ * répond alors `over_email_send_rate_limit` au bout de quelques essais. La
+ * route serveur crée le compte avec la clé de service, sans aucun envoi.
+ *
+ * Le profil, lui, naît du déclencheur `profil_a_l_inscription` côté base :
+ * ni l'écran ni la route n'écrivent jamais dans `profils`.
  */
 export async function inscrire(donnees: InscriptionReelle): Promise<Profil> {
-  const { data, error } = await clientNavigateur().auth.signUp({
-    email: courrielInterne(donnees.matricule),
-    password: donnees.motDePasse,
-    options: {
-      data: {
-        nom: donnees.nom,
-        prenoms: donnees.prenoms ?? '',
-        statut: donnees.statut ?? '',
-        centre_sante: donnees.centre_sante ?? '',
-        matricule: donnees.matricule,
-        role: donnees.role ?? 'agent',
-      },
-    },
-  });
+  let reponse: Response;
+  try {
+    reponse = await fetch('/api/inscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(donnees),
+    });
+  } catch {
+    throw new AuthRefusee('Pas de connexion. Vérifiez votre réseau, puis réessayez.');
+  }
 
-  if (error) throw new AuthRefusee(messageLisible(error.message));
-  if (!data.user) throw new AuthRefusee(messageLisible(''));
+  const charge = await reponse.json().catch(() => ({}));
+  if (!reponse.ok) {
+    throw new AuthRefusee(charge.erreur ?? 'La création du compte a échoué.');
+  }
 
-  return await lireMonProfil();
+  // Le compte existe ; on ouvre tout de suite la session pour que l'agent
+  // entre dans son espace sans ressaisir son code.
+  await connecter(donnees.matricule, donnees.motDePasse);
+  return charge.profil as Profil;
 }
 
 /** Connecte par matricule et code. */

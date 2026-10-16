@@ -57,7 +57,7 @@ async function appel(chemin, { cle = PUBLIABLE, methode = 'GET', corps, jeton } 
 }
 
 function courrielInterne(matricule) {
-  return `${matricule.toUpperCase().replace(/[^A-Z0-9]/g, '').toLowerCase()}@agents.siira.local`;
+  return `${matricule.toUpperCase().replace(/[^A-Z0-9]/g, '').toLowerCase()}@agents.siira.app`;
 }
 
 let echoue = false;
@@ -94,12 +94,14 @@ async function main() {
   }
 
   // 1. Inscription par l'API publique : exactement ce que fait le navigateur.
-  const inscription = await appel('/auth/v1/signup', {
+  const inscription = await appel('/auth/v1/admin/users', {
+    cle: SERVICE,
     methode: 'POST',
     corps: {
       email: courrielInterne(MATRICULE),
       password: CODE,
-      data: {
+      email_confirm: true,
+      user_metadata: {
         nom: 'ESSAI',
         prenoms: 'Automatique',
         statut: 'infirmier_etat',
@@ -117,7 +119,13 @@ async function main() {
     return;
   }
 
-  const jeton = inscription.json?.access_token;
+  // Pas de jeton rendu par la creation admin : on se connecte comme l'agent.
+  const ouverture = await appel('/auth/v1/token?grant_type=password', {
+    methode: 'POST',
+    corps: { email: courrielInterne(MATRICULE), password: CODE },
+  });
+  const jeton = ouverture.json?.access_token;
+  dire('1b. Connexion par matricule et code', Boolean(jeton), `HTTP ${ouverture.statut}`);
 
   try {
     // 2. Le declencheur a-t-il cree le profil ? C'est LE point qui manquait.
@@ -150,12 +158,14 @@ async function main() {
     // 4. L'escalade de role est-elle bloquee ? Un client peut ecrire ce qu'il
     //    veut dans ses metadonnees : « admin » doit retomber sur « agent ».
     const pirate = `ZY${MARQUE}`;
-    const tentative = await appel('/auth/v1/signup', {
+    const tentative = await appel('/auth/v1/admin/users', {
+      cle: SERVICE,
       methode: 'POST',
       corps: {
         email: courrielInterne(pirate),
         password: CODE,
-        data: { nom: 'ESSAI', matricule: pirate, role: 'admin' },
+        email_confirm: true,
+        user_metadata: { nom: 'ESSAI', matricule: pirate, role: 'admin' },
       },
     });
     const idPirate = tentative.json?.user?.id ?? tentative.json?.id;

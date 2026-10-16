@@ -448,3 +448,26 @@ du pouvoir étendu, et elle rend la base intacte.
 Après tout nouvel import depuis un composant client, revérifier que ni le nom
 de la variable, ni sa valeur, ni `clientDeService` n'apparaissent dans
 `.next/static`.
+
+## D13 — Les comptes réels : identifiant interne et inscription par le serveur
+
+Supabase Auth exige un identifiant de type courriel ; l'agent, lui, ne connaît
+que son matricule. On fabrique donc un courriel interne déterministe
+(`ag1042@agents.siira.app`), jamais montré : « ag 1042 » et « AG-1042 » donnent
+le même compte, un tiret oublié n'ouvre pas un doublon.
+
+Deux refus de Supabase ont dicté la forme finale. Le domaine `.local` est
+rejeté (`email_address_invalid`) — il faut un TLD plausible. Et `signUp` tente
+d'envoyer une confirmation à une adresse derrière laquelle il n'y a aucune
+boîte : au bout de quelques essais, `over_email_send_rate_limit`. L'inscription
+passe donc par `/api/inscription`, qui crée le compte avec la clé de service et
+`email_confirm: true` — aucun envoi. C'est le seul chemin qui ne casse pas en
+série le jour de la démonstration.
+
+Le rôle n'est jamais pris dans la requête, et le déclencheur refuse « admin »
+même s'il arrive dans les métadonnées : un client écrit ce qu'il veut dans les
+siennes. Les comptes d'équipe se posent par la clé de service.
+
+`identifiants.ts` est séparé de `auth.ts` et de `serveur.ts` : la route serveur
+et les écrans en ont tous deux besoin, et un module sans accès aux secrets évite
+de tirer le client à clé de service dans le graphe de construction du navigateur.
