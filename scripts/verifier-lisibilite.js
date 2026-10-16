@@ -47,6 +47,8 @@ const AUDIT = () => {
   const sortie = { coupes: [], cachees: [], contraste: [], debordement: 0 };
 
   sortie.debordement = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+  sortie.hauteur = document.documentElement.scrollHeight;
+  sortie.ecran = window.innerHeight;
 
   for (const e of document.querySelectorAll("body *")) {
     if (e.children.length > 0 || e.offsetParent === null) continue;
@@ -209,6 +211,11 @@ const AUDIT = () => {
   dire("Cachés sous la barre fixe", resultat.cachees);
   dire("Sous le seuil AA", resultat.contraste);
   console.log(`  Débordement horizontal : ${resultat.debordement > 0 ? `${resultat.debordement} px` : "aucun"}`);
+  console.log(
+    `  Hauteur de page : ${resultat.hauteur} px pour un écran de ${resultat.ecran} px${
+      resultat.hauteur > resultat.ecran ? " (il faut faire défiler)" : ""
+    }`,
+  );
 
   const problemes =
     resultat.coupes.length + resultat.cachees.length + resultat.contraste.length + (resultat.debordement > 0 ? 1 : 0);

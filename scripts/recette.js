@@ -57,19 +57,19 @@ async function attendre(page, fn, { timeout = 5000, message = "" } = {}) {
   throw new Error(`Délai dépassé : ${message}`);
 }
 
-async function connecter(page, email) {
+/*
+ * Connexion d'un compte de démonstration.
+ *
+ * Les écrans de connexion vivent leur vie — numéro de téléphone pour l'agent,
+ * matricule pour le centre — et un matricule tombé au hasard ne mène pas au
+ * centre que la recette veut éprouver. Elle ouvre donc la session directement,
+ * par l'identifiant du profil. Les écrans de connexion eux-mêmes sont vérifiés
+ * ailleurs : par l'audit des écrans et par le contrôle des adresses.
+ */
+async function connecter(page, profil) {
   await page.goto(`${BASE}/connexion`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("text=Comptes de démonstration");
-  await page.evaluate((mail) => {
-    const profils = {
-      "agent.saaba@siira.demo": "pro-agent-saaba",
-      "centre.bogodogo@siira.demo": "pro-centre-bogodogo",
-      "centre.tengandogo@siira.demo": "pro-centre-tengandogo",
-      "centre.yalgado@siira.demo": "pro-centre-yalgado",
-      "admin@siira.demo": "pro-admin",
-    };
-    sessionStorage.setItem("siira.session.v1", profils[mail]);
-  }, email);
+  await page.waitForSelector("text=/Se connecter|Ouvrir mon espace/");
+  await page.evaluate((id) => sessionStorage.setItem("siira.session.v1", id), profil);
 }
 
 /**
@@ -122,15 +122,15 @@ async function passage(navigateur, numero) {
   }
 
   /* 0. Remise à zéro par l'admin, puis connexion des deux rôles. */
-  await connecter(agent, "admin@siira.demo");
+  await connecter(agent, "pro-admin");
   await agent.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
   await agent.getByRole("button", { name: "Réinitialiser la démo" }).click();
   await agent.getByRole("button", { name: "Oui, tout remettre à zéro" }).click();
   await agent.waitForSelector("text=état de départ");
   verifier("Réinitialisation de la démonstration", true);
 
-  await connecter(agent, "agent.saaba@siira.demo");
-  await connecter(centre, "centre.bogodogo@siira.demo");
+  await connecter(agent, "pro-agent-saaba");
+  await connecter(centre, "pro-centre-bogodogo");
 
   await agent.goto(`${BASE}/agent`, { waitUntil: "domcontentloaded" });
   await agent.waitForSelector("text=Nouvelle consultation");
@@ -236,10 +236,10 @@ async function passage(navigateur, numero) {
    * matching : c'est là que le dossier doit arriver.
    */
   const COMPTE_CENTRE = {
-    "CHU de Bogodogo": "centre.bogodogo@siira.demo",
-    "CHU de Tengandogo": "centre.tengandogo@siira.demo",
-    "CHU Yalgado Ouédraogo": "centre.yalgado@siira.demo",
-    "CHR de Ziniaré": "centre.ziniare@siira.demo",
+    "CHU de Bogodogo": "pro-centre-bogodogo",
+    "CHU de Tengandogo": "pro-centre-tengandogo",
+    "CHU Yalgado Ouédraogo": "pro-centre-yalgado",
+    "CHR de Ziniaré": "pro-centre-ziniare",
   };
   const nomCentre = Object.keys(COMPTE_CENTRE).find((n) =>
     texteOrientation.includes(n),
