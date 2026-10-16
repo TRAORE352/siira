@@ -27,11 +27,6 @@ const SPECIALITES = [
   "Autre",
 ];
 
-const OPTIONS_SEXE = [
-  { valeur: "femme", libelle: "Femme" },
-  { valeur: "homme", libelle: "Homme" },
-];
-
 export default function Compte() {
   return (
     <Espace role="centre" liens={LIENS_CENTRE} large>
@@ -51,7 +46,6 @@ function Parametres({ profil: profilInitial }: { profil: Profil }) {
   const [profil, setProfil] = useState(profilInitial);
   const [telephone, setTelephone] = useState(profilInitial.telephone ?? "");
   const [specialite, setSpecialite] = useState(profilInitial.specialite ?? "");
-  const [sexe, setSexe] = useState(profilInitial.sexe ?? "");
   const [centreId, setCentreId] = useState(profilInitial.centre_id ?? "");
   const [succes, setSucces] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -67,7 +61,6 @@ function Parametres({ profil: profilInitial }: { profil: Profil }) {
     const misAJour = mettreAJourCompte(profil.id, {
       telephone: telephone.trim() || undefined,
       specialite: specialite || undefined,
-      sexe: (sexe || undefined) as "femme" | "homme" | undefined,
       centre_id: centreId || null,
       centre_sante: centre?.nom ?? null,
     });
@@ -94,6 +87,9 @@ function Parametres({ profil: profilInitial }: { profil: Profil }) {
           <h2 className="mb-3 text-lg">Informations</h2>
           <dl>
             <Ligne libelle="Nom">{profil.nom}</Ligne>
+            <Ligne libelle="Sexe">
+              {profil.sexe === "femme" ? "Femme" : profil.sexe === "homme" ? "Homme" : "—"}
+            </Ligne>
             <Ligne libelle="Matricule">{profil.matricule ?? "—"}</Ligne>
             <Ligne libelle="Rôle">{LIBELLE_ROLE[profil.role]}</Ligne>
           </dl>
@@ -130,14 +126,6 @@ function Parametres({ profil: profilInitial }: { profil: Profil }) {
               options={SPECIALITES.map((s) => ({ valeur: s, libelle: s }))}
               value={specialite}
               onChange={(e) => setSpecialite(e.target.value)}
-            />
-
-            <Liste
-              label="Sexe"
-              placeholder="Choisir"
-              options={OPTIONS_SEXE}
-              value={sexe}
-              onChange={(e) => setSexe(e.target.value)}
             />
 
             <Liste
