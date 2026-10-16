@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Bouton } from "@/components/Bouton";
+import { Champ } from "@/components/Champs";
 import { ChampCode, ChampTelephone } from "@/components/ChampsConnexion";
 import { MessageErreur } from "@/components/Interface";
 import {
   ACCUEIL_PAR_ROLE,
   fermerSession,
   lireSession,
+  ouvrirSession,
   ouvrirSessionParNumero,
 } from "@/lib/session";
 import { ESPACE_ACTIF, roleAutorise } from "@/lib/espaces";
@@ -21,6 +23,9 @@ import {
   numeroCanonique,
   numeroValide,
 } from "@/lib/telephone";
+import { matriculeNormalise } from "@/lib/comptes";
+import { AuthRefusee, connecter } from "@/lib/supabase/auth";
+import { supabaseEstConfigure } from "@/lib/supabase/environnement";
 
 /**
  * Connexion de l'agent de santé.
@@ -30,13 +35,21 @@ import {
  * démonstration à choisir dans une liste — l'écran doit ressembler à ce que
  * l'agent ouvrira tous les matins, pas à une maquette.
  *
- * Phase 1 : tout numéro burkinabè valide et tout code à 6 chiffres ouvrent
- * l'espace. La vérification viendra du serveur en Phase 2 ; cet écran ne
- * changera pas.
+ * Deux modes, selon que la base est configurée ou non. Avec Supabase, l'agent
+ * entre son MATRICULE — c'est l'identifiant de son compte réel, celui qu'il a
+ * choisi à l'inscription, et la vérification est faite par le serveur. Sans
+ * configuration, l'écran reste celui de la démonstration : un numéro burkinabè
+ * et un code à 6 chiffres ouvrent l'espace sans réseau.
+ *
+ * Le numéro n'identifie PAS un compte réel : l'inscription crée le compte sur
+ * le matricule. Demander le téléphone en mode réel rendrait tout compte
+ * impossible à ouvrir.
  */
 export function ConnexionAgent() {
   const router = useRouter();
+  const reel = supabaseEstConfigure();
   const [numero, setNumero] = useState("");
+  const [matricule, setMatricule] = useState("");
   const [code, setCode] = useState("");
   const [erreurTel, setErreurTel] = useState<string | undefined>();
   const [erreurSecret, setErreurSecret] = useState<string | undefined>();
@@ -54,12 +67,39 @@ export function ConnexionAgent() {
     router.replace(ACCUEIL_PAR_ROLE[profil.role]);
   }, [router]);
 
-  function entrer() {
+  async function entrer() {
     setErreur(null);
-    const fauteTel = erreurNumero(numero);
     const fauteCode = erreurCode(code);
-    setErreurTel(fauteTel ?? undefined);
     setErreurSecret(fauteCode ?? undefined);
+
+    if (reel) {
+      const fauteMat = matricule.trim().length < 4 ? "Entrez votre matricule." : null;
+      setErreurTel(fauteMat ?? undefined);
+      if (fauteMat || fauteCode) return;
+
+      setEnvoi(true);
+      try {
+        const profil = await connecter(matriculeNormalise(matricule), code);
+        if (!roleAutorise(ESPACE_ACTIF, profil.role)) {
+          setEnvoi(false);
+          setErreur("Ce compte n’ouvre pas cet espace.");
+          return;
+        }
+        ouvrirSession(profil.id);
+        router.replace(ACCUEIL_PAR_ROLE[profil.role]);
+      } catch (e) {
+        setEnvoi(false);
+        setErreur(
+          e instanceof AuthRefusee
+            ? e.message
+            : "Impossible d’ouvrir votre espace. Réessayez dans un instant.",
+        );
+      }
+      return;
+    }
+
+    const fauteTel = erreurNumero(numero);
+    setErreurTel(fauteTel ?? undefined);
     if (fauteTel || fauteCode) return;
 
     setEnvoi(true);
@@ -72,7 +112,9 @@ export function ConnexionAgent() {
     router.replace(ACCUEIL_PAR_ROLE[profil.role]);
   }
 
-  const complet = numeroValide(numero) && codeValide(code);
+  const complet = reel
+    ? matricule.trim().length >= 4 && codeValide(code)
+    : numeroValide(numero) && codeValide(code);
 
   return (
     <div className="flex min-h-screen flex-col bg-prune-900">
@@ -113,20 +155,35 @@ export function ConnexionAgent() {
             noValidate
             onSubmit={(e) => {
               e.preventDefault();
-              entrer();
+              void entrer();
             }}
             className="mt-6 flex flex-col gap-6"
           >
             {erreur ? <MessageErreur titre="Connexion impossible" texte={erreur} /> : null}
 
-            <ChampTelephone
-              valeur={numero}
-              onChange={(v) => {
-                setNumero(v);
-                if (erreurTel) setErreurTel(undefined);
-              }}
-              erreur={erreurTel}
-            />
+            {reel ? (
+              <Champ
+                label="Matricule d'agent"
+                obligatoire
+                autoComplete="username"
+                placeholder="AG-1042"
+                value={matricule}
+                erreur={erreurTel}
+                onChange={(e) => {
+                  setMatricule(matriculeNormalise(e.target.value));
+                  if (erreurTel) setErreurTel(undefined);
+                }}
+              />
+            ) : (
+              <ChampTelephone
+                valeur={numero}
+                onChange={(v) => {
+                  setNumero(v);
+                  if (erreurTel) setErreurTel(undefined);
+                }}
+                erreur={erreurTel}
+              />
+            )}
 
             <ChampCode
               valeur={code}

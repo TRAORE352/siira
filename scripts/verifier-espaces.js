@@ -112,16 +112,27 @@ async function lire(chemin, options = {}) {
   verifier(`le titre annonce « ${attendu.titre} »`, connexion.texte.includes(attendu.titre));
 
   /*
-   * L'agent se connecte par numéro de téléphone et code à 6 chiffres. On
-   * contrôle le rendu servi, pas les sources : c'est ce que reçoit le
-   * téléphone de l'agent qui compte.
+   * L'agent se connecte par son MATRICULE quand la base est configurée, et par
+   * numéro de téléphone en démonstration — le numéro n'identifie aucun compte
+   * réel, c'est le matricule que l'inscription enregistre. On contrôle le rendu
+   * servi, pas les sources : c'est ce que reçoit le téléphone de l'agent qui
+   * compte.
+   *
+   * Les deux formes sont donc acceptables, mais il en faut UNE : un écran qui
+   * ne demanderait aucun identifiant passerait un contrôle trop permissif.
    */
   if (attendu.connexionTelephone) {
+    const parMatricule = connexion.texte.includes("Matricule");
+    const parTelephone = connexion.texte.includes("Numéro de téléphone");
+
     verifier(
-      "la connexion demande un numéro de téléphone",
-      connexion.texte.includes("Numéro de téléphone"),
+      "la connexion demande un identifiant (matricule ou téléphone)",
+      parMatricule || parTelephone,
+      parMatricule ? "par matricule" : parTelephone ? "par téléphone" : "aucun des deux",
     );
-    verifier("l’indicatif du Burkina Faso est affiché", connexion.texte.includes("+226"));
+    if (parTelephone) {
+      verifier("l’indicatif du Burkina Faso est affiché", connexion.texte.includes("+226"));
+    }
     verifier("la connexion demande un mot de passe", connexion.texte.includes("Mot de passe"));
     verifier(
       "le code annoncé compte bien 6 chiffres",

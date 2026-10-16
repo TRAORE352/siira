@@ -8,10 +8,12 @@ import { Champ, Liste } from "@/components/Champs";
 import { ChampCode } from "@/components/ChampsConnexion";
 import { MessageErreur } from "@/components/Interface";
 import { creerCompteAgent, trouverCompteParMatricule } from "@/lib/data";
-import { InscriptionRefusee, matriculeNormalise } from "@/lib/comptes";
+import { InscriptionRefusee, matriculeNormalise, validerInscription } from "@/lib/comptes";
 import type { ChampInscription, Inscription } from "@/lib/comptes";
 import { LIBELLE_STATUT_AGENT } from "@/lib/libelles";
 import { ouvrirSession } from "@/lib/session";
+import { AuthRefusee, inscrire } from "@/lib/supabase/auth";
+import { supabaseEstConfigure } from "@/lib/supabase/environnement";
 import type { StatutAgent } from "@/lib/types";
 
 const VIDE: Inscription = {
@@ -50,18 +52,50 @@ export function InscriptionAgent() {
     setErreurs((e) => ({ ...e, [cle]: undefined }));
   }
 
-  function creer() {
+  /*
+    Création du compte. Quand Supabase est configuré, le compte est RÉEL : il
+    vit dans la base, survit au vidage du cache et s'ouvre depuis un autre
+    téléphone. Sans configuration, on retombe sur le compte de démonstration
+    local — c'est ce qui permet de montrer le parcours sans réseau.
+  */
+  async function creer() {
     setErreurGenerale(null);
+
+    /* On valide d'abord : inutile d'appeler le serveur pour un champ vide. */
+    const fautes = validerInscription(f, []);
+    if (Object.keys(fautes).length > 0) {
+      setErreurs(fautes);
+      setErreurGenerale("Vérifiez les informations signalées.");
+      return;
+    }
+
     setEnvoi(true);
     try {
-      const compte = creerCompteAgent(f);
-      ouvrirSession(compte.profil.id);
+      if (supabaseEstConfigure()) {
+        const profil = await inscrire({
+          nom: f.nom.trim(),
+          prenoms: f.prenom.trim(),
+          statut: f.statut || undefined,
+          centre_sante: f.centre_sante.trim(),
+          matricule: matriculeNormalise(f.matricule),
+          motDePasse: f.mot_de_passe,
+          role: "agent",
+        });
+        ouvrirSession(profil.id);
+      } else {
+        const compte = creerCompteAgent(f);
+        ouvrirSession(compte.profil.id);
+      }
       router.replace("/agent");
     } catch (e) {
       setEnvoi(false);
       if (e instanceof InscriptionRefusee) {
         setErreurs(e.fautes);
         setErreurGenerale("Vérifiez les informations signalées.");
+        return;
+      }
+      if (e instanceof AuthRefusee) {
+        setErreurGenerale(e.message);
         return;
       }
       setErreurGenerale("Le compte n'a pas pu être créé. Réessayez dans un instant.");
@@ -100,7 +134,7 @@ export function InscriptionAgent() {
             noValidate
             onSubmit={(e) => {
               e.preventDefault();
-              creer();
+              void creer();
             }}
             className="mt-6 flex flex-col gap-8"
           >

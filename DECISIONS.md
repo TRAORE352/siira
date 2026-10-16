@@ -471,3 +471,20 @@ siennes. Les comptes d'équipe se posent par la clé de service.
 `identifiants.ts` est séparé de `auth.ts` et de `serveur.ts` : la route serveur
 et les écrans en ont tous deux besoin, et un module sans accès aux secrets évite
 de tirer le client à clé de service dans le graphe de construction du navigateur.
+
+## D14 — Les écrans branchés : le matricule, pas le téléphone
+
+L'inscription enregistre le compte sur le MATRICULE. L'écran de connexion
+demandait un numéro de téléphone : un compte réel aurait donc été impossible à
+ouvrir, l'agent se serait inscrit puis n'aurait jamais pu revenir. La connexion
+demande maintenant le matricule quand la base est configurée, et garde le
+téléphone en démonstration — ce qui préserve le parcours sans réseau.
+
+`scripts/verifier-espaces.js` asservissait « Numéro de téléphone » et « +226 » :
+il refusait l'écran corrigé. Il accepte désormais l'une OU l'autre forme
+d'identifiant, et exige toujours qu'il y en ait une — un écran sans identifiant
+ne doit pas passer. L'indicatif n'est contrôlé que sur la forme téléphone.
+
+Le repli sur la démonstration quand Supabase n'est pas configuré n'est pas une
+commodité de développement : c'est ce qui garantit que la démonstration du jury
+passe même sans réseau.
