@@ -10,6 +10,7 @@ import {
   presentationEspace,
   titreEspace,
 } from "@/lib/espaces";
+import { ConnexionComptes } from "./(auth)/connexion/ConnexionComptes";
 
 /*
  * Page d'entrée d'une adresse.
@@ -103,44 +104,9 @@ function AccueilAgent() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Centre et application complète : écran d'ordinateur                  */
+/* Centre et application complète : la connexion ouvre l'écran          */
 /* ------------------------------------------------------------------ */
 
 function AccueilGeneral() {
-  const mention = mentionEspace(ESPACE_ACTIF);
-
-  return (
-    <main
-      id="contenu"
-      className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-5 py-16"
-    >
-      <Logo taille="grand" lien={false} />
-
-      {mention ? (
-        <p className="mt-6 text-sm font-medium tracking-wide text-rose-700 uppercase">
-          {mention}
-        </p>
-      ) : null}
-
-      <h1 className="mt-3 text-4xl">{titreEspace(ESPACE_ACTIF)}</h1>
-      <p className="mt-3 text-lg text-prune-700">{presentationEspace(ESPACE_ACTIF)}</p>
-
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link
-          href="/connexion"
-          className="pression inline-flex min-h-[var(--spacing-cible)] items-center justify-center rounded-[var(--radius-moyen)] bg-rose-600 px-5 py-3 font-medium text-white shadow-[var(--shadow-action)] hover:bg-rose-700"
-        >
-          Se connecter
-        </Link>
-        {ESPACE_ACTIF === "complet" ? (
-          <Link
-            href="/design"
-            className="pression inline-flex min-h-[var(--spacing-cible)] items-center justify-center rounded-[var(--radius-moyen)] border border-sable-300 bg-white px-5 py-3 font-medium text-prune-900 hover:bg-sable-100"
-          >
-            Système de design
-          </Link>
-        ) : null}
-      </div>
-    </main>
-  );
+  return <ConnexionComptes />;
 }

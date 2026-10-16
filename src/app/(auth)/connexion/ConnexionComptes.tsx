@@ -1,18 +1,21 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Bouton } from "@/components/Bouton";
 import { Champ } from "@/components/Champs";
 import { Carte, MessageErreur } from "@/components/Interface";
-import { Logo } from "@/components/Logo";
 import {
   ESPACE_ACTIF,
   LIBELLE_ROLE,
   comptesDeLespace,
   mentionEspace,
+  presentationEspace,
   roleAutorise,
   rolesEspace,
+  titreEspace,
 } from "@/lib/espaces";
 import {
   ACCUEIL_PAR_ROLE,
@@ -24,6 +27,13 @@ import {
 } from "@/lib/session";
 import type { Profil } from "@/lib/types";
 
+/**
+ * Connexion par compte (centre spécialisé, équipe Siira), en pleine page.
+ *
+ * Deux volets : à gauche la marque sur fond prune, à droite le formulaire.
+ * Sur ordinateur, les deux se partagent l'écran ; sur téléphone, la marque
+ * s'empile au-dessus du formulaire.
+ */
 export function ConnexionComptes() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -87,81 +97,136 @@ export function ConnexionComptes() {
   const roleUnique = rolesEspace(ESPACE_ACTIF).length === 1;
 
   return (
-    <main id="contenu" className="mx-auto w-full max-w-md px-5 py-10 sm:py-16">
-      <Logo taille="moyen" lien={false} />
+    <div className="grid min-h-screen lg:grid-cols-2">
+      {/* Panneau de marque */}
+      <aside className="fond-marque flex flex-col gap-12 px-8 py-10 lg:gap-0 lg:justify-between lg:px-14 lg:py-16">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/brand/icon-512.png"
+            alt=""
+            width={48}
+            height={48}
+            priority
+            className="rounded-[0.9rem] bg-white/95 p-1.5"
+            style={{ width: 48, height: 48 }}
+          />
+          <span className="font-[family-name:var(--font-titre)] text-2xl text-white">
+            S<span className="text-rose-400">ii</span>ra
+          </span>
+        </div>
 
-      <h1 className="mt-8 text-3xl">Se connecter</h1>
-      {mention ? (
-        <p className="mt-2 text-sm font-medium tracking-wide text-rose-700 uppercase">{mention}</p>
-      ) : (
-        <p className="mt-2 text-prune-700">
-          Entrez les informations de votre compte pour ouvrir votre espace.
+        <div className="lg:max-w-md">
+          {mention ? (
+            <p className="text-sm font-medium tracking-wide text-rose-300 uppercase">
+              {mention}
+            </p>
+          ) : null}
+          <h1 className="mt-3 text-3xl leading-tight text-white lg:text-[2.5rem]">
+            {titreEspace(ESPACE_ACTIF)}
+          </h1>
+          <p className="mt-4 text-[1.02rem] leading-relaxed text-rose-100/75">
+            {presentationEspace(ESPACE_ACTIF)}
+          </p>
+        </div>
+
+        <p className="text-xs leading-relaxed text-rose-100/50">
+          Siira ne pose pas de diagnostic.
         </p>
-      )}
+      </aside>
 
-      <form onSubmit={soumettre} noValidate className="mt-6 flex flex-col gap-4">
-        {erreur ? <MessageErreur titre="Connexion impossible" texte={erreur} /> : null}
+      {/* Formulaire */}
+      <main
+        id="contenu"
+        className="flex items-center justify-center bg-sable-50 px-6 py-12 lg:py-16"
+      >
+        <div className="cascade w-full max-w-md">
+          <h2 className="text-3xl">Se connecter</h2>
+          <p className="mt-2 text-prune-700">
+            Entrez les informations de votre compte pour ouvrir votre espace.
+          </p>
 
-        <Champ
-          label="Adresse e-mail"
-          type="email"
-          inputMode="email"
-          autoComplete="username"
-          obligatoire
-          value={email}
-          erreur={erreurEmail}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          <form onSubmit={soumettre} noValidate className="mt-6 flex flex-col gap-4">
+            {erreur ? <MessageErreur titre="Connexion impossible" texte={erreur} /> : null}
 
-        <Champ
-          label="Mot de passe"
-          type="password"
-          autoComplete="current-password"
-          obligatoire
-          value={motDePasse}
-          onChange={(e) => setMotDePasse(e.target.value)}
-        />
+            <Champ
+              label="Adresse e-mail"
+              type="email"
+              inputMode="email"
+              autoComplete="username"
+              obligatoire
+              value={email}
+              erreur={erreurEmail}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-        <Bouton type="submit" taille="grand" chargement={envoi} className="w-full">
-          Se connecter
-        </Bouton>
-      </form>
+            <Champ
+              label="Mot de passe"
+              type="password"
+              autoComplete="current-password"
+              obligatoire
+              value={motDePasse}
+              onChange={(e) => setMotDePasse(e.target.value)}
+            />
 
-      {/* Comptes de démonstration : la connexion n'est pas encore reliée à un
-          serveur, ces boutons ouvrent directement l'espace correspondant. Sur
-          une adresse dédiée, seuls les comptes de cet espace sont proposés. */}
-      <section aria-labelledby="titre-demo" className="mt-10">
-        <h2 id="titre-demo" className="text-xl">
-          {roleUnique ? "Compte de démonstration" : "Comptes de démonstration"}
-        </h2>
-        <p className="mt-1 text-sm text-sable-600">
-          Version de démonstration : touchez un compte pour ouvrir son espace.
-        </p>
+            <Bouton
+              type="submit"
+              taille="grand"
+              chargement={envoi}
+              className="w-full shadow-[var(--shadow-action)]"
+            >
+              Se connecter
+            </Bouton>
+          </form>
 
-        <ul className="mt-4 flex flex-col gap-2">
-          {comptes.map((p) => (
-            <li key={p.id}>
-              <Carte className="p-0">
-                <button
-                  type="button"
-                  onClick={() => entrer(p)}
-                  className="flex w-full items-center justify-between gap-3 rounded-[var(--radius-grand)] px-4 py-3 text-left transition-colors hover:bg-sable-100"
-                >
-                  <span>
-                    <span className="block font-medium text-prune-900">{p.nom}</span>
-                    <span className="block text-sm text-sable-600">
-                      {p.centre_sante ?? LIBELLE_ROLE[p.role]}
-                    </span>
-                  </span>
-                  <span className="shrink-0 rounded-full border border-sable-300 px-2.5 py-0.5 text-xs font-medium text-prune-700">
-                    {LIBELLE_ROLE[p.role]}
-                  </span>
-                </button>
-              </Carte>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </main>
+          {/* Séparateur entre la saisie et les comptes de démonstration. */}
+          <div className="my-9 flex items-center gap-3" aria-hidden="true">
+            <span className="h-px flex-1 bg-sable-200" />
+            <span className="text-xs font-medium tracking-wide text-sable-500 uppercase">ou</span>
+            <span className="h-px flex-1 bg-sable-200" />
+          </div>
+
+          <section aria-labelledby="titre-demo">
+            <h2 id="titre-demo" className="text-xl">
+              {roleUnique ? "Compte de démonstration" : "Comptes de démonstration"}
+            </h2>
+            <p className="mt-1 text-sm text-sable-600">
+              Version de démonstration : touchez un compte pour ouvrir son espace.
+            </p>
+
+            <ul className="mt-4 flex flex-col gap-2">
+              {comptes.map((p) => (
+                <li key={p.id}>
+                  <Carte className="p-0">
+                    <button
+                      type="button"
+                      onClick={() => entrer(p)}
+                      className="flex w-full items-center justify-between gap-3 rounded-[var(--radius-grand)] px-4 py-3 text-left transition-colors hover:bg-sable-100"
+                    >
+                      <span>
+                        <span className="block font-medium text-prune-900">{p.nom}</span>
+                        <span className="block text-sm text-sable-600">
+                          {p.centre_sante ?? LIBELLE_ROLE[p.role]}
+                        </span>
+                      </span>
+                      <span className="shrink-0 rounded-full border border-sable-300 px-2.5 py-0.5 text-xs font-medium text-prune-700">
+                        {LIBELLE_ROLE[p.role]}
+                      </span>
+                    </button>
+                  </Carte>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {ESPACE_ACTIF === "complet" ? (
+            <p className="mt-8 text-center text-sm">
+              <Link href="/design" className="text-rose-700 underline-offset-4 hover:underline">
+                Voir le système de design
+              </Link>
+            </p>
+          ) : null}
+        </div>
+      </main>
+    </div>
   );
 }
