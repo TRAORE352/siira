@@ -3,17 +3,17 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BadgeNiveau } from "@/components/BadgeNiveau";
-import { Liste } from "@/components/Champs";
+import { Champ, Liste } from "@/components/Champs";
 import { Espace } from "@/components/Espace";
 import { Carte, EtatVide, Squelette, TitreSection } from "@/components/Interface";
 import { listerDossiersCentre } from "@/lib/data";
 import { useDonnees } from "@/lib/hooks";
-import { LIBELLE_STATUT_ORIENTATION, dateCourte } from "@/lib/libelles";
+import { LIBELLE_STATUT_ORIENTATION, dateCourte, normaliserTexte } from "@/lib/libelles";
 import { LIENS_CENTRE } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import type { Niveau } from "@/lib/types";
 
-const STATUTS: string[] = ["envoyee", "recue", "examens", "resultat", "close", "absente"];
+const STATUTS: string[] = ["recue", "examens", "resultat", "close", "absente"];
 
 const POINT_NIVEAU: Record<Niveau, string> = {
   rouge: "bg-rouge-fort",
@@ -34,6 +34,7 @@ function Contenu() {
   const centreId = profil?.centre_id ?? "";
   const [niveau, setNiveau] = useState<"tous" | Niveau>("tous");
   const [statut, setStatut] = useState<string>("tous");
+  const [recherche, setRecherche] = useState("");
 
   const { donnees, pret } = useDonnees(() =>
     centreId ? listerDossiersCentre(centreId) : [],
@@ -41,15 +42,15 @@ function Contenu() {
 
   const dossiers = useMemo(() => donnees ?? [], [donnees]);
 
-  const visibles = useMemo(
-    () =>
-      dossiers.filter(
-        (d) =>
-          (niveau === "tous" || d.consultation.niveau_valide === niveau) &&
-          (statut === "tous" || d.orientation.statut === statut),
-      ),
-    [dossiers, niveau, statut],
-  );
+  const visibles = useMemo(() => {
+    const q = normaliserTexte(recherche);
+    return dossiers.filter(
+      (d) =>
+        (niveau === "tous" || d.consultation.niveau_valide === niveau) &&
+        (statut === "tous" || d.orientation.statut === statut) &&
+        (!q || normaliserTexte(d.patiente.nom).includes(q)),
+    );
+  }, [dossiers, niveau, statut, recherche]);
 
   if (!pret) return <Squelette lignes={4} />;
 
@@ -58,6 +59,15 @@ function Contenu() {
       <TitreSection aide="Les patientes orientées vers votre centre. Les cas rouges apparaissent en premier.">
         Patientes
       </TitreSection>
+
+      <Champ
+        label="Rechercher une patiente"
+        labelMasque
+        placeholder="Rechercher une patiente…"
+        value={recherche}
+        onChange={(e) => setRecherche(e.target.value)}
+        className="mb-4 max-w-md"
+      />
 
       <div className="mb-5 flex flex-wrap items-end gap-x-6 gap-y-4 rounded-[var(--radius-grand)] border border-sable-200 bg-white px-4 py-4">
         <div className="flex flex-col gap-2">
