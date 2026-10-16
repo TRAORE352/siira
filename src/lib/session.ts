@@ -34,6 +34,10 @@ export function sessionAutorisee(profil: Profil): boolean {
  * compte. Les données, elles, restent partagées entre tous les onglets.
  */
 const CLE = "siira.session.v1";
+/* Profil complet de la session, pour les comptes réels : eux n'existent dans
+   aucun référentiel local, donc un identifiant seul ne suffit pas à les
+   retrouver. */
+const CLE_PROFIL = "siira.profil.v1";
 
 export function listerComptesDemo(): Profil[] {
   return REFERENTIELS.profils;
@@ -315,14 +319,55 @@ export function ouvrirSession(profilId: string) {
   window.dispatchEvent(new Event("siira-session"));
 }
 
-export function fermerSession() {
+/**
+ * Ouvre la session d'un compte RÉEL, en retenant son profil en entier.
+ *
+ * Un compte réel n'existe dans aucun référentiel local : retenir son seul
+ * identifiant laisserait `lireSession` incapable de le retrouver, et le garde
+ * de l'espace renverrait l'agent vers /connexion juste après une
+ * authentification réussie.
+ */
+export function ouvrirSessionReelle(profil: Profil) {
   if (typeof window === "undefined") return;
-  window.sessionStorage.removeItem(CLE);
+  window.sessionStorage.setItem(CLE_PROFIL, JSON.stringify(profil));
+  window.sessionStorage.setItem(CLE, profil.id);
   window.dispatchEvent(new Event("siira-session"));
 }
 
+export function fermerSession() {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(CLE);
+  /* Les deux clés tombent ensemble : un profil réel laissé derrière
+     rouvrirait la session à la prochaine lecture. */
+  window.sessionStorage.removeItem(CLE_PROFIL);
+  window.dispatchEvent(new Event("siira-session"));
+}
+
+/**
+ * Profil de la session en cours.
+ *
+ * Deux sources, et la seconde est indispensable aux comptes RÉELS. La session
+ * ne retenait qu'un identifiant, puis relisait le profil par `trouverProfil`,
+ * qui ne cherche que dans les profils de DÉMONSTRATION : un compte réel ne s'y
+ * trouve jamais. L'agent s'authentifiait donc correctement — jeton, profil,
+ * rôle, tout en 200 — puis le garde de l'espace ne retrouvait pas son profil,
+ * le prenait pour un visiteur et le renvoyait vers /connexion. L'écran de
+ * connexion restait affiché sans aucun message : rien n'avait échoué.
+ *
+ * Le profil réel est donc enregistré en entier à l'ouverture de la session, et
+ * relu ici en priorité.
+ */
 export function lireSession(): Profil | null {
   if (typeof window === "undefined") return null;
+  const brut = window.sessionStorage.getItem(CLE_PROFIL);
+  if (brut) {
+    try {
+      return JSON.parse(brut) as Profil;
+    } catch {
+      /* Entrée abîmée : on l'efface plutôt que de boucler sur une erreur. */
+      window.sessionStorage.removeItem(CLE_PROFIL);
+    }
+  }
   const id = window.sessionStorage.getItem(CLE);
   if (!id) return null;
   return trouverProfil(id);

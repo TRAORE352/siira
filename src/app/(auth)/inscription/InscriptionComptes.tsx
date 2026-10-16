@@ -17,6 +17,7 @@ import {
   fermerSession,
   lireSession,
   ouvrirSession,
+  ouvrirSessionReelle,
   trouverCompteInscrit,
 } from "@/lib/session";
 
@@ -131,6 +132,7 @@ export function InscriptionComptes() {
           motDePasse,
           role: "centre",
         });
+        ouvrirSessionReelle(profil);
         router.replace(ACCUEIL_PAR_ROLE[profil.role]);
       } catch (e) {
         setEnvoi(false);

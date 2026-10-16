@@ -11,7 +11,7 @@ import { creerCompteAgent, listerStructuresDeBase, trouverCompteParMatricule } f
 import { InscriptionRefusee, matriculeNormalise, validerInscription } from "@/lib/comptes";
 import type { ChampInscription, Inscription } from "@/lib/comptes";
 import { LIBELLE_STATUT_AGENT } from "@/lib/libelles";
-import { ouvrirSession } from "@/lib/session";
+import { ouvrirSession, ouvrirSessionReelle } from "@/lib/session";
 import { AuthRefusee, inscrire } from "@/lib/supabase/auth";
 import { supabaseEstConfigure } from "@/lib/supabase/environnement";
 import type { StatutAgent } from "@/lib/types";
@@ -81,7 +81,7 @@ export function InscriptionAgent() {
           motDePasse: f.mot_de_passe,
           role: "agent",
         });
-        ouvrirSession(profil.id);
+        ouvrirSessionReelle(profil);
       } else {
         const compte = creerCompteAgent(f);
         ouvrirSession(compte.profil.id);

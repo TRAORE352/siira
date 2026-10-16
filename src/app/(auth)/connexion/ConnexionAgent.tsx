@@ -12,8 +12,8 @@ import {
   ACCUEIL_PAR_ROLE,
   fermerSession,
   lireSession,
-  ouvrirSession,
   ouvrirSessionParNumero,
+  ouvrirSessionReelle,
 } from "@/lib/session";
 import { ESPACE_ACTIF, roleAutorise } from "@/lib/espaces";
 import {
@@ -85,7 +85,7 @@ export function ConnexionAgent() {
           setErreur("Ce compte n’ouvre pas cet espace.");
           return;
         }
-        ouvrirSession(profil.id);
+        ouvrirSessionReelle(profil);
         router.replace(ACCUEIL_PAR_ROLE[profil.role]);
       } catch (e) {
         setEnvoi(false);

@@ -19,7 +19,10 @@ import {
   connecterParMatricule,
   fermerSession,
   lireSession,
+  ouvrirSessionReelle,
 } from "@/lib/session";
+import { AuthRefusee, connecter } from "@/lib/supabase/auth";
+import { supabaseEstConfigure } from "@/lib/supabase/environnement";
 
 /**
  * Connexion par numéro matricule et mot de passe.
@@ -47,7 +50,7 @@ export function ConnexionComptes() {
     router.replace(ACCUEIL_PAR_ROLE[profil.role]);
   }, [router]);
 
-  function soumettre(e: React.FormEvent) {
+  async function soumettre(e: React.FormEvent) {
     e.preventDefault();
     setErreur(null);
     setErreurMatricule(undefined);
@@ -58,6 +61,35 @@ export function ConnexionComptes() {
     }
     if (!motDePasse) {
       setErreur("Indiquez votre mot de passe.");
+      return;
+    }
+
+    /*
+     * Voie RÉELLE quand la base est configurée. Sans ce branchement, cet
+     * écran acceptait n'importe quel matricule et n'importe quel mot de passe
+     * (phase 1) : un spécialiste inscrit pour de vrai ne pouvait pas entrer
+     * avec SES identifiants, et un inconnu entrait avec les siens. Le repli
+     * sur la démonstration reste pour le parcours sans réseau.
+     */
+    if (supabaseEstConfigure()) {
+      setEnvoi(true);
+      try {
+        const profil = await connecter(matricule.trim(), motDePasse);
+        if (!roleAutorise(ESPACE_ACTIF, profil.role)) {
+          setEnvoi(false);
+          setErreur("Ce compte n’ouvre pas cet espace.");
+          return;
+        }
+        ouvrirSessionReelle(profil);
+        router.replace(ACCUEIL_PAR_ROLE[profil.role]);
+      } catch (e) {
+        setEnvoi(false);
+        setErreur(
+          e instanceof AuthRefusee
+            ? e.message
+            : "Impossible d’ouvrir votre espace. Réessayez dans un instant.",
+        );
+      }
       return;
     }
 
