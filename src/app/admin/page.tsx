@@ -1,81 +1,105 @@
 "use client";
 
-import { useState } from "react";
-import { Bouton } from "@/components/Bouton";
+import Link from "next/link";
 import { Espace } from "@/components/Espace";
-import {
-  Carte,
-  Chargement,
-  Ligne,
-  MessageInfo,
-  MessageSucces,
-  TitreSection,
-} from "@/components/Interface";
-import { lireEtat, listerProfils, reinitialiser } from "@/lib/data";
+import { Carte, Chargement, Ligne, TitreSection } from "@/components/Interface";
+import { lireEtat, listerComptesAgents, listerProfils } from "@/lib/data";
 import { useDonnees } from "@/lib/hooks";
+import { LIENS_ADMIN } from "@/lib/nav";
 import { LIBELLE_ROLE } from "@/lib/session";
 
-export default function Admin() {
+export default function TableauDeBord() {
   return (
-    <Espace role="admin" large>
+    <Espace role="admin" liens={LIENS_ADMIN} large>
       <Contenu />
     </Espace>
   );
 }
 
 function Contenu() {
-  const [succes, setSucces] = useState<string | null>(null);
-  const [confirmation, setConfirmation] = useState(false);
-
   const { donnees, pret } = useDonnees(() => {
     const e = lireEtat();
+    const centres = e.centres ?? [];
+    const regles = e.regles_financement;
     return {
       patientes: e.patientes.length,
       consultations: e.consultations.length,
       orientations: e.orientations.length,
       financements: e.financements.length,
       suivis: e.suivis.length,
+      centres: centres.length,
+      centresInactifs: centres.filter((c) => !c.actif).length,
       creneauxLibres: e.creneaux.filter((c) => c.libre).length,
+      profils: listerProfils().length,
+      inscrits: listerComptesAgents().length,
       ongs: e.ongs,
-      profils: listerProfils(),
+      reglesEnVeille: regles.filter((r) => !r.active).length,
+      budgetRestant: e.ongs.reduce((s, o) => s + o.budget_restant, 0),
     };
   });
 
   if (!pret || !donnees) return <Chargement />;
 
-  function remettreAZero() {
-    reinitialiser();
-    setConfirmation(false);
-    setSucces("La démonstration est revenue à son état de départ.");
-  }
+  const d = donnees;
 
   return (
     <>
-      <TitreSection aide="Pilotage de la démonstration.">Espace équipe Siira</TitreSection>
+      <TitreSection aide="L'état de la plateforme, et ce qui demande une décision.">
+        Tableau de bord
+      </TitreSection>
 
-      {succes ? (
-        <div className="mb-4">
-          <MessageSucces>{succes}</MessageSucces>
-        </div>
-      ) : null}
-
-      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
         <Carte>
-          <h2 className="mb-3 text-lg">État actuel</h2>
+          <h2 className="mb-3 text-lg">Activité</h2>
           <dl>
-            <Ligne libelle="Patientes">{donnees.patientes}</Ligne>
-            <Ligne libelle="Consultations">{donnees.consultations}</Ligne>
-            <Ligne libelle="Orientations">{donnees.orientations}</Ligne>
-            <Ligne libelle="Demandes de financement">{donnees.financements}</Ligne>
-            <Ligne libelle="Étapes de suivi">{donnees.suivis}</Ligne>
-            <Ligne libelle="Rendez-vous libres">{donnees.creneauxLibres}</Ligne>
+            <Ligne libelle="Patientes">{d.patientes}</Ligne>
+            <Ligne libelle="Consultations">{d.consultations}</Ligne>
+            <Ligne libelle="Orientations">{d.orientations}</Ligne>
+            <Ligne libelle="Prises en charge">{d.financements}</Ligne>
+            <Ligne libelle="Étapes de suivi">{d.suivis}</Ligne>
           </dl>
         </Carte>
 
         <Carte>
-          <h2 className="mb-3 text-lg">Budgets des ONG</h2>
+          <h2 className="mb-3 text-lg">Comptes</h2>
           <dl>
-            {donnees.ongs.map((o) => (
+            <Ligne libelle="Comptes enregistrés">{d.profils}</Ligne>
+            <Ligne libelle="Inscrits depuis l'application">{d.inscrits}</Ligne>
+          </dl>
+          <Link
+            href="/admin/comptes"
+            className="mt-3 inline-flex min-h-[var(--spacing-cible)] items-center text-[0.95rem] font-medium text-rose-700 underline-offset-4 hover:underline"
+          >
+            Voir les comptes →
+          </Link>
+        </Carte>
+
+        <Carte>
+          <h2 className="mb-3 text-lg">Ce qui demande une décision</h2>
+          <dl>
+            <Ligne libelle="Centres en sommeil">
+              {d.centresInactifs} sur {d.centres}
+            </Ligne>
+            <Ligne libelle="Règles de financement en veille">{d.reglesEnVeille}</Ligne>
+            <Ligne libelle="Budget restant des financeurs">
+              {d.budgetRestant.toLocaleString("fr-FR")} FCFA
+            </Ligne>
+            <Ligne libelle="Rendez-vous libres">{d.creneauxLibres}</Ligne>
+          </dl>
+          <Link
+            href="/admin/centres"
+            className="mt-3 inline-flex min-h-[var(--spacing-cible)] items-center text-[0.95rem] font-medium text-rose-700 underline-offset-4 hover:underline"
+          >
+            Centres et tarifs →
+          </Link>
+        </Carte>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2 lg:items-start">
+        <Carte>
+          <h2 className="mb-3 text-lg">Financeurs</h2>
+          <dl>
+            {d.ongs.map((o) => (
               <Ligne key={o.id} libelle={o.nom}>
                 {o.budget_restant.toLocaleString("fr-FR")} sur{" "}
                 {o.budget_total.toLocaleString("fr-FR")} FCFA
@@ -85,44 +109,14 @@ function Contenu() {
         </Carte>
 
         <Carte>
-          <h2 className="mb-3 text-lg">Comptes de démonstration</h2>
-          <ul className="flex flex-col">
-            {donnees.profils.map((p) => (
-              <li
-                key={p.id}
-                className="flex flex-wrap items-baseline justify-between gap-2 border-b border-sable-200 py-2 last:border-0"
-              >
-                <span className="text-[0.95rem] text-prune-900">{p.nom}</span>
-                <span className="text-sm text-sable-600">
-                  {p.email} · {LIBELLE_ROLE[p.role]}
-                </span>
-              </li>
+          <h2 className="mb-3 text-lg">Les rôles de la plateforme</h2>
+          <dl>
+            {(["agent", "centre", "admin"] as const).map((r) => (
+              <Ligne key={r} libelle={LIBELLE_ROLE[r]}>
+                {listerProfils(r).length} compte{listerProfils(r).length > 1 ? "s" : ""}
+              </Ligne>
             ))}
-          </ul>
-        </Carte>
-
-        <Carte>
-          <h2 className="mb-3 text-lg">Réinitialiser la démonstration</h2>
-          <MessageInfo>
-            Tout revient à l&apos;état de départ : patientes, orientations, budgets et
-            rendez-vous. Les onglets ouverts se mettent à jour aussitôt.
-          </MessageInfo>
-          <div className="mt-4">
-            {!confirmation ? (
-              <Bouton variante="danger" onClick={() => setConfirmation(true)}>
-                Réinitialiser la démo
-              </Bouton>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                <Bouton variante="danger" onClick={remettreAZero}>
-                  Oui, tout remettre à zéro
-                </Bouton>
-                <Bouton variante="second" onClick={() => setConfirmation(false)}>
-                  Annuler
-                </Bouton>
-              </div>
-            )}
-          </div>
+          </dl>
         </Carte>
       </div>
     </>

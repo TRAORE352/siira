@@ -123,7 +123,7 @@ async function passage(navigateur, numero) {
 
   /* 0. Remise à zéro par l'admin, puis connexion des deux rôles. */
   await connecter(agent, "pro-admin");
-  await agent.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
+  await agent.goto(`${BASE}/admin/demonstration`, { waitUntil: "domcontentloaded" });
   await agent.getByRole("button", { name: "Réinitialiser la démo" }).click();
   await agent.getByRole("button", { name: "Oui, tout remettre à zéro" }).click();
   await agent.waitForSelector("text=état de départ");

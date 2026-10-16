@@ -29,8 +29,10 @@ import type {
   RegleFinancement,
   ResultatSuivi,
   Role,
+  Soin,
   StatutAgent,
   Suivi,
+  Tarif,
 } from "../types";
 import {
   InscriptionRefusee,
@@ -66,7 +68,7 @@ export function listerDistricts(): District[] {
 }
 
 export function listerCentres(): Centre[] {
-  return REFERENTIELS.centres;
+  return lireEtat().centres ?? REFERENTIELS.centres;
 }
 
 export function trouverDistrict(id: string): District | undefined {
@@ -74,7 +76,13 @@ export function trouverDistrict(id: string): District | undefined {
 }
 
 export function trouverCentre(id: string): Centre | undefined {
-  return REFERENTIELS.centres.find((c) => c.id === id);
+  return listerCentres().find((c) => c.id === id);
+}
+
+/** Tarifs des soins, tous centres confondus ou pour un seul. */
+export function listerTarifs(centreId?: string): Tarif[] {
+  const tous = lireEtat().tarifs ?? REFERENTIELS.tarifs;
+  return centreId ? tous.filter((t) => t.centre_id === centreId) : tous;
 }
 
 export function trouverProfil(id: string): Profil | undefined {
@@ -365,7 +373,7 @@ export function preparerOrientation(consultationId: string): PropositionOrientat
   const resultat = choisirCentre({
     niveau,
     district,
-    centres: REFERENTIELS.centres,
+    centres: listerCentres(),
     creneaux: e.creneaux,
     aujourdhui: new Date(),
   });
@@ -451,7 +459,7 @@ export function envoyerOrientation(entree: {
       niveau,
       patiente.capacite_paiement,
       entree.centre_id,
-      REFERENTIELS.tarifs,
+      listerTarifs(),
     );
     const financements: Financement[] = [];
     if (montant) {
@@ -804,5 +812,40 @@ export function creerCompteAgent(entree: Inscription): CompteAgent {
 /* ------------------------------------------------------------------ */
 /* Abonnement et réinitialisation                                      */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/* Écriture : espace équipe Siira                                      */
+/* ------------------------------------------------------------------ */
+
+/** Un centre qui n'est plus actif sort du matching, sans être supprimé. */
+export function basculerCentreActif(centreId: string, actif: boolean): void {
+  modifier((e) => {
+    const c = e.centres?.find((x) => x.id === centreId);
+    if (c) c.actif = actif;
+  });
+}
+
+/** Tarif d'un soin dans un centre. */
+export function modifierTarif(centreId: string, soin: Soin, montant: number): void {
+  modifier((e) => {
+    const t = e.tarifs?.find((x) => x.centre_id === centreId && x.soin === soin);
+    if (t) t.montant = montant;
+  });
+}
+
+/** Une règle de financement qu'on active ou qu'on met en veille. */
+export function basculerRegleFinancement(regleId: string, active: boolean): void {
+  modifier((e) => {
+    const r = e.regles_financement.find((x) => x.id === regleId);
+    if (r) r.active = active;
+  });
+}
+
+/** Retire un compte créé depuis l'application (les comptes de démo restent). */
+export function supprimerCompteAgent(profilId: string): void {
+  modifier((e) => {
+    e.comptes = (e.comptes ?? []).filter((c) => c.profil.id !== profilId);
+  });
+}
 
 export { abonner, reinitialiser, lireEtat };

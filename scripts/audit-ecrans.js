@@ -38,6 +38,10 @@ const ECRANS = [
   ["/centre/disponibilites", "pro-centre-bogodogo", 1280],
   ["/centre/compte", "pro-centre-bogodogo", 1280],
   ["/admin", "pro-admin", 1280],
+  ["/admin/comptes", "pro-admin", 1280],
+  ["/admin/centres", "pro-admin", 1280],
+  ["/admin/financeurs", "pro-admin", 1280],
+  ["/admin/demonstration", "pro-admin", 1280],
 ];
 
 let problemes = 0;

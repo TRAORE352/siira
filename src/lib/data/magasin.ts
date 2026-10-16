@@ -10,6 +10,7 @@
  */
 
 import type {
+  Centre,
   Consultation,
   Creneau,
   Financement,
@@ -18,6 +19,7 @@ import type {
   Patiente,
   RegleFinancement,
   Suivi,
+  Tarif,
 } from "../types";
 import type { CompteAgent } from "../comptes";
 import {
@@ -44,6 +46,9 @@ export interface EtatSiira {
   regles_financement: RegleFinancement[];
   /** Comptes créés à l'inscription d'un agent, avec leur matricule. */
   comptes: CompteAgent[];
+  /** Centres et tarifs : l'équipe les modifie depuis l'espace admin. */
+  centres: Centre[];
+  tarifs: Tarif[];
   /** Incrémenté à chaque écriture, pour repérer les changements. */
   version: number;
 }
@@ -64,6 +69,8 @@ export function etatInitial(): EtatSiira {
     ongs: ONGS.map((o) => ({ ...o })),
     regles_financement: REGLES_FINANCEMENT.map((r) => ({ ...r })),
     comptes: [],
+    centres: CENTRES.map((c) => ({ ...c })),
+    tarifs: TARIFS.map((t) => ({ ...t })),
     version: 1,
   };
 }
@@ -95,6 +102,13 @@ function charger(): EtatSiira {
         /* État enregistré avant l'inscription : aucun compte, et c'est normal. */
         if (!Array.isArray(lu.comptes)) {
           lu.comptes = [];
+        }
+        /* État enregistré avant que l'équipe puisse modifier centres et tarifs. */
+        if (!Array.isArray(lu.centres)) {
+          lu.centres = CENTRES.map((c) => ({ ...c }));
+        }
+        if (!Array.isArray(lu.tarifs)) {
+          lu.tarifs = TARIFS.map((t) => ({ ...t }));
         }
         return lu;
       }
