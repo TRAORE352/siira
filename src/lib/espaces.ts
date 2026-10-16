@@ -92,7 +92,7 @@ export function roleAutorise(espace: Espace, role: Role): boolean {
 }
 
 /** Chemins toujours ouverts, quel que soit l'espace. */
-export const CHEMINS_PUBLICS: readonly string[] = ["/", "/connexion"];
+export const CHEMINS_PUBLICS: readonly string[] = ["/", "/connexion", "/inscription"];
 
 /**
  * Un chemin est-il ouvert sur cette adresse ?

@@ -191,4 +191,9 @@ export interface Profil {
   centre_sante: string | null;
   centre_id: string | null;
   ong_id: string | null;
+  /* Comptes créés dans l'application (inscription). */
+  prenoms?: string;
+  sexe?: "femme" | "homme";
+  specialite?: string;
+  matricule?: string;
 }

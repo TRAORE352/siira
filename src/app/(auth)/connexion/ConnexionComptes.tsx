@@ -16,9 +16,9 @@ import {
 } from "@/lib/espaces";
 import {
   ACCUEIL_PAR_ROLE,
+  connecterParMatricule,
   fermerSession,
   lireSession,
-  ouvrirSessionParMatricule,
 } from "@/lib/session";
 
 /**
@@ -61,13 +61,13 @@ export function ConnexionComptes() {
       return;
     }
 
-    const profil = ouvrirSessionParMatricule(matricule.trim());
-    if (!profil) {
-      setErreur("Impossible d'ouvrir votre espace. Réessayez dans un instant.");
+    const resultat = connecterParMatricule(matricule.trim(), motDePasse);
+    if ("erreur" in resultat) {
+      setErreur(resultat.erreur);
       return;
     }
     setEnvoi(true);
-    router.replace(ACCUEIL_PAR_ROLE[profil.role]);
+    router.replace(ACCUEIL_PAR_ROLE[resultat.profil.role]);
   }
 
   const mention = mentionEspace(ESPACE_ACTIF);
@@ -149,6 +149,16 @@ export function ConnexionComptes() {
               Se connecter
             </Bouton>
           </form>
+
+          <p className="mt-6 text-center text-sm">
+            Pas de compte ?{" "}
+            <Link
+              href="/inscription"
+              className="font-medium text-rose-700 underline-offset-4 hover:underline"
+            >
+              Créer un compte
+            </Link>
+          </p>
 
           {ESPACE_ACTIF === "complet" ? (
             <p className="mt-6 text-center text-sm">

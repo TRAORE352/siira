@@ -134,6 +134,123 @@ export function lireMatriculeSession(): string | null {
   return window.sessionStorage.getItem(CLE_MATRICULE);
 }
 
+/* ------------------------------------------------------------------ */
+/* Comptes créés par inscription                                        */
+/* ------------------------------------------------------------------ */
+
+export interface CompteInscrit {
+  matricule: string;
+  motDePasse: string;
+  profil: Profil;
+}
+
+const CLE_COMPTES = "siira.comptes.v1";
+
+function lireComptes(): CompteInscrit[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const brut = window.localStorage.getItem(CLE_COMPTES);
+    return brut ? (JSON.parse(brut) as CompteInscrit[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function ecrireComptes(comptes: CompteInscrit[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(CLE_COMPTES, JSON.stringify(comptes));
+  } catch {
+    // Stockage plein ou refusé : l'inscription n'est pas conservée.
+  }
+}
+
+export function listerComptesInscrits(): CompteInscrit[] {
+  return lireComptes();
+}
+
+export function trouverCompteInscrit(matricule: string): CompteInscrit | undefined {
+  const cherche = matricule.trim().toLowerCase();
+  return lireComptes().find((c) => c.matricule.toLowerCase() === cherche);
+}
+
+export function enregistrerCompte(compte: CompteInscrit): void {
+  const comptes = lireComptes();
+  comptes.push(compte);
+  ecrireComptes(comptes);
+}
+
+function nouvelId(prefixe: string): string {
+  return `${prefixe}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** Enregistre un nouveau compte de centre et renvoie son profil. */
+export function creerCompteCentre(donnees: {
+  nom: string;
+  prenoms: string;
+  sexe: "femme" | "homme";
+  specialite: string;
+  centreId: string;
+  matricule: string;
+  motDePasse: string;
+}): Profil {
+  const centre = REFERENTIELS.centres.find((c) => c.id === donnees.centreId);
+  const profil: Profil = {
+    id: nouvelId("pro"),
+    nom: `${donnees.prenoms} ${donnees.nom}`.trim(),
+    email: "",
+    role: "centre",
+    centre_sante: centre?.nom ?? null,
+    centre_id: donnees.centreId,
+    ong_id: null,
+    prenoms: donnees.prenoms,
+    sexe: donnees.sexe,
+    specialite: donnees.specialite,
+    matricule: donnees.matricule,
+  };
+  enregistrerCompte({
+    matricule: donnees.matricule,
+    motDePasse: donnees.motDePasse,
+    profil,
+  });
+  return profil;
+}
+
+/**
+ * Connecte un centre par matricule et mot de passe.
+ * Un matricule inscrit voit son mot de passe vérifié ; sinon (Phase 1) tout
+ * matricule ouvre un centre de démonstration.
+ */
+export function connecterParMatricule(
+  matricule: string,
+  motDePasse: string,
+): { profil: Profil } | { erreur: string } {
+  const compte = trouverCompteInscrit(matricule);
+  if (compte) {
+    if (compte.motDePasse !== motDePasse) {
+      return { erreur: "Matricule ou mot de passe incorrect." };
+    }
+    ouvrirSession(compte.profil.id);
+    return { profil: compte.profil };
+  }
+  const profil = centrePourMatricule(matricule);
+  if (!profil) {
+    return { erreur: "Impossible d'ouvrir votre espace. Réessayez dans un instant." };
+  }
+  if (typeof window !== "undefined") {
+    window.sessionStorage.setItem(CLE_MATRICULE, matricule);
+  }
+  ouvrirSession(profil.id);
+  return { profil };
+}
+
+/** Retrouve un profil par identifiant, parmi les comptes de démo et inscrits. */
+function trouverProfil(id: string): Profil | null {
+  const referentiel = REFERENTIELS.profils.find((p) => p.id === id);
+  if (referentiel) return referentiel;
+  return lireComptes().find((c) => c.profil.id === id)?.profil ?? null;
+}
+
 export function ouvrirSession(profilId: string) {
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(CLE, profilId);
@@ -150,7 +267,7 @@ export function lireSession(): Profil | null {
   if (typeof window === "undefined") return null;
   const id = window.sessionStorage.getItem(CLE);
   if (!id) return null;
-  return REFERENTIELS.profils.find((p) => p.id === id) ?? null;
+  return trouverProfil(id);
 }
 
 /** Abonnement aux changements de session, dans cet onglet et dans les autres. */
@@ -187,8 +304,6 @@ export function useSession(): { profil: Profil | null; pret: boolean } {
   // Rendu serveur : on ne sait encore rien, l'écran reste en chargement.
   if (identifiant === null) return { profil: null, pret: false };
 
-  const profil = identifiant
-    ? (REFERENTIELS.profils.find((p) => p.id === identifiant) ?? null)
-    : null;
+  const profil = identifiant ? trouverProfil(identifiant) : null;
   return { profil, pret: true };
 }
