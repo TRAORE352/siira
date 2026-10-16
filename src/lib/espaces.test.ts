@@ -233,3 +233,25 @@ describe("comptesDeLespace", () => {
     for (const id of centres) expect(agents.has(id)).toBe(false);
   });
 });
+
+describe("les routes API ne sont pas filtrées par espace", () => {
+  /*
+   * Régression constatée en ligne : le middleware redirigeait /api/inscription
+   * vers /connexion avec un 307, donc le navigateur recevait du HTML là où il
+   * attendait du JSON — l'inscription échouait sur l'adresse de l'agent sans
+   * aucune erreur compréhensible.
+   */
+  it("laisse passer /api/inscription sur une adresse dédiée", () => {
+    expect(cheminAutorise("agent", "/api/inscription")).toBe(true);
+    expect(cheminAutorise("centre", "/api/inscription")).toBe(true);
+  });
+
+  it("laisse passer les routes API même sur une adresse fermée", () => {
+    expect(cheminAutorise("ferme", "/api/inscription")).toBe(true);
+  });
+
+  it("continue de filtrer les écrans d'un autre espace", () => {
+    expect(cheminAutorise("agent", "/centre/patientes")).toBe(false);
+    expect(cheminAutorise("centre", "/agent")).toBe(false);
+  });
+});

@@ -105,6 +105,14 @@ export const CHEMINS_PUBLICS: readonly string[] = ["/", "/connexion", "/inscript
 export function cheminAutorise(espace: Espace, chemin: string): boolean {
   if (espace === "complet") return true;
   /*
+   * Les routes API ne sont pas des écrans : elles ne rendent rien et ne
+   * révèlent aucun contenu d'un autre espace. Les filtrer par espace casse
+   * l'inscription sur une adresse dédiée — la redirection renvoie un 307 vers
+   * /connexion, et le navigateur reçoit une page HTML là où il attend du JSON.
+   * Chaque route porte ses propres contrôles (voir /api/inscription).
+   */
+  if (chemin.startsWith("/api/")) return true;
+  /*
    * Adresse fermée : même la connexion est refusée. Laisser entrer sur un
    * écran de connexion qui ne mène nulle part serait pire que de refuser —
    * on renvoie vers la racine, qui explique que l'adresse n'est plus en
