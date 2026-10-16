@@ -429,3 +429,22 @@ choisir le même centre pour la même raison.
 3. **Le fichier définitif du logo**, à déposer dans `public/brand/`.
 4. **Les clés Supabase, DeepSeek et l'accès Vercel**, à fournir au début de la
    Phase 2.
+
+## D12 — La clé de service vit côté serveur, et on le prouve
+
+Le client Supabase à clé de service (`src/lib/supabase/serveur.ts`) contourne
+toutes les politiques RLS. Il est donc verrouillé par `import 'server-only'` :
+la construction échoue si un composant client l'importe, même par une chaîne
+d'imports indirecte. Les variables publiques sont isolées dans
+`environnement.ts`, qui ne lit aucun secret et reste importable côté client.
+
+Deux épreuves, parce qu'une seule ne suffit pas. `epreuve-cle-service.js`
+vérifie que la clé est posée, bien formée et acceptée par le projet — mais une
+clé publiable valide passe ce contrôle aussi. `epreuve-pouvoir-rls.js` tranche :
+il écrit un district témoin, constate que la clé publiable est refusée (401) là
+où la clé de service passe (201), puis supprime le témoin. C'est la seule preuve
+du pouvoir étendu, et elle rend la base intacte.
+
+Après tout nouvel import depuis un composant client, revérifier que ni le nom
+de la variable, ni sa valeur, ni `clientDeService` n'apparaissent dans
+`.next/static`.
