@@ -407,6 +407,14 @@ export function useSession(): { profil: Profil | null; pret: boolean } {
   // Rendu serveur : on ne sait encore rien, l'écran reste en chargement.
   if (identifiant === null) return { profil: null, pret: false };
 
-  const profil = identifiant ? trouverProfil(identifiant) : null;
+  /*
+   * `lireSession` et non `trouverProfil` : ce dernier ne cherche que dans les
+   * profils de DÉMONSTRATION. Un compte réel ne s'y trouve pas, donc le garde
+   * de l'espace (`<Espace>`) recevait `profil: null`, prenait l'agent pour un
+   * visiteur et le renvoyait vers /connexion — après une authentification
+   * pourtant réussie, et sans aucun message. L'adresse devenait bien /agent,
+   * mais l'écran affiché restait celui de la connexion.
+   */
+  const profil = identifiant ? lireSession() : null;
   return { profil, pret: true };
 }
