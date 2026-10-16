@@ -64,6 +64,7 @@ export const CENTRES: Centre[] = [
     service: "Service de gynécologie et sénologie",
     latitude: 12.3217,
     longitude: -1.4694,
+    type: "specialise",
     examens: ["echographie", "mammographie", "biopsie"],
     places_semaine: 10,
     actif: true,
@@ -74,6 +75,7 @@ export const CENTRES: Centre[] = [
     service: "Service d'oncologie",
     latitude: 12.2894,
     longitude: -1.4747,
+    type: "specialise",
     examens: ["echographie", "biopsie"],
     places_semaine: 8,
     actif: true,
@@ -84,6 +86,7 @@ export const CENTRES: Centre[] = [
     service: "Service de chirurgie générale",
     latitude: 12.3772,
     longitude: -1.5203,
+    type: "specialise",
     examens: ["echographie", "mammographie", "biopsie"],
     places_semaine: 12,
     actif: true,
@@ -94,11 +97,55 @@ export const CENTRES: Centre[] = [
     service: "Maternité et imagerie",
     latitude: 12.5819,
     longitude: -1.2969,
+    type: "specialise",
     examens: ["echographie"],
     places_semaine: 6,
     actif: true,
   },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Structures de base — là où l'agent exerce                            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Ce sont les lieux de travail proposés à l'agent lors de son inscription,
+ * pas des destinations : `places_semaine` vaut 0 et `examens` est vide,
+ * et le filtre d'orientation les écarte de toute façon sur leur `type`.
+ * Elles existent ici pour que l'inscription propose une vraie liste même
+ * sans réseau — c'est ce qui fait tenir la démonstration du jury.
+ */
+export const STRUCTURES_DE_BASE: Centre[] = [
+  ["csps-dassasgho", "CSPS de Dassasgho", "Ouagadougou — Bogodogo", 12.3889, -1.4639],
+  ["csps-wemtenga", "CSPS de Wemtenga", "Ouagadougou — Bogodogo", 12.3744, -1.4792],
+  ["csps-zogona", "CSPS de Zogona", "Ouagadougou — Bogodogo", 12.3817, -1.4919],
+  ["csps-pissy", "CSPS de Pissy", "Ouagadougou — Boulmiougou", 12.3372, -1.5614],
+  ["csps-kilwin", "CSPS de Kilwin", "Ouagadougou — Boulmiougou", 12.3889, -1.5589],
+  ["csps-tanghin", "CSPS de Tanghin", "Ouagadougou — Nongr-Massom", 12.4089, -1.5047],
+  ["csps-polesgo", "CSPS de Polesgo", "Ouagadougou — Nongr-Massom", 12.4417, -1.4583],
+  ["csps-nioko2", "CSPS de Nioko II", "Ouagadougou — Nongr-Massom", 12.4283, -1.4506],
+  ["csps-kossodo", "CSPS de Kossodo", "Ouagadougou — Nongr-Massom", 12.4194, -1.4903],
+  ["csps-somgande", "CSPS de Somgandé", "Ouagadougou — Sig-Nonghin", 12.4247, -1.5106],
+  ["csps-cissin", "CSPS de Cissin", "Ouagadougou — Baskuy", 12.345, -1.5333],
+  ["csps-gounghin", "CSPS de Gounghin", "Ouagadougou — Baskuy", 12.3672, -1.5456],
+  ["csps-saaba", "CSPS de Saaba", "Saaba", 12.3858, -1.3678],
+  ["csps-koubri", "CSPS de Koubri", "Koubri", 12.1878, -1.4017],
+  ["csps-loumbila", "CSPS de Loumbila", "Loumbila", 12.5086, -1.4053],
+  ["cma-pissy", "CMA de Pissy", "Ouagadougou — Boulmiougou", 12.34, -1.565],
+  ["cma-secteur30", "CMA du Secteur 30", "Ouagadougou — Bogodogo", 12.3406, -1.4989],
+  ["cma-kossodo", "CMA de Kossodo", "Ouagadougou — Nongr-Massom", 12.4211, -1.4878],
+  ["cma-ziniare", "CMA de Ziniaré", "Ziniaré", 12.5819, -1.2969],
+].map(([id, nom, service, latitude, longitude]) => ({
+  id: id as string,
+  nom: nom as string,
+  service: service as string,
+  type: "base" as const,
+  latitude: latitude as number,
+  longitude: longitude as number,
+  examens: [],
+  places_semaine: 0,
+  actif: true,
+}));
 
 /* ------------------------------------------------------------------ */
 /* Créneaux : 30 prochains jours, du lundi au vendredi                  */

@@ -55,6 +55,29 @@ export async function POST(requete: Request) {
 
   const client = clientDeService();
 
+  /*
+   * Un spécialiste est rattaché à un centre SPÉCIALISÉ, et la base l'exige
+   * (contrainte `profils_centre_coherent`). On le vérifie ici pour deux
+   * raisons : rendre un 400 lisible plutôt qu'un 500 de contrainte, et
+   * refuser un rattachement à un CSPS — un spécialiste inscrit sur une
+   * structure de base recevrait des dossiers qu'il ne peut pas traiter.
+   */
+  let centreId: string | null = null;
+  if (role === 'centre') {
+    centreId = String(corps.centre_id ?? '').trim() || null;
+    if (!centreId) {
+      return NextResponse.json({ erreur: 'Choisissez votre centre.' }, { status: 400 });
+    }
+    const { data: centre } = await client
+      .from('centres')
+      .select('id, type, actif')
+      .eq('id', centreId)
+      .maybeSingle();
+    if (!centre || !centre.actif || centre.type !== 'specialise') {
+      return NextResponse.json({ erreur: 'Ce centre n’est pas valide.' }, { status: 400 });
+    }
+  }
+
   const { data, error } = await client.auth.admin.createUser({
     email: courrielInterne(matricule),
     password: motDePasse,
@@ -66,6 +89,11 @@ export async function POST(requete: Request) {
       centre_sante: String(corps.centre_sante ?? '').trim(),
       matricule,
       role,
+      // Propres au spécialiste. Le déclencheur les recopie dans le profil ;
+      // `centre_id` est obligatoire côté base pour un rôle « centre ».
+      sexe: String(corps.sexe ?? '').trim(),
+      specialite: String(corps.specialite ?? '').trim(),
+      centre_id: centreId,
     },
   });
 

@@ -79,15 +79,36 @@ export interface District {
   longitude: number;
 }
 
+/**
+ * Nature d'une structure de santé.
+ *
+ * - `base`       : CSPS, CMA — là où l'agent exerce et reçoit la femme. Ne
+ *                  reçoit JAMAIS d'orientation.
+ * - `specialise` : CHU, CHR, polyclinique — la destination du dossier, et le
+ *                  lieu d'exercice du spécialiste qui ouvre un compte.
+ *
+ * Cette nature est une donnée, jamais une déduction depuis `examens` :
+ * plusieurs CMA ont un échographe et seraient sinon proposés comme
+ * destination d'un niveau « orange », qui n'exige que l'échographie. L'agent
+ * enverrait alors le dossier à une structure sans sénologue.
+ */
+export type TypeCentre = "base" | "specialise";
+
 export interface Centre {
   id: string;
   nom: string;
   service: string;
+  /** Défaut `base` : une structure dont la nature est inconnue ne reçoit pas
+   *  d'orientation. Se tromper dans ce sens est sans danger ; l'inverse
+   *  envoie une femme au mauvais endroit. */
+  type: TypeCentre;
   latitude: number;
   longitude: number;
   examens: Examen[];
   places_semaine: number;
   actif: boolean;
+  /** District de rattachement. Absent pour un CHU national. */
+  district_id?: string | null;
 }
 
 export interface Creneau {

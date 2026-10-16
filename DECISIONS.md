@@ -519,3 +519,55 @@ d'une adresse n'est pas un problème de routage applicatif ni de domaine : c'est
 le projet qui ne sait pas ce qu'il publie.** Comparer `framework`,
 `rootDirectory` et `buildCommand` entre le projet qui marche et celui qui
 casse (`/v9/projects/<nom>`) dit la réponse en une commande.
+
+## D16 — Deux natures de structures, et pourquoi la distinction est vitale
+
+Le référentiel était vide : aucun centre, aucun district. Un agent ne pouvait
+orienter personne, et un spécialiste ne pouvait pas s'inscrire — la base exige
+qu'un profil de rôle « centre » soit rattaché à un centre existant
+(`profils_centre_coherent`), ce qui rendait un 500 à l'écran.
+
+Deux populations vivaient dans la même table `centres` sans rien pour les
+distinguer. Elles sont maintenant séparées par une colonne `type` :
+
+- `base` (CSPS, CMA) : là où l'agent exerce et reçoit la femme. Ne reçoit
+  AUCUNE orientation. 19 structures de Ouagadougou et son pourtour.
+- `specialise` (CHU, CHR, polyclinique) : la destination du dossier, et le
+  lieu d'exercice du spécialiste. 6 centres, avec créneaux et tarifs.
+
+**Pourquoi une colonne et pas une déduction depuis `examens`.** Plusieurs CMA
+disposent d'un échographe, et un niveau « orange » n'exige que l'échographie :
+le filtre d'orientation aurait donc proposé un CMA comme destination, et
+l'agent aurait envoyé le dossier à une structure sans sénologue. La femme
+aurait fait le trajet pour rien. La nature d'une structure est une donnée, pas
+une conséquence de son équipement. Trois essais fixent la règle, dont celui
+qui compte : entre un CMA proche et un CHU lointain, le CHU est choisi.
+
+`base` est le défaut partout (colonne, déclencheur) : une structure dont la
+nature est inconnue ne reçoit pas d'orientation. Se tromper dans ce sens est
+sans danger ; l'inverse envoie une femme au mauvais endroit.
+
+Trois conséquences qu'il a fallu traiter ensemble, et qu'aucune ne révélait
+seule :
+
+1. **Le déclencheur n'écrivait ni `centre_id`, ni `sexe`, ni `specialite`.**
+   Une inscription de spécialiste violait donc la contrainte. Un rôle
+   « centre » sans centre valide est désormais rétrogradé en agent plutôt que
+   refusé : un compte Auth sans profil ne peut RIEN lire, et l'écran reste
+   vide sans aucune erreur visible — le pire des échecs.
+2. **L'écran d'inscription du spécialiste n'appelait pas l'API.** Il écrivait
+   dans le stockage du navigateur : le compte disparaissait en changeant de
+   machine. Il passe maintenant par `/api/inscription`, avec le même repli sur
+   la démonstration que l'agent.
+3. **La liste des centres doit venir de la BASE en mode réel.** Ses
+   identifiants sont des UUID ; la liste de démonstration aurait proposé des
+   centres que la base ne connaît pas, et l'envoi aurait été refusé après
+   coup. Deux vues (`structures_de_base`, `centres_specialises`) sont
+   accordées à `anon` — l'inscription a besoin de la liste avant tout compte.
+   Elles n'exposent que nom et commune : ni places, ni tarifs, ni
+   coordonnées, et la table brute reste fermée à `anon` (vérifié : `[]`).
+
+Le champ « centre de santé » de l'agent devient une LISTE. En champ libre,
+deux agents du même CSPS l'écrivaient différemment (« CSPS Dassasgho », « csps
+de dassasgho ») et le centre recevait des dossiers venus d'un lieu qu'il ne
+pouvait pas regrouper.

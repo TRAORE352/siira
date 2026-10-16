@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Champ, Liste } from "@/components/Champs";
 import { ChampCode } from "@/components/ChampsConnexion";
 import { MessageErreur } from "@/components/Interface";
-import { creerCompteAgent, trouverCompteParMatricule } from "@/lib/data";
+import { creerCompteAgent, listerStructuresDeBase, trouverCompteParMatricule } from "@/lib/data";
 import { InscriptionRefusee, matriculeNormalise, validerInscription } from "@/lib/comptes";
 import type { ChampInscription, Inscription } from "@/lib/comptes";
 import { LIBELLE_STATUT_AGENT } from "@/lib/libelles";
@@ -102,6 +102,8 @@ export function InscriptionAgent() {
     }
   }
 
+  const structures = listerStructuresDeBase();
+
   /* Le matricule saisi est-il déjà pris ? On le dit avant l'envoi. */
   const matriculePris =
     f.matricule.trim().length >= 4 && trouverCompteParMatricule(f.matricule) !== null;
@@ -179,13 +181,24 @@ export function InscriptionAgent() {
                 Où travaillez-vous ?
               </h2>
 
-              <Champ
+              {/*
+                * Une liste, pas un champ libre : deux agents du même CSPS
+                * l'écrivaient différemment (« CSPS Dassasgho », « csps de
+                * dassasgho »), et le centre recevait des dossiers venus d'un
+                * lieu qu'il ne pouvait pas regrouper. La commune accompagne le
+                * nom car plusieurs CSPS portent celui de leur quartier.
+                */}
+              <Liste
                 label="Centre de santé"
                 obligatoire
                 aide="Celui où vous recevez les patientes."
-                placeholder="Centre de santé de…"
+                placeholder="Choisissez votre centre"
                 value={f.centre_sante}
                 erreur={erreurs.centre_sante}
+                options={structures.map((s) => ({
+                  valeur: s.nom,
+                  libelle: `${s.nom} — ${s.service}`,
+                }))}
                 onChange={(e) => set("centre_sante", e.target.value)}
               />
             </section>

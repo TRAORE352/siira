@@ -28,6 +28,11 @@ export interface InscriptionReelle {
   matricule: string;
   motDePasse: string;
   role?: 'agent' | 'centre';
+  /* Propres au spécialiste. `centre_id` est obligatoire pour un rôle
+     « centre » : la base refuse un profil de centre sans rattachement. */
+  sexe?: string;
+  specialite?: string;
+  centre_id?: string;
 }
 
 /** Échec d'authentification, avec un message que l'agent peut comprendre. */
@@ -159,4 +164,22 @@ export async function profilCourant(): Promise<Profil | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Liste des centres spécialisés, lisible AVANT la connexion.
+ *
+ * L'écran d'inscription du spécialiste doit proposer les centres alors qu'il
+ * n'a pas encore de compte. La vue `centres_specialises` est accordée à
+ * `anon` et n'expose que l'identifiant, le nom et le service — ni places, ni
+ * tarifs, ni coordonnées. Les structures de base n'y figurent pas : un
+ * spécialiste ne s'inscrit pas sur un CSPS.
+ */
+export async function centresSpecialises(): Promise<{ id: string; nom: string }[]> {
+  const { data, error } = await clientNavigateur()
+    .from('centres_specialises')
+    .select('id, nom')
+    .order('nom');
+  if (error) throw new AuthRefusee('La liste des centres est indisponible.');
+  return data ?? [];
 }

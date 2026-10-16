@@ -15,6 +15,10 @@ function centre(p: Partial<Centre> & { id: string }): Centre {
   return {
     nom: p.id,
     service: "Oncologie",
+    /* Un centre d'essai est spécialisé par défaut : c'est le cas qu'on teste.
+       Les essais qui vérifient le refus d'une structure de base posent
+       explicitement `type: "base"`. */
+    type: "specialise",
     latitude: 12.35,
     longitude: -1.5,
     examens: ["echographie", "biopsie"],
@@ -89,6 +93,58 @@ describe("filtre par examens", () => {
       aujourdhui: AUJ,
     });
     expect(r.proposition).toBeNull();
+  });
+
+  /*
+   * Le piege que ces trois essais ferment : un CMA equipe d'un echographe
+   * satisfait les examens d'un cas orange. S'il etait retenu, l'agent
+   * enverrait le dossier a une structure sans senologue et la femme ferait
+   * le trajet pour rien. La nature de la structure decide, pas l'equipement.
+   */
+  it("une structure de base n'est jamais proposee, meme equipee pour le cas", () => {
+    const cmaEquipe = centre({
+      id: "cma1",
+      type: "base",
+      examens: ["echographie", "biopsie"],
+    });
+    const r = choisirCentre({
+      niveau: "rouge",
+      district: saaba,
+      centres: [cmaEquipe],
+      creneaux: creneaux("cma1", [1]),
+      aujourdhui: AUJ,
+    });
+    expect(r.proposition).toBeNull();
+  });
+
+  it("un CMA avec echographe n'est pas propose sur un cas orange", () => {
+    const cma = centre({ id: "cma1", type: "base", examens: ["echographie"] });
+    const r = choisirCentre({
+      niveau: "orange",
+      district: saaba,
+      centres: [cma],
+      creneaux: creneaux("cma1", [2]),
+      aujourdhui: AUJ,
+    });
+    expect(r.proposition).toBeNull();
+  });
+
+  it("entre un CMA proche et un CHU lointain, le CHU est choisi", () => {
+    const cmaProche = centre({
+      id: "cma1",
+      type: "base",
+      latitude: saaba.latitude,
+      longitude: saaba.longitude,
+    });
+    const chuLointain = centre({ id: "chu1", latitude: 12.2, longitude: -1.7 });
+    const r = choisirCentre({
+      niveau: "rouge",
+      district: saaba,
+      centres: [cmaProche, chuLointain],
+      creneaux: [...creneaux("cma1", [1]), ...creneaux("chu1", [1])],
+      aujourdhui: AUJ,
+    });
+    expect(r.proposition?.centre.id).toBe("chu1");
   });
 });
 

@@ -24,6 +24,7 @@ import type {
 import type { CompteAgent } from "../comptes";
 import {
   CENTRES,
+  STRUCTURES_DE_BASE,
   DISTRICTS,
   ONGS,
   PROFILS,
@@ -69,7 +70,10 @@ export function etatInitial(): EtatSiira {
     ongs: ONGS.map((o) => ({ ...o })),
     regles_financement: REGLES_FINANCEMENT.map((r) => ({ ...r })),
     comptes: [],
-    centres: CENTRES.map((c) => ({ ...c })),
+    /* Les deux natures vivent dans la meme liste, comme en base : c'est
+       `type` qui les separe, et `listerCentres` / `listerStructuresDeBase`
+       qui les trient. */
+    centres: [...CENTRES, ...STRUCTURES_DE_BASE].map((c) => ({ ...c })),
     tarifs: TARIFS.map((t) => ({ ...t })),
     version: 1,
   };
@@ -202,7 +206,7 @@ export function reinitialiser(): EtatSiira {
 
 export const REFERENTIELS = {
   districts: DISTRICTS,
-  centres: CENTRES,
+  centres: [...CENTRES, ...STRUCTURES_DE_BASE],
   tarifs: TARIFS,
   profils: PROFILS,
   regles_financement: REGLES_FINANCEMENT,

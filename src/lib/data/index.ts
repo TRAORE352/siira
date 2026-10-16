@@ -8,6 +8,7 @@
  */
 
 import { chercherDansLeCache, explicationDeRepli, resumeDeRepli } from "../cache-demo";
+import { STRUCTURES_DE_BASE } from "../demo";
 import { calculerMontant, ongsCorrespondantes } from "../financement";
 import { choisirCentre } from "../matching";
 import type { PropositionCentre } from "../matching";
@@ -67,8 +68,29 @@ export function listerDistricts(): District[] {
   return REFERENTIELS.districts;
 }
 
+/**
+ * Centres SPÉCIALISÉS : les destinations d'orientation.
+ *
+ * Cette liste ne contient jamais de CSPS ni de CMA. Le filtre est ici et non
+ * chez l'appelant, parce que tous les appelants — orientation, inscription du
+ * spécialiste, console de l'équipe — veulent la même chose : les structures
+ * qui reçoivent un dossier.
+ */
 export function listerCentres(): Centre[] {
-  return lireEtat().centres ?? REFERENTIELS.centres;
+  const tous = lireEtat().centres ?? REFERENTIELS.centres;
+  return tous.filter((c) => c.type === "specialise");
+}
+
+/**
+ * Structures DE BASE : les lieux de travail de l'agent (CSPS, CMA).
+ *
+ * Elles servent à remplir le champ « où exercez-vous » de l'inscription, pas
+ * à recevoir une orientation.
+ */
+export function listerStructuresDeBase(): Centre[] {
+  const tous = lireEtat().centres ?? REFERENTIELS.centres;
+  const base = tous.filter((c) => c.type === "base");
+  return base.length > 0 ? base : STRUCTURES_DE_BASE;
 }
 
 export function trouverDistrict(id: string): District | undefined {

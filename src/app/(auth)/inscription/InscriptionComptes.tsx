@@ -8,6 +8,8 @@ import { Bouton } from "@/components/Bouton";
 import { Champ, Liste } from "@/components/Champs";
 import { MessageErreur } from "@/components/Interface";
 import { listerCentres } from "@/lib/data";
+import { AuthRefusee, centresSpecialises, inscrire } from "@/lib/supabase/auth";
+import { supabaseEstConfigure } from "@/lib/supabase/environnement";
 import { ESPACE_ACTIF, mentionEspace, roleAutorise } from "@/lib/espaces";
 import {
   ACCUEIL_PAR_ROLE,
@@ -62,10 +64,35 @@ export function InscriptionComptes() {
     router.replace(ACCUEIL_PAR_ROLE[profil.role]);
   }, [router]);
 
-  const centres = listerCentres();
+  /*
+   * La liste des centres vient de la BASE en mode réel : ses identifiants
+   * sont des UUID, et l'API refuse un `centre_id` qui n'en est pas un. La
+   * liste de démonstration ne servirait qu'à proposer des centres que la
+   * base ne connaît pas.
+   */
+  const [centres, setCentres] = useState<{ id: string; nom: string }[]>(
+    supabaseEstConfigure() ? [] : listerCentres(),
+  );
+
+  useEffect(() => {
+    if (!supabaseEstConfigure()) return;
+    let vivant = true;
+    centresSpecialises()
+      .then((liste) => {
+        if (vivant) setCentres(liste);
+      })
+      .catch(() => {
+        /* Sans réseau la liste reste vide et le champ le dit : mieux vaut
+           cela qu'un centre proposé puis refusé à l'envoi. */
+      });
+    return () => {
+      vivant = false;
+    };
+  }, []);
+
   const mention = mentionEspace(ESPACE_ACTIF);
 
-  function soumettre(e: React.FormEvent) {
+  async function soumettre(e: React.FormEvent) {
     e.preventDefault();
     setErreur(null);
 
@@ -84,6 +111,35 @@ export function InscriptionComptes() {
     }
     setErreurs(fautes);
     if (Object.keys(fautes).length > 0) return;
+
+    /*
+     * Deux voies, comme pour l'agent : la base quand elle est configurée, la
+     * démonstration sinon. Le repli n'est pas une commodité de
+     * développement — c'est ce qui garantit que le parcours du jury passe
+     * même sans réseau.
+     */
+    if (supabaseEstConfigure()) {
+      setEnvoi(true);
+      try {
+        const profil = await inscrire({
+          nom: nom.trim(),
+          prenoms: prenoms.trim(),
+          sexe,
+          specialite,
+          centre_id: centreId,
+          matricule: matricule.trim(),
+          motDePasse,
+          role: "centre",
+        });
+        router.replace(ACCUEIL_PAR_ROLE[profil.role]);
+      } catch (e) {
+        setEnvoi(false);
+        setErreur(
+          e instanceof AuthRefusee ? e.message : "La création du compte a échoué.",
+        );
+      }
+      return;
+    }
 
     if (trouverCompteInscrit(matricule.trim())) {
       setErreur("Ce numéro matricule est déjà utilisé.");

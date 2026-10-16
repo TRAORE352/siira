@@ -151,8 +151,16 @@ export function choisirCentre(entree: EntreeMatching): ResultatMatching {
   const requis = EXAMENS_REQUIS[niveau];
   const delaiLimite = DELAIS_JOURS[niveau];
 
+  /*
+   * Un centre de BASE ne reçoit jamais d'orientation, même s'il dispose de
+   * l'équipement requis : plusieurs CMA ont un échographe, et un niveau
+   * « orange » n'exige que l'échographie. Sans ce filtre, l'agent enverrait
+   * le dossier à une structure sans sénologue — la femme ferait le trajet
+   * pour rien. La nature de la structure décide, pas son équipement.
+   */
   const eligibles = centres.filter(
-    (c) => c.actif && requis.every((ex) => c.examens.includes(ex)),
+    (c) =>
+      c.actif && c.type === "specialise" && requis.every((ex) => c.examens.includes(ex)),
   );
 
   const retenus: PropositionCentre[] = [];
