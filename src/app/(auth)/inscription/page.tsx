@@ -2,6 +2,7 @@
 
 import { InscriptionAgent } from "./InscriptionAgent";
 import { InscriptionComptes } from "./InscriptionComptes";
+import { Redirection } from "@/components/Espace";
 import { ESPACE_ACTIF } from "@/lib/espaces";
 
 /**
@@ -16,5 +17,7 @@ import { ESPACE_ACTIF } from "@/lib/espaces";
  */
 export default function Inscription() {
   if (ESPACE_ACTIF === "agent") return <InscriptionAgent />;
+  /* L'adresse de l'équipe n'ouvre pas d'inscription : elle sert la console. */
+  if (ESPACE_ACTIF === "admin") return <Redirection vers="/connexion" />;
   return <InscriptionComptes />;
 }

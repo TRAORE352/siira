@@ -32,7 +32,7 @@ import type { Profil, Role } from "./types";
  * « ferme » n'est pas un public : c'est l'état d'une adresse dont l'espace a
  * été supprimé. Elle répond, mais n'ouvre aucun écran.
  */
-export type Espace = "agent" | "centre" | "complet" | "ferme";
+export type Espace = "agent" | "centre" | "admin" | "complet" | "ferme";
 
 export const ROLES: readonly Role[] = ["agent", "centre", "admin"];
 
@@ -72,7 +72,9 @@ const ESPACES_SUPPRIMES: readonly string[] = ["ong"];
  */
 export function lireEspace(valeur: string | undefined): Espace {
   const v = (valeur ?? "").trim().toLowerCase();
-  if (v === "agent" || v === "centre") return v;
+  if (v === "agent" || v === "centre" || v === "admin") return v;
+  /* « equipe » est l'autre nom de l'espace de l'équipe : les deux marchent. */
+  if (v === "equipe" || v === "équipe") return "admin";
   if (ESPACES_SUPPRIMES.includes(v)) return "ferme";
   return "complet";
 }
@@ -135,6 +137,8 @@ export function nomEspace(espace: Espace): string {
       return "Siira, espace agent de santé";
     case "centre":
       return "Siira, espace centre spécialisé";
+    case "admin":
+      return "Siira, espace équipe";
     case "ferme":
       return "Adresse hors service — Siira";
     default:
@@ -148,6 +152,8 @@ export function titreEspace(espace: Espace): string {
       return "L’espace des agents de santé";
     case "centre":
       return "L’espace des centres spécialisés";
+    case "admin":
+      return "L’espace de l’équipe Siira";
     case "ferme":
       return "Cette adresse n’est plus en service";
     default:
@@ -161,6 +167,8 @@ export function presentationEspace(espace: Espace): string {
       return "Enregistrez une patiente, dictez ce qu’elle ressent, validez le niveau d’urgence et envoyez le dossier au centre spécialisé.";
     case "centre":
       return "Recevez les dossiers orientés vers votre centre, suivez les examens et enregistrez les résultats.";
+    case "admin":
+      return "La console de la plateforme : les comptes, les centres et leurs tarifs, les financeurs, et la remise à zéro de la démonstration.";
     case "ferme":
       return "L’espace qui se trouvait ici a été retiré. Rapprochez-vous de l’équipe Siira pour obtenir la bonne adresse.";
     default:

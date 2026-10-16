@@ -121,6 +121,23 @@ describe("cheminAutorise", () => {
     expect(cheminAutorise("centre", "/agent")).toBe(false);
   });
 
+  /* L'adresse de l'équipe : la console, et rien d'autre. */
+  it("l'espace équipe n'ouvre que sa console", () => {
+    expect(cheminAutorise("admin", "/admin")).toBe(true);
+    expect(cheminAutorise("admin", "/admin/comptes")).toBe(true);
+    expect(cheminAutorise("admin", "/admin/centres")).toBe(true);
+    expect(cheminAutorise("admin", "/agent")).toBe(false);
+    expect(cheminAutorise("admin", "/centre")).toBe(false);
+    expect(cheminAutorise("admin", "/design")).toBe(false);
+  });
+
+  it("« equipe » et « admin » désignent le même espace", () => {
+    expect(lireEspace("equipe")).toBe("admin");
+    expect(lireEspace("admin")).toBe("admin");
+    expect(roleAutorise(lireEspace("equipe"), "admin")).toBe(true);
+    expect(roleAutorise(lireEspace("equipe"), "agent")).toBe(false);
+  });
+
   /*
    * Les écrans de l'ONG ont été supprimés. Une adresse enregistrée dans un
    * téléphone ou un favori ne doit mener nulle part, sur aucun espace.
