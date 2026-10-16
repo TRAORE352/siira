@@ -154,7 +154,7 @@ export function ConnexionComptes() {
             Pas de compte ?{" "}
             <Link
               href="/inscription"
-              className="font-medium text-rose-700 underline-offset-4 hover:underline"
+              className="inline-flex min-h-[var(--spacing-cible)] items-center px-2 font-medium text-rose-700 underline-offset-4 hover:underline"
             >
               Créer un compte
             </Link>

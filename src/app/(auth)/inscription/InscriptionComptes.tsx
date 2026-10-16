@@ -255,7 +255,7 @@ export function InscriptionComptes() {
             Déjà un compte ?{" "}
             <Link
               href="/connexion"
-              className="font-medium text-rose-700 underline-offset-4 hover:underline"
+              className="inline-flex min-h-[var(--spacing-cible)] items-center px-2 font-medium text-rose-700 underline-offset-4 hover:underline"
             >
               Se connecter
             </Link>

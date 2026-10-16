@@ -130,14 +130,21 @@ export function profilParMatricule(matricule: string): Profil | undefined {
   const cle = cleMatricule(matricule);
   if (!cle) return undefined;
 
+  /* Compte de démonstration qui porte ce matricule — l'équipe : SIIRA-ADMIN. */
   const referentiel = REFERENTIELS.profils.find(
     (p) => p.matricule && cleMatricule(p.matricule) === cle,
   );
   if (referentiel) return referentiel;
 
-  const inscrit = lireEtat().comptes?.find((c) => cleMatricule(c.matricule) === cle);
-  if (inscrit) return inscrit.profil;
+  /* Compte de centre créé à l'inscription. */
+  const centre = trouverCompteInscrit(matricule)?.profil;
+  if (centre) return centre;
 
+  /* Compte d'agent créé à l'inscription. */
+  const agent = lireEtat().comptes?.find((c) => cleMatricule(c.matricule) === cle)?.profil;
+  if (agent) return agent;
+
+  /* Et à défaut, un centre de démonstration, comme avant. */
   return centrePourMatricule(matricule);
 }
 
@@ -277,7 +284,8 @@ export function connecterParMatricule(
     ouvrirSession(compte.profil.id);
     return { profil: compte.profil };
   }
-  const profil = centrePourMatricule(matricule);
+  /* Compte de démonstration, compte inscrit, ou centre attribué d'après les chiffres. */
+  const profil = profilParMatricule(matricule);
   if (!profil) {
     return { erreur: "Impossible d'ouvrir votre espace. Réessayez dans un instant." };
   }
