@@ -65,7 +65,10 @@ function maintenant(): string {
 /* ------------------------------------------------------------------ */
 
 export function listerDistricts(): District[] {
-  return REFERENTIELS.districts;
+  /* L'etat, pas la constante : les districts REELS y sont charges a
+     l'ouverture de session, et ils portent des UUID que la demonstration ne
+     connait pas. */
+  return lireEtat().districts ?? REFERENTIELS.districts;
 }
 
 /**
@@ -94,7 +97,7 @@ export function listerStructuresDeBase(): Centre[] {
 }
 
 export function trouverDistrict(id: string): District | undefined {
-  return REFERENTIELS.districts.find((d) => d.id === id);
+  return listerDistricts().find((d) => d.id === id);
 }
 
 export function trouverCentre(id: string): Centre | undefined {

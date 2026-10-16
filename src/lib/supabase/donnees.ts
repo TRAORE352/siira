@@ -26,8 +26,10 @@ import { clientNavigateur } from "./navigateur";
 import { supabaseEstConfigure } from "./environnement";
 import { remplacerEtat } from "../data/magasin";
 import type {
+  Centre,
   Consultation,
   Creneau,
+  District,
   Orientation,
   Patiente,
   Suivi,
@@ -59,7 +61,7 @@ export async function chargerDonneesReelles(): Promise<boolean> {
      * être lues, et les enchaîner multiplierait l'attente sur un réseau lent —
      * celui du terrain.
      */
-    const [patientes, consultations, orientations, suivis, creneaux, tarifs] =
+    const [patientes, consultations, orientations, suivis, creneaux, tarifs, districts, centres] =
       await Promise.all([
         bd.from("patientes").select("*").order("cree_le", { ascending: false }),
         bd.from("consultations").select("*").order("cree_le", { ascending: false }),
@@ -67,6 +69,12 @@ export async function chargerDonneesReelles(): Promise<boolean> {
         bd.from("suivis").select("*").order("cree_le", { ascending: true }),
         bd.from("creneaux").select("*").order("debut", { ascending: true }),
         bd.from("tarifs").select("*"),
+        /* Les referentiels aussi : une patiente reelle porte l'UUID de son
+           district, introuvable dans la demonstration. Sans eux, l'ecran
+           affiche « District non precise » sur des dossiers pourtant complets,
+           et l'orientation ne peut pas calculer de distance. */
+        bd.from("districts").select("*").order("nom"),
+        bd.from("centres").select("*").order("nom"),
       ]);
 
     /*
@@ -87,6 +95,10 @@ export async function chargerDonneesReelles(): Promise<boolean> {
       suivis: (suivis.data ?? []) as Suivi[],
       creneaux: (creneaux.data ?? []) as Creneau[],
       tarifs: (tarifs.data ?? []) as Tarif[],
+      /* On ne remplace les referentiels que s'ils sont peuples : sinon on
+         priverait la demonstration des siens sans rien mettre a la place. */
+      districts: districts.data?.length ? (districts.data as District[]) : e.districts,
+      centres: centres.data?.length ? (centres.data as Centre[]) : e.centres,
     }));
 
     chargeUneFois = true;

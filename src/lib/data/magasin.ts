@@ -17,6 +17,7 @@ import type {
   Ong,
   Orientation,
   Patiente,
+  District,
   RegleFinancement,
   Suivi,
   Tarif,
@@ -47,6 +48,8 @@ export interface EtatSiira {
   regles_financement: RegleFinancement[];
   /** Comptes créés à l'inscription d'un agent, avec leur matricule. */
   comptes: CompteAgent[];
+  /** Districts : ceux de la base en mode réel, ceux de la démo sinon. */
+  districts: District[];
   /** Centres et tarifs : l'équipe les modifie depuis l'espace admin. */
   centres: Centre[];
   tarifs: Tarif[];
@@ -73,6 +76,7 @@ export function etatInitial(): EtatSiira {
     /* Les deux natures vivent dans la meme liste, comme en base : c'est
        `type` qui les separe, et `listerCentres` / `listerStructuresDeBase`
        qui les trient. */
+    districts: DISTRICTS.map((d) => ({ ...d })),
     centres: [...CENTRES, ...STRUCTURES_DE_BASE].map((c) => ({ ...c })),
     tarifs: TARIFS.map((t) => ({ ...t })),
     version: 1,
