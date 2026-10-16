@@ -92,6 +92,48 @@ export function lireNumeroSession(): string | null {
   return window.sessionStorage.getItem(CLE_NUMERO);
 }
 
+/*
+ * Connexion du centre par numéro matricule.
+ *
+ * Phase 1 : aucun serveur ne vérifie quoi que ce soit. Tout matricule et tout
+ * mot de passe ouvrent l'espace du centre. Le matricule est retenu pour que
+ * l'écran puisse l'afficher, et un même matricule retrouve toujours le même
+ * centre de démonstration.
+ */
+const CLE_MATRICULE = "siira.matricule.v1";
+
+/** Centres de démonstration, dans l'ordre d'attribution. */
+function centresDemo(): Profil[] {
+  return REFERENTIELS.profils.filter((p) => p.role === "centre");
+}
+
+/** Attribue toujours le même centre à un même matricule (somme des chiffres). */
+export function centrePourMatricule(matricule: string): Profil | undefined {
+  const centres = centresDemo();
+  if (centres.length === 0) return undefined;
+  const chiffres = matricule.replace(/\D/g, "");
+  let somme = 0;
+  for (const c of chiffres) somme += Number(c);
+  return centres[somme % centres.length];
+}
+
+/** Ouvre la session d'un centre à partir de son matricule. */
+export function ouvrirSessionParMatricule(matricule: string): Profil | undefined {
+  const profil = centrePourMatricule(matricule);
+  if (!profil) return undefined;
+  if (typeof window !== "undefined") {
+    window.sessionStorage.setItem(CLE_MATRICULE, matricule);
+  }
+  ouvrirSession(profil.id);
+  return profil;
+}
+
+/** Matricule avec lequel la session a été ouverte, s'il y en a un. */
+export function lireMatriculeSession(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.sessionStorage.getItem(CLE_MATRICULE);
+}
+
 export function ouvrirSession(profilId: string) {
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(CLE, profilId);
