@@ -56,7 +56,7 @@ function chrome() {
 
   /* 2. Connexion, remplie. */
   await page.getByLabel(/Numéro de téléphone/).fill("70123456");
-  await page.getByLabel(/Code secret/).fill("1234");
+  await page.getByLabel(/Mot de passe/).fill("1234");
   await page.waitForTimeout(300);
   await cliche("02-connexion-remplie");
 
@@ -67,7 +67,7 @@ function chrome() {
    */
   for (const essai of ["25123456", "04123456", "09123456", "60123456", "01234567"]) {
     await page.getByLabel(/Numéro de téléphone/).fill(essai);
-    await page.getByLabel(/Code secret/).fill("123456");
+    await page.getByLabel(/Mot de passe/).fill("123456");
     await page.getByRole("button", { name: /Ouvrir mon espace/ }).click();
     /*
       Attendre l'arrivée, ne pas lire l'URL après un délai fixe : en production

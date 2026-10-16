@@ -63,7 +63,7 @@ function dire(titre, valeur) {
   /* Le parcours réel, de la connexion à l'envoi du dossier. */
   await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
   await page.getByLabel(/Numéro de téléphone/).fill("70123456");
-  await page.getByLabel(/Code secret/).fill("123456");
+  await page.getByLabel(/Mot de passe/).fill("123456");
   await page.getByRole("button", { name: /Ouvrir mon espace/ }).click();
   await page.waitForURL(/\/agent$/, { timeout: 20000 });
 

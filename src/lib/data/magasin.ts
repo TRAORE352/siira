@@ -19,6 +19,7 @@ import type {
   RegleFinancement,
   Suivi,
 } from "../types";
+import type { CompteAgent } from "../comptes";
 import {
   CENTRES,
   DISTRICTS,
@@ -41,6 +42,8 @@ export interface EtatSiira {
   ongs: Ong[];
   /** Règles de financement, modifiables par chaque ONG. */
   regles_financement: RegleFinancement[];
+  /** Comptes créés à l'inscription d'un agent, avec leur matricule. */
+  comptes: CompteAgent[];
   /** Incrémenté à chaque écriture, pour repérer les changements. */
   version: number;
 }
@@ -60,6 +63,7 @@ export function etatInitial(): EtatSiira {
     creneaux: [...creneauxDemo(), ...creneauxHistorique()],
     ongs: ONGS.map((o) => ({ ...o })),
     regles_financement: REGLES_FINANCEMENT.map((r) => ({ ...r })),
+    comptes: [],
     version: 1,
   };
 }
@@ -87,6 +91,10 @@ function charger(): EtatSiira {
       if (Array.isArray(lu.patientes) && Array.isArray(lu.creneaux)) {
         if (!Array.isArray(lu.regles_financement)) {
           lu.regles_financement = REGLES_FINANCEMENT.map((r) => ({ ...r }));
+        }
+        /* État enregistré avant l'inscription : aucun compte, et c'est normal. */
+        if (!Array.isArray(lu.comptes)) {
+          lu.comptes = [];
         }
         return lu;
       }

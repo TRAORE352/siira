@@ -111,12 +111,18 @@ export function ChampCode({
   onChange,
   erreur,
   onComplet,
+  label = "Mot de passe",
+  aide,
 }: {
   valeur: string;
   onChange: (chiffres: string) => void;
   erreur?: string;
   /** Appelé dès que les 6 chiffres sont saisis. */
   onComplet?: (code: string) => void;
+  /** « Mot de passe » sur la connexion, « Confirmer le mot de passe » ailleurs. */
+  label?: string;
+  /** Phrase d'aide sous les cases, quand elle sert. */
+  aide?: string;
 }) {
   const id = useId();
   const champ = useRef<HTMLInputElement>(null);
@@ -136,14 +142,14 @@ export function ChampCode({
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-3">
         <label htmlFor={id} className="text-[0.95rem] font-medium text-prune-800">
-          Code secret
+          {label}
         </label>
         <button
           type="button"
           onClick={() => setMontrer((m) => !m)}
           className="min-h-[var(--spacing-cible)] text-sm font-medium text-rose-700 underline-offset-4 hover:underline"
         >
-          {montrer ? "Masquer le code" : "Afficher le code"}
+          {montrer ? "Masquer" : "Afficher"}
         </button>
       </div>
 
@@ -161,9 +167,9 @@ export function ChampCode({
           autoComplete="one-time-code"
           enterKeyHint="go"
           maxLength={LONGUEUR_CODE}
-          aria-label="Code secret à 6 chiffres"
+          aria-label={`${label} à 6 chiffres`}
           aria-invalid={erreur ? true : undefined}
-          aria-describedby={erreur ? `${id}-erreur` : undefined}
+          aria-describedby={erreur ? `${id}-erreur` : aide ? `${id}-aide` : undefined}
           value={valeur}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
@@ -205,6 +211,10 @@ export function ChampCode({
       {erreur ? (
         <p id={`${id}-erreur`} role="alert" className="text-sm font-medium text-rouge-fort">
           {erreur}
+        </p>
+      ) : aide ? (
+        <p id={`${id}-aide`} className="text-sm text-sable-600">
+          {aide}
         </p>
       ) : null}
     </div>

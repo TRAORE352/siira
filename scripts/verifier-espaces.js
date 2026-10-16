@@ -122,7 +122,7 @@ async function lire(chemin, options = {}) {
       connexion.texte.includes("Numéro de téléphone"),
     );
     verifier("l’indicatif du Burkina Faso est affiché", connexion.texte.includes("+226"));
-    verifier("la connexion demande un code secret", connexion.texte.includes("Code secret"));
+    verifier("la connexion demande un mot de passe", connexion.texte.includes("Mot de passe"));
     verifier(
       "le code annoncé compte bien 6 chiffres",
       connexion.texte.includes("6 chiffres"),

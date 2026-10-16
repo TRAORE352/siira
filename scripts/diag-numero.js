@@ -30,7 +30,7 @@ function chrome() {
   await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
 
   await page.getByLabel(/Numéro de téléphone/).fill("25123456");
-  await page.getByLabel(/Code secret/).fill("123456");
+  await page.getByLabel(/Mot de passe/).fill("123456");
 
   const avant = await page.evaluate(() => ({
     tel: document.querySelector('input[type="tel"]')?.value,

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Bouton } from "@/components/Bouton";
@@ -149,6 +150,16 @@ export function ConnexionAgent() {
           <p className="mt-6 text-center text-sm text-sable-600">
             Code oublié ?{" "}
             <span className="font-medium text-prune-800">Appelez votre superviseur.</span>
+          </p>
+
+          <p className="mt-4 text-center text-sm text-sable-600">
+            Pas encore de compte ?{" "}
+            <Link
+              href="/inscription"
+              className="inline-flex min-h-[var(--spacing-cible)] items-center px-2 font-medium text-rose-700 underline-offset-4 hover:underline"
+            >
+              Créer un compte
+            </Link>
           </p>
         </div>
       </main>

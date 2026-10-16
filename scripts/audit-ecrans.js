@@ -24,6 +24,7 @@ function chrome() {
 const ECRANS = [
   ["/", null, 360],
   ["/connexion", null, 360],
+  ["/inscription", null, 360],
   ["/design", null, 1280],
   ["/agent", "pro-agent-saaba", 360],
   ["/agent/patientes", "pro-agent-saaba", 360],

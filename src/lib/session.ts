@@ -11,7 +11,8 @@
 
 import { useSyncExternalStore } from "react";
 import type { Profil } from "./types";
-import { REFERENTIELS } from "./data/magasin";
+import { cleMatricule } from "./comptes";
+import { REFERENTIELS, lireEtat } from "./data/magasin";
 import { ACCUEIL_PAR_ROLE, ESPACE_ACTIF, LIBELLE_ROLE, roleAutorise } from "./espaces";
 
 /*
@@ -117,9 +118,32 @@ export function centrePourMatricule(matricule: string): Profil | undefined {
   return centres[somme % centres.length];
 }
 
+/**
+ * Profil derrière un matricule.
+ *
+ * Trois cas, dans cet ordre : un compte de démonstration qui porte ce matricule
+ * (l'équipe Siira entre par `SIIRA-ADMIN`), un compte créé à l'inscription, et
+ * — comme avant — un centre de démonstration attribué d'après les chiffres du
+ * matricule, pour que n'importe quelle saisie ouvre un espace crédible.
+ */
+export function profilParMatricule(matricule: string): Profil | undefined {
+  const cle = cleMatricule(matricule);
+  if (!cle) return undefined;
+
+  const referentiel = REFERENTIELS.profils.find(
+    (p) => p.matricule && cleMatricule(p.matricule) === cle,
+  );
+  if (referentiel) return referentiel;
+
+  const inscrit = lireEtat().comptes?.find((c) => cleMatricule(c.matricule) === cle);
+  if (inscrit) return inscrit.profil;
+
+  return centrePourMatricule(matricule);
+}
+
 /** Ouvre la session d'un centre à partir de son matricule. */
 export function ouvrirSessionParMatricule(matricule: string): Profil | undefined {
-  const profil = centrePourMatricule(matricule);
+  const profil = profilParMatricule(matricule);
   if (!profil) return undefined;
   if (typeof window !== "undefined") {
     window.sessionStorage.setItem(CLE_MATRICULE, matricule);
@@ -268,6 +292,12 @@ export function connecterParMatricule(
 function trouverProfil(id: string): Profil | null {
   const referentiel = REFERENTIELS.profils.find((p) => p.id === id);
   if (referentiel) return referentiel;
+
+  /* Compte d'agent créé à l'inscription : il vit dans l'état de la démonstration. */
+  const agent = lireEtat().comptes?.find((c) => c.profil.id === id)?.profil;
+  if (agent) return agent;
+
+  /* Compte de centre créé à l'inscription : il vit dans le stockage local. */
   return lireComptes().find((c) => c.profil.id === id)?.profil ?? null;
 }
 

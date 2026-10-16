@@ -265,6 +265,11 @@ export const PROFILS: Profil[] = [
     centre_sante: null,
     centre_id: null,
     ong_id: null,
+    /*
+     * L'équipe entre par ce matricule sur l'écran de connexion. Sans lui, plus
+     * rien ne mène à /admin, où l'on réinitialise la démonstration.
+     */
+    matricule: "SIIRA-ADMIN",
   },
 ];
 

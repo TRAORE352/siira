@@ -195,6 +195,15 @@ export interface Profil {
   prenoms?: string;
   sexe?: "femme" | "homme";
   specialite?: string;
-  matricule?: string;
   telephone?: string;
+  /** Renseignés à l'inscription d'un agent. */
+  prenom?: string | null;
+  statut?: StatutAgent | null;
+  matricule?: string | null;
 }
+
+/** Métier déclaré par l'agent à l'inscription. */
+export type StatutAgent =
+  | "infirmier_etat"
+  | "medecin_generaliste"
+  | "agent_communautaire";

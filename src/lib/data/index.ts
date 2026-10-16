@@ -29,8 +29,16 @@ import type {
   RegleFinancement,
   ResultatSuivi,
   Role,
+  StatutAgent,
   Suivi,
 } from "../types";
+import {
+  InscriptionRefusee,
+  cleMatricule,
+  matriculeNormalise,
+  validerInscription,
+} from "../comptes";
+import type { CompteAgent, Inscription } from "../comptes";
 import { REFERENTIELS, abonner, lireEtat, modifier, reinitialiser } from "./magasin";
 
 /* ------------------------------------------------------------------ */
@@ -728,6 +736,69 @@ export function changerDisponibiliteCreneau(creneauId: string, libre: boolean): 
     if (!creneau) throw new Error("Créneau introuvable.");
     creneau.libre = libre;
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* Inscription des agents                                              */
+/* ------------------------------------------------------------------ */
+
+/** Comptes créés à l'inscription, du plus récent au plus ancien. */
+export function listerComptesAgents(): CompteAgent[] {
+  return lireEtat().comptes ?? [];
+}
+
+/** Compte portant ce matricule, quelle que soit l'écriture. */
+export function trouverCompteParMatricule(matricule: string): CompteAgent | null {
+  const cherche = cleMatricule(matricule);
+  return listerComptesAgents().find((c) => cleMatricule(c.matricule) === cherche) ?? null;
+}
+
+/** Profil inscrit, quand la session a été ouverte par un compte créé ici. */
+export function trouverProfilInscrit(profilId: string): Profil | null {
+  return listerComptesAgents().find((c) => c.profil.id === profilId)?.profil ?? null;
+}
+
+/**
+ * Crée le compte d'un agent. Lève `InscriptionRefusee` si un champ ne va pas :
+ * l'écran affiche alors la faute sous le champ concerné.
+ */
+export function creerCompteAgent(entree: Inscription): CompteAgent {
+  const fautes = validerInscription(
+    entree,
+    listerComptesAgents().map((c) => c.matricule),
+  );
+  if (Object.keys(fautes).length > 0) throw new InscriptionRefusee(fautes);
+
+  const matricule = matriculeNormalise(entree.matricule);
+  const prenom = entree.prenom.trim();
+  const nom = entree.nom.trim();
+
+  const profil: Profil = {
+    id: `agent-inscrit-${matricule.toLowerCase()}`,
+    /* Le prénom d'abord : c'est par lui que l'application salue l'agent. */
+    nom: `${prenom} ${nom}`,
+    email: "",
+    role: "agent",
+    centre_sante: entree.centre_sante.trim(),
+    centre_id: null,
+    ong_id: null,
+    prenom,
+    statut: entree.statut as StatutAgent,
+    matricule,
+  };
+
+  const compte: CompteAgent = {
+    profil,
+    matricule,
+    /* Phase 1 : le mot de passe reste dans le navigateur, le temps de la démo. */
+    mot_de_passe: entree.mot_de_passe,
+  };
+
+  modifier((e) => {
+    e.comptes = [compte, ...(e.comptes ?? [])];
+  });
+
+  return compte;
 }
 
 /* ------------------------------------------------------------------ */

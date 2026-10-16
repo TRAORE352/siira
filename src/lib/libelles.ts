@@ -15,8 +15,16 @@ import type {
   ResultatSuivi,
   Sein,
   SignePeau,
+  StatutAgent,
   StatutFinancement,
 } from "./types";
+
+/** Métier de l'agent, tel qu'il est demandé à l'inscription. */
+export const LIBELLE_STATUT_AGENT: Record<StatutAgent, string> = {
+  infirmier_etat: "Infirmier d'état",
+  medecin_generaliste: "Médecin généraliste",
+  agent_communautaire: "Agent communautaire",
+};
 
 export const LIBELLE_PAIEMENT: Record<CapacitePaiement, string> = {
   peut_payer: "Elle peut payer",

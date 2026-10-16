@@ -95,16 +95,16 @@ considère l'application installable sur l'adresse de l'agent.
 
 ## Comptes de démonstration
 
-**L'agent de santé se connecte avec son numéro de téléphone et un code à
-6 chiffres.** Aucun compte n'est proposé sur l'adresse de l'agent : l'écran est
-celui qu'il ouvrira tous les matins. En Phase 1, tout numéro burkinabè valide
-et tout code à 6 chiffres ouvrent l'espace — c'est Supabase Auth qui vérifiera
-le couple en Phase 2, sans changer l'écran.
+**L'agent de santé se connecte avec son numéro de téléphone et son mot de passe
+à 6 chiffres.** Aucun compte n'est proposé sur l'adresse de l'agent : l'écran
+est celui qu'il ouvrira tous les matins. En Phase 1, tout numéro burkinabè
+valide et tout mot de passe à 6 chiffres ouvrent l'espace — c'est Supabase Auth
+qui vérifiera le couple en Phase 2, sans changer l'écran.
 
 | Saisie | Règle |
 |---|---|
 | Numéro | 8 chiffres, indicatif `+226` fixé. **Aucun préfixe n'est refusé** : mobiles, lignes fixes et tranches récentes passent tous. |
-| Code | 6 chiffres, n'importe lesquels en Phase 1. |
+| Mot de passe | 6 chiffres, n'importe lesquels en Phase 1. |
 
 Seule la longueur est contrôlée, délibérément. Une liste de préfixes « connus »
 écrite dans le code vieillit mal — le plan de numérotation burkinabè a changé
@@ -114,23 +114,23 @@ tranchera en Phase 2.
 
 Un même numéro retrouve toujours le même agent de démonstration — et donc les
 mêmes patientes — plutôt qu'un agent tiré au hasard à chaque connexion.
-Essayez `70 12 34 56` avec le code `123456`.
+Essayez `70 12 34 56` avec le mot de passe `123456`.
 
-Le centre travaille sur ordinateur et garde la connexion par compte : sur son
-écran de connexion, il suffit de toucher un compte.
+**L'agent peut aussi créer son compte lui-même**, sur `/inscription` : nom,
+prénom, statut (infirmier d'état, médecin généraliste, agent communautaire),
+centre de santé, matricule d'agent, et mot de passe à 6 chiffres à confirmer.
+Le compte est enregistré dans l'état de la démonstration, et l'agent entre
+directement dans son espace — on ne lui demande pas de se connecter juste après
+s'être inscrit.
 
-| Rôle | Adresse | Personne |
-|---|---|---|
-| Centre | `centre.bogodogo@siira.demo` | Dr Alimata Zongo, CHU de Bogodogo |
-| Centre | `centre.tengandogo@siira.demo` | Dr Issa Compaoré, CHU de Tengandogo |
-| Centre | `centre.yalgado@siira.demo` | Dr Rasmata Nikiéma, CHU Yalgado Ouédraogo |
-| Centre | `centre.ziniare@siira.demo` | Dr Paul Ilboudo, CHR de Ziniaré |
-| Admin | `admin@siira.demo` | Équipe Siira |
+Le centre et l'équipe Siira travaillent sur ordinateur et se connectent par
+**numéro matricule et mot de passe** :
 
-Les trois agents de démonstration (Salimata Ouédraogo à Saaba, Boukary
-Sawadogo à Ziniaré, Mariam Kaboré à Koubri) se connectent par téléphone sur
-l'adresse de l'agent, et par leur adresse lorsque l'application est servie
-sans `NEXT_PUBLIC_ESPACE`.
+| Matricule saisi | Espace ouvert |
+|---|---|
+| `SIIRA-ADMIN` | L'équipe Siira — réinitialiser la démonstration, gérer les comptes |
+| un matricule d'agent inscrit | L'espace de cet agent |
+| tout autre matricule | Un centre de démonstration, attribué d'après les chiffres saisis |
 
 En Phase 2, ces comptes auront de vrais mots de passe, qui seront notés ici et
 jamais publiés.

@@ -376,6 +376,26 @@ groupe du contexte, et part donc avec le dossier vers le spécialiste. L'agent
 n'a rien à calculer : il lit, il demande, il note — et si la patiente est en
 retard, le spécialiste le voit écrit.
 
+**D46. L'agent crée son compte lui-même : nom, prénom, statut, centre de santé,
+matricule et mot de passe à 6 chiffres.**
+L'écran `/inscription` demande ces six réponses, en trois groupes courts, et
+signale les fautes champ par champ : un matricule déjà pris, deux mots de passe
+qui diffèrent, un mot de passe qui n'a pas six chiffres. À la fin, l'agent
+entre directement dans son espace — on ne demande pas de se connecter juste
+après s'être inscrit. Le compte vit dans l'état de la démonstration
+(`comptes`), et `lireSession()` le retrouve comme un compte de démonstration :
+c'est ce qui permettra à Supabase Auth de prendre la main sans toucher aux
+écrans.
+
+Le matricule se compare en lettres et chiffres seuls : « ag 1042 » et
+« AG-1042 » sont le même matricule, un tiret oublié n'ouvre pas un second
+compte. Le mot de passe reste dans le navigateur, le temps de la Phase 1 ; il
+n'est jamais transmis, et la vérification viendra du serveur.
+
+**Le vocabulaire s'aligne au passage : le code à 6 chiffres s'appelle partout
+« mot de passe »**, comme au centre, au lieu de « code secret » sur un écran et
+« mot de passe » sur l'autre.
+
 ---
 
 ## Données de démonstration
