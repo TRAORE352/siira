@@ -134,7 +134,7 @@ export function AgendaSemaine({
           type="button"
           onClick={() => defiler(-1)}
           aria-label="Mois précédents"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-sable-300 text-lg text-sable-600 hover:bg-sable-100"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sable-300 text-lg text-sable-600 hover:bg-sable-100"
         >
           ‹
         </button>
@@ -147,7 +147,7 @@ export function AgendaSemaine({
                 type="button"
                 onClick={() => allerAuMois(m)}
                 aria-pressed={actif}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                className={`flex min-h-[var(--spacing-cible)] shrink-0 items-center rounded-full border px-3.5 text-sm transition-colors ${
                   actif
                     ? "border-rose-600 bg-rose-600 font-medium text-white"
                     : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
@@ -162,7 +162,7 @@ export function AgendaSemaine({
           type="button"
           onClick={() => defiler(1)}
           aria-label="Mois suivants"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-sable-300 text-lg text-sable-600 hover:bg-sable-100"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sable-300 text-lg text-sable-600 hover:bg-sable-100"
         >
           ›
         </button>
@@ -174,7 +174,7 @@ export function AgendaSemaine({
           type="button"
           onClick={() => decalerSemaine(-1)}
           aria-label="Semaine précédente"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-sable-300 text-sable-600 hover:bg-sable-100"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-sable-300 text-sable-600 hover:bg-sable-100"
         >
           ‹
         </button>
@@ -183,7 +183,7 @@ export function AgendaSemaine({
           type="button"
           onClick={() => decalerSemaine(1)}
           aria-label="Semaine suivante"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-sable-300 text-sable-600 hover:bg-sable-100"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-sable-300 text-sable-600 hover:bg-sable-100"
         >
           ›
         </button>
