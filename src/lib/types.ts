@@ -196,4 +196,5 @@ export interface Profil {
   sexe?: "femme" | "homme";
   specialite?: string;
   matricule?: string;
+  telephone?: string;
 }

@@ -180,6 +180,26 @@ export function enregistrerCompte(compte: CompteInscrit): void {
   ecrireComptes(comptes);
 }
 
+/**
+ * Met à jour les informations modifiables d'un compte inscrit (téléphone,
+ * spécialité, sexe, centre de rattachement…). Renvoie le profil mis à jour,
+ * ou null si le compte n'est pas un compte inscrit (compte de démonstration).
+ */
+export function mettreAJourCompte(
+  profilId: string,
+  changements: Partial<Profil>,
+): Profil | null {
+  const comptes = lireComptes();
+  const compte = comptes.find((c) => c.profil.id === profilId);
+  if (!compte) return null;
+  compte.profil = { ...compte.profil, ...changements };
+  ecrireComptes(comptes);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("siira-session"));
+  }
+  return compte.profil;
+}
+
 function nouvelId(prefixe: string): string {
   return `${prefixe}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
