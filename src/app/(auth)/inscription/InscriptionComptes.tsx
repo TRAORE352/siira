@@ -217,19 +217,18 @@ export function InscriptionComptes() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Champ
-                label="Mot de passe"
+                label="Mot de passe (6 chiffres)"
                 type="password"
                 inputMode="numeric"
                 autoComplete="new-password"
                 maxLength={6}
                 obligatoire
-                aide="6 chiffres"
                 value={motDePasse}
                 erreur={erreurs.motDePasse}
                 onChange={(e) => setMotDePasse(e.target.value.replace(/\D/g, ""))}
               />
               <Champ
-                label="Confirmer le mot de passe"
+                label="Confirmation"
                 type="password"
                 inputMode="numeric"
                 autoComplete="new-password"
