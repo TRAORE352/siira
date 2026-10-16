@@ -261,6 +261,15 @@ export function FicheModifiable({
               }
             />
 
+            {/* Posée au moment de la saisie de l'âge, avec ce qui est recommandé. */}
+            <Liste
+              label="Est-elle à jour de son dépistage ?"
+              placeholder="Non précisé"
+              options={OUI_NON}
+              value={depuisBooleen(fiche.depistage_a_jour)}
+              onChange={(e) => set("depistage_a_jour", versBooleen(e.target.value))}
+            />
+
             <Liste
               label="Cas de cancer du sein dans la famille"
               placeholder="Non précisé"

@@ -303,6 +303,7 @@ function fiche(partiel: Partial<Consultation["fiche"]> = {}): Consultation["fich
     statut_menopause: null,
     fievre: null,
     grossesse_ou_allaitement: null,
+    depistage_a_jour: null,
     antecedents_familiaux: null,
     autres: null,
     ...partiel,

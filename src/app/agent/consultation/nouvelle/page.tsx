@@ -6,6 +6,7 @@ import { clsx } from "clsx";
 import { Espace } from "@/components/Espace";
 import { CaseACocher, Champ, Liste, ZoneTexte } from "@/components/Champs";
 import { MessageErreur, MessageInfo } from "@/components/Interface";
+import { SurveillanceTexte } from "@/components/Surveillance";
 import {
   BarreEtape,
   CorpsEtape,
@@ -226,6 +227,11 @@ function Parcours() {
 
   const courante = ETAPES[etape - 1];
   const district = districts.find((d) => d.id === f.district_id);
+  /* Âge exploitable : dans les bornes de la fiche, sinon rien à recommander. */
+  const ageSaisi = (() => {
+    const n = Number(f.age);
+    return Number.isInteger(n) && n >= 15 && n <= 100 ? n : null;
+  })();
 
   return (
     <>
@@ -269,6 +275,23 @@ function Parcours() {
                 erreur={erreurs.age}
                 onChange={(e) => set("age", e.target.value)}
               />
+
+              {/*
+                Dès que l'âge est connu, l'agent sait ce que la patiente devrait
+                faire : c'est le moment de le lui demander, pendant qu'elle est
+                en face de lui. La réponse se note dans la fiche, et part avec
+                le dossier.
+              */}
+              {ageSaisi !== null ? (
+                <div className="mt-4">
+                  <MessageInfo titre={`Ce qui est recommandé à ${ageSaisi} ans`}>
+                    <SurveillanceTexte age={ageSaisi} />
+                    <p className="mt-2 text-sm text-sable-600">
+                      Demandez-lui si elle est à jour. Vous le noterez dans la fiche.
+                    </p>
+                  </MessageInfo>
+                </div>
+              ) : null}
             </Question>
           </>
         ) : null}

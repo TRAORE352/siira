@@ -33,6 +33,8 @@ export interface Fiche {
   statut_menopause: boolean | null;
   fievre: boolean | null;
   grossesse_ou_allaitement: boolean | null;
+  /** Est-elle à jour de son examen de dépistage, vu son âge ? */
+  depistage_a_jour: boolean | null;
   antecedents_familiaux: boolean | null;
   autres: string | null;
 }

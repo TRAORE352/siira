@@ -368,6 +368,14 @@ question par question, la referme pour dicter. La zone du récit est aussi plus
 haute, et la ligne de rappel d'une étape accepte deux lignes — « Awa Compaoré,
 41 ans · Saaba » s'y coupait en « … · Saa… ».
 
+**D45. Le dépistage se rappelle au moment où l'agent saisit l'âge.**
+Dès que l'âge est connu (entre 15 et 100 ans), l'étape 1 affiche ce qui est
+recommandé à cet âge et invite l'agent à demander si la patiente est à jour. La
+réponse se note dans la fiche (« Est-elle à jour de son dépistage ? »), dans le
+groupe du contexte, et part donc avec le dossier vers le spécialiste. L'agent
+n'a rien à calculer : il lit, il demande, il note — et si la patiente est en
+retard, le spécialiste le voit écrit.
+
 ---
 
 ## Données de démonstration

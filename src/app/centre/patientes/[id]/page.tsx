@@ -222,6 +222,7 @@ function LignesFiche({ fiche }: { fiche: Fiche }) {
       <Ligne libelle="Enceinte ou allaitante">
         {ouiNon(fiche.grossesse_ou_allaitement)}
       </Ligne>
+      <Ligne libelle="À jour de son dépistage">{ouiNon(fiche.depistage_a_jour)}</Ligne>
       <Ligne libelle="Antécédents familiaux">{ouiNon(fiche.antecedents_familiaux)}</Ligne>
       {fiche.autres ? <Ligne libelle="Autre">{fiche.autres}</Ligne> : null}
     </>
