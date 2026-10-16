@@ -10,6 +10,8 @@ import { BarreLaterale } from "./BarreLaterale";
 import { Chargement } from "./Interface";
 import { ACCUEIL_PAR_ROLE, LIBELLE_ROLE, fermerSession, useSession } from "@/lib/session";
 import { ESPACE_ACTIF, roleAutorise } from "@/lib/espaces";
+import { chargerDonneesReelles, donneesReellesChargees } from "@/lib/supabase/donnees";
+import { supabaseEstConfigure } from "@/lib/supabase/environnement";
 import type { Role } from "@/lib/types";
 
 export type { LienNav } from "@/lib/nav";
@@ -42,6 +44,19 @@ export function Espace({
 }) {
   const { profil, pret } = useSession();
   const router = useRouter();
+
+  /*
+   * Rouvrir l'onglet ne repasse pas par l'ecran de connexion : la session vit
+   * dans le stockage, mais les donnees reelles, elles, ne survivent pas a un
+   * rechargement si personne ne les recharge. Sans ce filet, l'agent revient
+   * sur un espace vide apres un simple rafraichissement — et c'est exactement
+   * ce qu'on fait pendant une demonstration.
+   */
+  useEffect(() => {
+    if (!pret || !profil) return;
+    if (!supabaseEstConfigure() || donneesReellesChargees()) return;
+    void chargerDonneesReelles();
+  }, [pret, profil]);
 
   useEffect(() => {
     if (!pret) return;

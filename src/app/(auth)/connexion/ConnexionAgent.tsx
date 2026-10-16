@@ -25,6 +25,7 @@ import {
 } from "@/lib/telephone";
 import { matriculeNormalise } from "@/lib/comptes";
 import { AuthRefusee, connecter } from "@/lib/supabase/auth";
+import { chargerDonneesReelles } from "@/lib/supabase/donnees";
 import { supabaseEstConfigure } from "@/lib/supabase/environnement";
 
 /**
@@ -86,6 +87,9 @@ export function ConnexionAgent() {
           return;
         }
         ouvrirSessionReelle(profil);
+        /* Les ecrans lisent l'etat local : sans ce chargement, l'agent entre
+           dans un espace vide alors que ses dossiers existent en base. */
+        await chargerDonneesReelles();
         router.replace(ACCUEIL_PAR_ROLE[profil.role]);
       } catch (e) {
         setEnvoi(false);

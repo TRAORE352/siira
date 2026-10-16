@@ -22,6 +22,7 @@ import {
   ouvrirSessionReelle,
 } from "@/lib/session";
 import { AuthRefusee, connecter } from "@/lib/supabase/auth";
+import { chargerDonneesReelles } from "@/lib/supabase/donnees";
 import { supabaseEstConfigure } from "@/lib/supabase/environnement";
 
 /**
@@ -81,6 +82,7 @@ export function ConnexionComptes() {
           return;
         }
         ouvrirSessionReelle(profil);
+        await chargerDonneesReelles();
         router.replace(ACCUEIL_PAR_ROLE[profil.role]);
       } catch (e) {
         setEnvoi(false);

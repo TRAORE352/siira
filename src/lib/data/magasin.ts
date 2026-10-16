@@ -167,6 +167,25 @@ export function lireEtat(): EtatSiira {
   return etat;
 }
 
+/**
+ * Remplace le contenu de l'état sans passer par la copie profonde de
+ * `modifier`.
+ *
+ * Réservé au chargement des données RÉELLES : on remplace des tables entières
+ * venues de la base, et dupliquer l'état complet pour l'écraser aussitôt
+ * coûterait cher sur un téléphone d'entrée de gamme. Le résultat est enregistré
+ * et diffusé aux autres onglets comme toute autre écriture.
+ */
+export function remplacerEtat(action: (e: EtatSiira) => EtatSiira): EtatSiira {
+  const courant = lireEtat();
+  const suivant = action(courant);
+  suivant.version = courant.version + 1;
+  etat = suivant;
+  ecrireDansLeStockage(suivant);
+  prevenir();
+  return suivant;
+}
+
 /** Applique une modification, enregistre et prévient tous les onglets. */
 export function modifier(action: (e: EtatSiira) => EtatSiira | void): EtatSiira {
   const courant = lireEtat();
