@@ -58,14 +58,14 @@ export const REGLES: Regle[] = [
   },
   {
     code: "R3",
-    libelle: "Un ecoulement avec du sang, d'un seul cote",
+    libelle: "Un écoulement avec du sang, d'un seul côté",
     niveau: "rouge",
     condition: ({ fiche }) =>
       fiche.ecoulement === "sanglant" && fiche.ecoulement_un_cote === true,
   },
   {
     code: "R4",
-    libelle: "Une masse dure et fixee",
+    libelle: "Une masse dure et fixée",
     niveau: "rouge",
     condition: ({ fiche }) =>
       fiche.masse_dure === true && fiche.masse_fixe === true,
@@ -88,13 +88,13 @@ export const REGLES: Regle[] = [
   },
   {
     code: "O2",
-    libelle: "Un mamelon rentre depuis peu",
+    libelle: "Un mamelon rentré depuis peu",
     niveau: "orange",
     condition: ({ fiche }) => fiche.mamelon_retraction_recente === true,
   },
   {
     code: "O3",
-    libelle: "Un ecoulement sans sang, d'un seul cote",
+    libelle: "Un écoulement sans sang, d'un seul côté",
     niveau: "orange",
     condition: ({ fiche }) =>
       fiche.ecoulement === "non_sanglant" && fiche.ecoulement_un_cote === true,
@@ -107,7 +107,7 @@ export const REGLES: Regle[] = [
   },
   {
     code: "O5",
-    libelle: "Une douleur a un endroit precis depuis 4 semaines ou plus",
+    libelle: "Une douleur à un endroit précis depuis 4 semaines ou plus",
     niveau: "orange",
     condition: ({ fiche }) =>
       fiche.douleur === "localisee" &&
@@ -119,14 +119,14 @@ export const REGLES: Regle[] = [
 /** Regle particuliere : information manquante sur la presence d'une masse. */
 export const REGLE_MASSE_INCONNUE = {
   code: "M1",
-  libelle: "Presence d'une masse inconnue",
+  libelle: "Présence d'une masse inconnue",
   niveau: "orange" as Niveau,
 };
 
 /** Regle par defaut quand rien ne se declenche. */
 export const REGLE_VERT = {
   code: "V1",
-  libelle: "Aucun signe d'alerte dans ce qui a ete decrit",
+  libelle: "Aucun signe d'alerte dans ce qui a été décrit",
   niveau: "vert" as Niveau,
 };
 
