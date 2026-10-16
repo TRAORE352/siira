@@ -152,7 +152,15 @@ export function ConnexionComptes() {
 
           {ESPACE_ACTIF === "complet" ? (
             <p className="mt-6 text-center text-sm">
-              <Link href="/design" className="text-rose-700 underline-offset-4 hover:underline">
+              {/*
+                Cible tactile de 44 px, sans allonger la page : la marge
+                négative annule la hauteur ajoutée au bloc. L'écran tient sans
+                défilement, c'est voulu.
+              */}
+              <Link
+                href="/design"
+                className="-my-3 inline-flex min-h-[var(--spacing-cible)] items-center px-2 text-rose-700 underline-offset-4 hover:underline"
+              >
                 Voir le système de design
               </Link>
             </p>
