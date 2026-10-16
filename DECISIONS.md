@@ -488,3 +488,34 @@ ne doit pas passer. L'indicatif n'est contrôlé que sur la forme téléphone.
 Le repli sur la démonstration quand Supabase n'est pas configuré n'est pas une
 commodité de développement : c'est ce qui garantit que la démonstration du jury
 passe même sans réseau.
+
+## D15 — Le cadre du projet se déclare sur Vercel, sinon l'adresse sert un 404
+
+`siira-equipe.vercel.app` répondait 404 sur TOUS ses chemins — racine, écrans,
+routes API — alors que la construction réussissait, que le déploiement était
+« Ready » et que l'alias pointait bien sur lui. Les deux autres adresses
+servaient le même commit sans défaut.
+
+Cause réelle : le projet `siira-admin` avait `framework: null` au lieu de
+`nextjs`. Sans cadre déclaré, Vercel ne câble pas la sortie de Next sur ses
+routes et publie le dossier brut : rien ne correspond, donc 404 partout. Le
+journal de construction est trompeur — il liste les 24 routes, parce que Next
+les a bien produites ; c'est la publication qui les ignore.
+
+Ce projet s'appelait `siira-equipe` avant d'être renommé `siira-admin`, et le
+cadre a été perdu à ce moment-là. Corrigé par l'API, le CLI ne l'expose pas :
+
+```sh
+curl -X PATCH -H "Authorization: Bearer $TOK" -H 'Content-Type: application/json' \
+  -d '{"framework":"nextjs"}' "https://api.vercel.com/v9/projects/siira-admin?teamId=$T"
+```
+
+Le réglage ne vaut que pour les constructions suivantes : il faut redéployer.
+
+Ce qui n'était PAS la cause, et a coûté le plus de temps à écarter :
+réassigner l'alias, retirer puis rajouter le domaine, attendre une propagation.
+L'alias était juste depuis le début. **Un 404 uniforme sur toutes les routes
+d'une adresse n'est pas un problème de routage applicatif ni de domaine : c'est
+le projet qui ne sait pas ce qu'il publie.** Comparer `framework`,
+`rootDirectory` et `buildCommand` entre le projet qui marche et celui qui
+casse (`/v9/projects/<nom>`) dit la réponse en une commande.
