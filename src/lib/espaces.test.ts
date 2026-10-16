@@ -40,7 +40,7 @@ describe("lireEspace", () => {
   });
 
   it("refuse une valeur inconnue plutôt que d'ouvrir un espace", () => {
-    expect(lireEspace("admin")).toBe("complet");
+    expect(lireEspace("patient")).toBe("complet");
     expect(lireEspace("tous")).toBe("complet");
     expect(lireEspace("agent; drop")).toBe("complet");
   });
