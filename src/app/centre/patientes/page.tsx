@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BadgeNiveau } from "@/components/BadgeNiveau";
+import { Liste } from "@/components/Champs";
 import { Espace } from "@/components/Espace";
 import { Carte, EtatVide, Squelette, TitreSection } from "@/components/Interface";
 import { listerDossiersCentre } from "@/lib/data";
@@ -13,6 +14,12 @@ import { useSession } from "@/lib/session";
 import type { Niveau } from "@/lib/types";
 
 const STATUTS: string[] = ["envoyee", "recue", "examens", "resultat", "close", "absente"];
+
+const POINT_NIVEAU: Record<Niveau, string> = {
+  rouge: "bg-rouge-fort",
+  orange: "bg-orange-fort",
+  vert: "bg-vert-fort",
+};
 
 export default function ListePatientes() {
   return (
@@ -34,15 +41,6 @@ function Contenu() {
 
   const dossiers = useMemo(() => donnees ?? [], [donnees]);
 
-  const compteurs = useMemo(() => {
-    const c = { tous: dossiers.length, rouge: 0, orange: 0, vert: 0 };
-    for (const d of dossiers) {
-      const n = d.consultation.niveau_valide;
-      if (n) c[n] += 1;
-    }
-    return c;
-  }, [dossiers]);
-
   const visibles = useMemo(
     () =>
       dossiers.filter(
@@ -61,63 +59,66 @@ function Contenu() {
         Patientes
       </TitreSection>
 
-      <div className="mb-5 rounded-[var(--radius-grand)] border border-sable-200 bg-white p-4">
-        <div className="flex flex-wrap gap-x-8 gap-y-4">
-          <div>
-            <span className="mb-2 block text-sm font-medium text-sable-600">
-              Niveau d&apos;urgence
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {(["tous", "rouge", "orange", "vert"] as const).map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setNiveau(f)}
-                  aria-pressed={niveau === f}
-                  className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
-                    niveau === f
-                      ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
-                      : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
-                  }`}
-                >
-                  {f === "tous" ? "Toutes" : f[0].toUpperCase() + f.slice(1)} ({compteurs[f]})
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <span className="mb-2 block text-sm font-medium text-sable-600">Statut</span>
-            <div className="flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap items-end gap-x-6 gap-y-4 rounded-[var(--radius-grand)] border border-sable-200 bg-white px-4 py-4">
+        <div className="flex flex-col gap-2">
+          <span className="text-[0.95rem] font-medium text-prune-800">Niveau d&apos;urgence</span>
+          <div
+            role="group"
+            aria-label="Filtrer par niveau d'urgence"
+            className="inline-flex rounded-[var(--radius-moyen)] border border-sable-300 bg-white p-0.5"
+          >
+            {(["tous", "rouge", "orange", "vert"] as const).map((f) => (
               <button
+                key={f}
                 type="button"
-                onClick={() => setStatut("tous")}
-                aria-pressed={statut === "tous"}
-                className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
-                  statut === "tous"
-                    ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
-                    : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
+                onClick={() => setNiveau(f)}
+                aria-pressed={niveau === f}
+                className={`flex min-h-[var(--spacing-cible)] items-center gap-1.5 rounded-[calc(var(--radius-moyen)-2px)] px-3.5 text-sm transition-colors ${
+                  niveau === f
+                    ? "bg-prune-900 font-medium text-white"
+                    : "text-prune-800 hover:bg-sable-100"
                 }`}
               >
-                Tous
+                {f !== "tous" ? (
+                  <span aria-hidden="true" className={`h-2 w-2 rounded-full ${POINT_NIVEAU[f]}`} />
+                ) : null}
+                {f === "tous" ? "Toutes" : f[0].toUpperCase() + f.slice(1)}
               </button>
-              {STATUTS.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setStatut(s)}
-                  aria-pressed={statut === s}
-                  className={`flex min-h-[var(--spacing-cible)] items-center rounded-[var(--radius-moyen)] border px-3 text-[0.95rem] transition-colors ${
-                    statut === s
-                      ? "border-rose-600 bg-rose-50 font-medium text-rose-700"
-                      : "border-sable-300 bg-white text-prune-800 hover:bg-sable-100"
-                  }`}
-                >
-                  {LIBELLE_STATUT_ORIENTATION[s as keyof typeof LIBELLE_STATUT_ORIENTATION]}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
+        </div>
+
+        <div className="w-52">
+          <Liste
+            label="Statut"
+            options={[
+              { valeur: "tous", libelle: "Tous les statuts" },
+              ...STATUTS.map((s) => ({
+                valeur: s,
+                libelle: LIBELLE_STATUT_ORIENTATION[s as keyof typeof LIBELLE_STATUT_ORIENTATION],
+              })),
+            ]}
+            value={statut}
+            onChange={(e) => setStatut(e.target.value)}
+          />
+        </div>
+
+        <div className="ml-auto flex items-center gap-4 pb-1.5">
+          {niveau !== "tous" || statut !== "tous" ? (
+            <button
+              type="button"
+              onClick={() => {
+                setNiveau("tous");
+                setStatut("tous");
+              }}
+              className="text-sm font-medium text-rose-700 underline-offset-4 hover:underline"
+            >
+              Effacer les filtres
+            </button>
+          ) : null}
+          <span className="text-sm text-sable-600" aria-live="polite">
+            {visibles.length} patiente{visibles.length > 1 ? "s" : ""}
+          </span>
         </div>
       </div>
 
