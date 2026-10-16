@@ -5,7 +5,13 @@ import { AgendaSemaine } from "@/components/AgendaSemaine";
 import { Bouton } from "@/components/Bouton";
 import { Champ } from "@/components/Champs";
 import { Espace } from "@/components/Espace";
-import { Carte, Ligne, MessageInfo, Squelette, TitreSection } from "@/components/Interface";
+import {
+  Carte,
+  MessageInfo,
+  MessageSucces,
+  Squelette,
+  TitreSection,
+} from "@/components/Interface";
 import {
   changerDisponibiliteCreneau,
   creerCreneau,
@@ -36,6 +42,9 @@ function Contenu() {
   const [date, setDate] = useState("");
   const [heure, setHeure] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
+  const [succes, setSucces] = useState<string | null>(null);
+  const [ajoutOuvert, setAjoutOuvert] = useState(true);
+  const [calendrierOuvert, setCalendrierOuvert] = useState(false);
 
   const { donnees, pret } = useDonnees(() => {
     const centre = trouverCentre(centreId);
@@ -52,6 +61,7 @@ function Contenu() {
 
   function ajouter() {
     setErreur(null);
+    setSucces(null);
     if (!date || !heure) {
       setErreur("Indiquez la date et l'heure du rendez-vous.");
       return;
@@ -69,6 +79,7 @@ function Contenu() {
       creerCreneau(centreId, debut.toISOString());
       setDate("");
       setHeure("");
+      setSucces("Créneau ajouté au calendrier.");
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Une erreur est survenue.");
     }
@@ -90,59 +101,114 @@ function Contenu() {
 
   return (
     <>
-      <TitreSection aide="Ajoutez des créneaux libres et suivez l'état de vos rendez-vous.">
+      <TitreSection aide="Ajoutez vos créneaux libres, puis suivez-les dans le calendrier.">
         Disponibilités
       </TitreSection>
 
-      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-        <Carte>
-          <h2 className="mb-3 text-lg">{centre.nom}</h2>
-          <dl>
-            <Ligne libelle="Service">{centre.service}</Ligne>
-            <Ligne libelle="Examens proposés">
-              {centre.examens.map((e) => LIBELLE_EXAMEN[e] ?? e).join(", ")}
-            </Ligne>
-            <Ligne libelle="Places par semaine">{centre.places_semaine}</Ligne>
-            <Ligne libelle="Créneaux libres à venir">{libres}</Ligne>
-          </dl>
-        </Carte>
-
-        <Carte>
-          <h2 className="mb-3 text-lg">Ajouter un rendez-vous</h2>
-          {erreur ? (
-            <p role="alert" className="mb-3 text-sm font-medium text-rouge-fort">
-              {erreur}
+      {/* Résumé du centre */}
+      <Carte className="mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="text-lg">{centre.nom}</h2>
+            <p className="mt-0.5 text-sm text-sable-600">
+              {centre.examens.map((e) => LIBELLE_EXAMEN[e] ?? e).join(" · ")}
             </p>
-          ) : null}
-          <div className="flex flex-col gap-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Champ
-                type="date"
-                label="Date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-              <Champ
-                type="time"
-                label="Heure"
-                value={heure}
-                onChange={(e) => setHeure(e.target.value)}
-              />
-            </div>
-            <Bouton onClick={ajouter}>Ajouter le créneau</Bouton>
           </div>
-        </Carte>
-      </div>
+          <div className="flex gap-8">
+            <div className="text-right">
+              <p className="font-[family-name:var(--font-titre)] text-2xl text-prune-900">
+                {libres}
+              </p>
+              <p className="text-sm text-sable-600">créneaux libres</p>
+            </div>
+            <div className="text-right">
+              <p className="font-[family-name:var(--font-titre)] text-2xl text-prune-900">
+                {centre.places_semaine}
+              </p>
+              <p className="text-sm text-sable-600">places / semaine</p>
+            </div>
+          </div>
+        </div>
+      </Carte>
 
-      <div className="mt-4">
-        <Carte>
-          <h2 className="mb-1 text-lg">Agenda des rendez-vous</h2>
-          <p className="mb-4 text-sm text-sable-600">
-            Cliquez sur un créneau pour le marquer libre ou pris.
+      {/* Ajouter un créneau */}
+      <SectionDepliable
+        titre="Ajouter un créneau"
+        ouvert={ajoutOuvert}
+        onBasculer={() => setAjoutOuvert((v) => !v)}
+      >
+        {erreur ? (
+          <p role="alert" className="mb-4 text-sm font-medium text-rouge-fort">
+            {erreur}
           </p>
-          <AgendaSemaine creneaux={creneaux} onBasculer={basculer} />
-        </Carte>
-      </div>
+        ) : null}
+        {succes ? (
+          <div className="mb-4">
+            <MessageSucces>{succes}</MessageSucces>
+          </div>
+        ) : null}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Champ
+            type="date"
+            label="Date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <Champ
+            type="time"
+            label="Heure"
+            value={heure}
+            onChange={(e) => setHeure(e.target.value)}
+          />
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          <Bouton onClick={ajouter}>Ajouter ce créneau</Bouton>
+          <p className="text-sm text-sable-600">Le créneau apparaît dans le calendrier.</p>
+        </div>
+      </SectionDepliable>
+
+      {/* Calendrier */}
+      <SectionDepliable
+        titre="Calendrier des rendez-vous"
+        ouvert={calendrierOuvert}
+        onBasculer={() => setCalendrierOuvert((v) => !v)}
+      >
+        <AgendaSemaine creneaux={creneaux} onBasculer={basculer} />
+      </SectionDepliable>
     </>
+  );
+}
+
+function SectionDepliable({
+  titre,
+  ouvert,
+  onBasculer,
+  children,
+}: {
+  titre: string;
+  ouvert: boolean;
+  onBasculer: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-4 overflow-hidden rounded-[var(--radius-grand)] border border-sable-200 bg-white">
+      <button
+        type="button"
+        onClick={onBasculer}
+        aria-expanded={ouvert}
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-sable-50"
+      >
+        <span className="text-lg font-medium text-prune-900">{titre}</span>
+        <span
+          aria-hidden="true"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sable-300 text-xl leading-none text-prune-700"
+        >
+          {ouvert ? "−" : "+"}
+        </span>
+      </button>
+      {ouvert ? (
+        <div className="border-t border-sable-200 px-5 py-5">{children}</div>
+      ) : null}
+    </div>
   );
 }
